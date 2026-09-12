@@ -5,3 +5,4 @@ export * from "@/db/schema/audit-logs";
 export * from "@/db/schema/job-logs";
 export * from "@/db/schema/catalog";
 export * from "@/db/schema/inventory";
+export * from "@/db/schema/orders";

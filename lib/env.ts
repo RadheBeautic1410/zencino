@@ -13,6 +13,11 @@ const envSchema = z.object({
     .min(32)
     .refine((value) => !value.includes("replace-with")),
   CHECKOUT_ENABLED: z.enum(["true", "false"]).default("false"),
+  PAYMENT_MODE: z.enum(["upi_qr", "razorpay"]).default("upi_qr"),
+  UPI_ID: z.string().min(1).default("zencino@upi"),
+  UPI_NAME: z.string().min(1).default("Zencino"),
+  RAZORPAY_KEY_ID: optionalString,
+  RAZORPAY_KEY_SECRET: optionalString,
   NEXT_PUBLIC_APP_URL: z.url(),
   NODE_ENV: z
     .enum(["development", "test", "production"])

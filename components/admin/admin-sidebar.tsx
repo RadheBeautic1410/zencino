@@ -6,6 +6,7 @@ import {
   Envelope,
   FolderSimple,
   Package,
+  Receipt,
   SignOut,
   SquaresFour,
   Stack,
@@ -20,6 +21,7 @@ import { PRODUCT_NAME } from "@/config/platform";
 
 const navItems = [
   { href: "/admin", label: "Overview", icon: ChartBar, exact: true },
+  { href: "/admin/orders", label: "Orders", icon: Receipt, exact: false },
   { href: "/admin/products", label: "Products", icon: Package, exact: false },
   { href: "/admin/inventory", label: "Inventory", icon: Tray, exact: false },
   { href: "/admin/categories", label: "Categories", icon: FolderSimple, exact: false },

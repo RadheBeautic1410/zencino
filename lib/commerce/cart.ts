@@ -393,3 +393,15 @@ export async function mergeGuestCartOnLogin(userId: string, guestToken: string) 
   // Delete guest cart
   await db.delete(carts).where(eq(carts.id, guestCart.id));
 }
+
+export async function clearCart(cartId?: string) {
+  if (cartId) {
+    await db.delete(cartItems).where(eq(cartItems.cartId, cartId));
+    return;
+  }
+  const details = await getCartDetails();
+  if (details.cartId) {
+    await db.delete(cartItems).where(eq(cartItems.cartId, details.cartId));
+  }
+}
+

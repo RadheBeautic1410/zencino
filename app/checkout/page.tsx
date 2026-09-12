@@ -9,8 +9,13 @@ export const metadata: Metadata = {
   description: "Provide shipping details and generate a verified checkout quote for your Zencino order.",
 };
 
+import { getCurrentSession } from "@/lib/authz";
+
 export default async function CheckoutPage() {
-  const cart = await getCartDetails();
+  const [cart, session] = await Promise.all([
+    getCartDetails(),
+    getCurrentSession(),
+  ]);
 
   if (!cart.cartId || cart.items.length === 0) {
     redirect("/cart");
@@ -18,7 +23,11 @@ export default async function CheckoutPage() {
 
   return (
     <StoreShell>
-      <CheckoutView cart={cart} />
+      <CheckoutView
+        cart={cart}
+        initialEmail={session?.user?.email || ""}
+        initialName={session?.user?.name || ""}
+      />
     </StoreShell>
   );
 }

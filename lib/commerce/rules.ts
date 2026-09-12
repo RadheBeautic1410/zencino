@@ -1,4 +1,4 @@
-import { createHash } from "node:crypto";
+import { createHash, randomBytes } from "node:crypto";
 
 export const FREE_SHIPPING_THRESHOLD_PAISE = 99900; // ₹999
 export const STANDARD_SHIPPING_PAISE = 7900;        // ₹79
@@ -44,3 +44,14 @@ export function calculateAvailableStock(onHand: number, reserved: number): numbe
 export function hashGuestToken(token: string): string {
   return createHash("sha256").update(token).digest("hex");
 }
+
+/**
+ * Generates an immutable, human-friendly order reference: ZNC-YYYYMMDD-XXXX
+ * Example: ZNC-20260912-A3F9
+ */
+export function generateOrderNumber(): string {
+  const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+  const randomSuffix = randomBytes(2).toString("hex").toUpperCase();
+  return `ZNC-${dateStr}-${randomSuffix}`;
+}
+
