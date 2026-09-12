@@ -60,11 +60,18 @@ export default async function AdminOrdersPage({
 
   return (
     <div className="space-y-8">
-      <OrbitPageHeader
-        eyebrow="Sales & Fulfilment"
-        title="Customer Orders"
-        description="Verify direct UPI transfers, approve stock deductions, and manage shipment dispatch."
-      />
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <OrbitPageHeader
+          eyebrow="Sales & Fulfilment"
+          title="Customer Orders"
+          description="Verify direct UPI transfers, approve stock deductions, and manage shipment dispatch."
+        />
+        <Button asChild variant="outline" size="sm" className="h-8 text-xs font-bold uppercase tracking-ui">
+          <Link href="/admin/returns">
+            Return Claims Queue
+          </Link>
+        </Button>
+      </div>
 
       {/* Filter Tabs */}
       <div className="flex flex-wrap items-center gap-1.5 border-b border-border pb-3">

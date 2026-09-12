@@ -59,6 +59,8 @@ export const orders = pgTable(
     cancelReason: text("cancel_reason"),
     trackingCourier: text("tracking_courier"),
     trackingNumber: text("tracking_number"),
+    dispatchedAt: timestamp("dispatched_at", { withTimezone: true }),
+    deliveredAt: timestamp("delivered_at", { withTimezone: true }),
     ...dates(),
   },
   (table) => [
@@ -174,3 +176,122 @@ export const customerAddresses = pgTable(
   ]
 );
 
+// 6. Order Cancellations
+export const orderCancellations = pgTable(
+  "order_cancellations",
+  {
+    id: text("id").primaryKey().$defaultFn(createId),
+    orderId: text("order_id")
+      .notNull()
+      .references(() => orders.id, { onDelete: "cascade" }),
+    userId: text("user_id").references(() => user.id, { onDelete: "set null" }),
+    requestedBy: text("requested_by", { enum: ["customer", "admin"] })
+      .notNull()
+      .default("customer"),
+    reason: text("reason").notNull(),
+    status: text("status", { enum: ["requested", "approved", "rejected"] })
+      .notNull()
+      .default("requested"),
+    adminNote: text("admin_note"),
+    reviewedBy: text("reviewed_by").references(() => user.id, { onDelete: "set null" }),
+    reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
+    ...dates(),
+  },
+  (table) => [
+    index("order_cancellations_order_id_idx").on(table.orderId),
+    index("order_cancellations_status_idx").on(table.status),
+  ]
+);
+
+// 7. Order Returns
+export const orderReturns = pgTable(
+  "order_returns",
+  {
+    id: text("id").primaryKey().$defaultFn(createId),
+    returnNumber: text("return_number").notNull().unique(),
+    orderId: text("order_id")
+      .notNull()
+      .references(() => orders.id, { onDelete: "cascade" }),
+    orderItemId: text("order_item_id")
+      .notNull()
+      .references(() => orderItems.id),
+    variantId: text("variant_id")
+      .notNull()
+      .references(() => productVariants.id),
+    userId: text("user_id").references(() => user.id, { onDelete: "set null" }),
+    quantity: integer("quantity").notNull().default(1),
+    reason: text("reason", {
+      enum: [
+        "damaged_in_transit",
+        "wrong_item",
+        "defective_quality",
+        "not_as_described",
+        "other",
+      ],
+    }).notNull(),
+    customerNote: text("customer_note"),
+    photos: jsonb("photos").$type<string[]>().default([]),
+    status: text("status", {
+      enum: [
+        "requested",
+        "approved",
+        "rejected",
+        "received",
+        "completed",
+        "cancelled",
+      ],
+    })
+      .notNull()
+      .default("requested"),
+    restockAction: text("restock_action", {
+      enum: ["none", "restocked", "scrapped"],
+    })
+      .notNull()
+      .default("none"),
+    refundAmountMinor: integer("refund_amount_minor").notNull().default(0),
+    adminNote: text("admin_note"),
+    reviewedBy: text("reviewed_by").references(() => user.id, { onDelete: "set null" }),
+    reviewedAt: timestamp("reviewed_at", { withTimezone: true }),
+    receivedAt: timestamp("received_at", { withTimezone: true }),
+    completedAt: timestamp("completed_at", { withTimezone: true }),
+    ...dates(),
+  },
+  (table) => [
+    uniqueIndex("order_returns_return_number_idx").on(table.returnNumber),
+    index("order_returns_order_id_idx").on(table.orderId),
+    index("order_returns_item_id_idx").on(table.orderItemId),
+    index("order_returns_status_idx").on(table.status),
+  ]
+);
+
+// 8. Order Refunds & GST Credit Notes
+export const orderRefunds = pgTable(
+  "order_refunds",
+  {
+    id: text("id").primaryKey().$defaultFn(createId),
+    refundNumber: text("refund_number").notNull().unique(),
+    orderId: text("order_id")
+      .notNull()
+      .references(() => orders.id, { onDelete: "cascade" }),
+    returnId: text("return_id").references(() => orderReturns.id, { onDelete: "set null" }),
+    cancellationId: text("cancellation_id").references(() => orderCancellations.id, { onDelete: "set null" }),
+    amountMinor: integer("amount_minor").notNull(),
+    currency: text("currency").notNull().default("INR"),
+    reason: text("reason").notNull(),
+    method: text("method").notNull().default("upi_reversal"),
+    transactionReference: text("transaction_reference"), // bank UTR / refund reference
+    creditNoteNumber: text("credit_note_number").notNull().unique(),
+    status: text("status", { enum: ["pending", "completed", "failed"] })
+      .notNull()
+      .default("completed"),
+    processedBy: text("processed_by").references(() => user.id, { onDelete: "set null" }),
+    processedAt: timestamp("processed_at", { withTimezone: true }).notNull().defaultNow(),
+    ...dates(),
+  },
+  (table) => [
+    uniqueIndex("order_refunds_refund_number_idx").on(table.refundNumber),
+    uniqueIndex("order_refunds_credit_note_number_idx").on(table.creditNoteNumber),
+    index("order_refunds_order_id_idx").on(table.orderId),
+    index("order_refunds_return_id_idx").on(table.returnId),
+  ]
+);

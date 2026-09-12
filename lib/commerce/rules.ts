@@ -165,3 +165,107 @@ export function generateOrderNumber(): string {
   return `ZNC-${dateStr}-${randomSuffix}`;
 }
 
+/**
+ * Generates an immutable, human-friendly return reference: RET-YYYYMMDD-XXXX
+ * Example: RET-20260912-B4E1
+ */
+export function generateReturnNumber(): string {
+  const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+  const randomSuffix = randomBytes(2).toString("hex").toUpperCase();
+  return `RET-${dateStr}-${randomSuffix}`;
+}
+
+/**
+ * Generates an immutable, human-friendly refund reference: REF-YYYYMMDD-XXXX
+ * Example: REF-20260912-C8D2
+ */
+export function generateRefundNumber(): string {
+  const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+  const randomSuffix = randomBytes(2).toString("hex").toUpperCase();
+  return `REF-${dateStr}-${randomSuffix}`;
+}
+
+/**
+ * Generates an immutable, statutory GST Credit Note reference: CN-YYYYMMDD-XXXX
+ * Compliant with Section 34 of CGST Act, 2017.
+ * Example: CN-20260912-A1B2
+ */
+export function generateCreditNoteNumber(): string {
+  const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+  const randomSuffix = randomBytes(2).toString("hex").toUpperCase();
+  return `CN-${dateStr}-${randomSuffix}`;
+}
+
+export const RETURN_WINDOW_DAYS = 7;
+const RETURN_WINDOW_MS = RETURN_WINDOW_DAYS * 24 * 60 * 60 * 1000;
+
+/**
+ * Evaluates return eligibility under Zencino 7-day transit & quality policy:
+ * - Order must be in 'delivered' status.
+ * - Delivery date must be within 7 calendar days.
+ */
+export function isReturnEligible(
+  orderStatus: string,
+  deliveredAt?: Date | string | null
+): { eligible: boolean; reason?: string } {
+  if (orderStatus !== "delivered") {
+    return {
+      eligible: false,
+      reason: "Returns are only applicable once the package has been delivered.",
+    };
+  }
+
+  if (!deliveredAt) {
+    // If delivery date is missing but status is delivered, permit claim within fallback window
+    return { eligible: true };
+  }
+
+  const deliveryTime = new Date(deliveredAt).getTime();
+  const now = Date.now();
+
+  if (now - deliveryTime > RETURN_WINDOW_MS) {
+    return {
+      eligible: false,
+      reason: `The 7-day replacement and return window has expired for this delivered order.`,
+    };
+  }
+
+  return { eligible: true };
+}
+
+/**
+ * Validates allowed state machine transitions for orders:
+ * - Unpaid orders cannot be dispatched (shipped).
+ * - Shipped/delivered orders cannot be directly cancelled.
+ */
+export function canTransitionOrderStatus(
+  currentStatus: string,
+  targetStatus: string,
+  paymentStatus: string
+): boolean {
+  if (currentStatus === targetStatus) return true;
+
+  // Terminal states
+  if (currentStatus === "cancelled" || currentStatus === "delivered") {
+    return false;
+  }
+
+  const validTransitions: Record<string, string[]> = {
+    pending_payment: ["payment_review", "cancelled"],
+    payment_review: ["confirmed", "cancelled", "pending_payment"],
+    confirmed: ["processing", "cancelled"],
+    processing: ["shipped", "cancelled"],
+    shipped: ["delivered"],
+  };
+
+  const allowed = validTransitions[currentStatus]?.includes(targetStatus) ?? false;
+  if (!allowed) return false;
+
+  // Invariant: cannot ship without verified payment
+  if (targetStatus === "shipped" && paymentStatus !== "verified") {
+    return false;
+  }
+
+  return true;
+}
+

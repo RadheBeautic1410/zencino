@@ -1,9 +1,10 @@
-﻿import { notFound } from "next/navigation";
+import { notFound } from "next/navigation";
 import { CustomerOrderDetail } from "@/components/account/customer-order-detail";
 import { AppShell } from "@/components/scaffold/app-shell";
 import { ADMIN_ROLE } from "@/config/platform";
 import { requireSession } from "@/lib/authz";
 import { getSecureCustomerOrder } from "@/lib/commerce/customer-account";
+import { getOrderReturnAndRefundDetails } from "@/lib/commerce/returns";
 
 export const metadata = {
   title: "Order Details - Zencino",
@@ -23,6 +24,10 @@ export default async function CustomerOrderPage({
     notFound();
   }
 
+  const { returns, refunds, cancellations } = await getOrderReturnAndRefundDetails(
+    details.order.id
+  );
+
   return (
     <AppShell email={current.user.email} isAdmin={current.user.role === ADMIN_ROLE}>
       <CustomerOrderDetail
@@ -30,6 +35,9 @@ export default async function CustomerOrderPage({
         items={details.items}
         address={details.address}
         proof={details.proof}
+        returns={returns}
+        refunds={refunds}
+        cancellations={cancellations}
       />
     </AppShell>
   );

@@ -2,10 +2,11 @@ import { notFound } from "next/navigation";
 import { OrderDetailView } from "@/components/admin/order-detail-view";
 import { requireAdmin } from "@/lib/authz";
 import { getOrderDetails } from "@/lib/commerce/orders";
+import { getOrderReturnAndRefundDetails } from "@/lib/commerce/returns";
 
 export const metadata = {
   title: "Order Details - Zencino Admin",
-  description: "Review payment proof, verify UTR, and manage order fulfillment.",
+  description: "Review payment proof, verify UTR, manage fulfillment, and process returns and refunds.",
 };
 
 export default async function AdminOrderDetailPage({
@@ -21,12 +22,19 @@ export default async function AdminOrderDetailPage({
     notFound();
   }
 
+  const { returns, refunds, cancellations } = await getOrderReturnAndRefundDetails(
+    details.order.id
+  );
+
   return (
     <OrderDetailView
       order={details.order}
       items={details.items}
       address={details.address}
       proof={details.proof}
+      returns={returns}
+      refunds={refunds}
+      cancellations={cancellations}
     />
   );
 }
