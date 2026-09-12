@@ -87,6 +87,15 @@ export function StoreShell({ children }: { children: ReactNode }) {
               <MagnifyingGlass className="absolute left-2.5 top-2 text-muted-foreground" size={14} />
             </form>
 
+            {/* Track Order */}
+            <Link
+              href="/track-order"
+              className="hidden sm:flex items-center gap-1 text-xs font-semibold uppercase tracking-ui text-foreground/80 hover:text-foreground"
+              title="Track Order"
+            >
+              <span>Track</span>
+            </Link>
+
             {/* Account Link */}
             <Link
               href="/account"
@@ -159,6 +168,13 @@ export function StoreShell({ children }: { children: ReactNode }) {
                 className="py-1 border-b border-border/50"
               >
                 Acrylic Essentials
+              </Link>
+              <Link
+                href="/track-order"
+                onClick={() => setMobileMenuOpen(false)}
+                className="py-1 border-b border-border/50 text-foreground"
+              >
+                Track Order
               </Link>
               <Link
                 href="/account"
@@ -242,6 +258,11 @@ export function StoreShell({ children }: { children: ReactNode }) {
                 <li>
                   <Link href="/faq" className="hover:text-foreground transition-colors">
                     Frequently Asked Questions
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/track-order" className="hover:text-foreground transition-colors">
+                    Track Your Order
                   </Link>
                 </li>
                 <li>

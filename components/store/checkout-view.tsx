@@ -21,7 +21,9 @@ import {
   WarningCircle,
   X,
 } from "@phosphor-icons/react";
+import { saveAddressAction } from "@/app/actions/addresses";
 import { createOrderAction, submitPaymentProofAction } from "@/app/actions/orders";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -38,6 +40,18 @@ export interface CheckoutCartItem {
   image: string | null;
 }
 
+export interface SavedCustomerAddress {
+  id: string;
+  recipient: string;
+  phone: string;
+  line1: string;
+  line2: string | null;
+  city: string;
+  state: string;
+  postcode: string;
+  isDefault: boolean;
+}
+
 export interface CheckoutViewProps {
   cart: {
     cartId: string | null;
@@ -47,6 +61,8 @@ export interface CheckoutViewProps {
   };
   initialEmail?: string;
   initialName?: string;
+  savedAddresses?: SavedCustomerAddress[];
+  isLoggedIn?: boolean;
 }
 
 interface OrderPaymentState {
@@ -59,20 +75,54 @@ interface OrderPaymentState {
   upiName: string;
 }
 
-export function CheckoutView({ cart, initialEmail = "", initialName = "" }: CheckoutViewProps) {
+export function CheckoutView({
+  cart,
+  initialEmail = "",
+  initialName = "",
+  savedAddresses = [],
+  isLoggedIn = false,
+}: CheckoutViewProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
+  const defaultAddress = savedAddresses.find((a) => a.isDefault) || savedAddresses[0] || null;
+  const [selectedAddressId, setSelectedAddressId] = useState<string>(
+    defaultAddress ? defaultAddress.id : "new"
+  );
+  const [saveAddressToAccount, setSaveAddressToAccount] = useState(false);
+
   // Address inputs state
   const [customerEmail, setCustomerEmail] = useState(initialEmail);
-  const [recipient, setRecipient] = useState(initialName);
-  const [phone, setPhone] = useState("");
-  const [line1, setLine1] = useState("");
-  const [line2, setLine2] = useState("");
-  const [city, setCity] = useState("");
-  const [state, setState] = useState("");
-  const [postcode, setPostcode] = useState("");
+  const [recipient, setRecipient] = useState(defaultAddress?.recipient || initialName);
+  const [phone, setPhone] = useState(defaultAddress?.phone || "");
+  const [line1, setLine1] = useState(defaultAddress?.line1 || "");
+  const [line2, setLine2] = useState(defaultAddress?.line2 || "");
+  const [city, setCity] = useState(defaultAddress?.city || "");
+  const [state, setState] = useState(defaultAddress?.state || "");
+  const [postcode, setPostcode] = useState(defaultAddress?.postcode || "");
+
+  const handleSelectAddress = (addr: SavedCustomerAddress) => {
+    setSelectedAddressId(addr.id);
+    setRecipient(addr.recipient);
+    setPhone(addr.phone);
+    setLine1(addr.line1);
+    setLine2(addr.line2 || "");
+    setCity(addr.city);
+    setState(addr.state);
+    setPostcode(addr.postcode);
+  };
+
+  const handleSelectNewAddress = () => {
+    setSelectedAddressId("new");
+    setRecipient(initialName);
+    setPhone("");
+    setLine1("");
+    setLine2("");
+    setCity("");
+    setState("");
+    setPostcode("");
+  };
 
   // Payment stage state
   const [orderPayment, setOrderPayment] = useState<OrderPaymentState | null>(null);
@@ -114,6 +164,19 @@ export function CheckoutView({ cart, initialEmail = "", initialName = "" }: Chec
       if (res.error) {
         setError(res.error);
       } else if (res.success && res.orderId && res.orderNumber && res.upiUri && res.qrSvg) {
+        if (selectedAddressId === "new" && saveAddressToAccount && isLoggedIn) {
+          const saveAddrData = new FormData();
+          saveAddrData.append("recipient", recipient.trim());
+          saveAddrData.append("phone", phone.trim());
+          saveAddrData.append("line1", line1.trim());
+          saveAddrData.append("line2", line2.trim());
+          saveAddrData.append("city", city.trim());
+          saveAddrData.append("state", state.trim());
+          saveAddrData.append("postcode", postcode.trim());
+          saveAddrData.append("isDefault", (savedAddresses.length === 0).toString());
+          saveAddressAction(saveAddrData).catch(() => {});
+        }
+
         setOrderPayment({
           orderId: res.orderId,
           orderNumber: res.orderNumber,
@@ -235,6 +298,64 @@ export function CheckoutView({ cart, initialEmail = "", initialName = "" }: Chec
                 />
               </div>
 
+              {/* Saved Addresses Quick Picker */}
+              {savedAddresses.length > 0 && (
+                <div className="space-y-3 pt-2 pb-3 border-y border-border">
+                  <div className="flex items-center justify-between">
+                    <label className="text-2xs font-bold uppercase tracking-ui text-muted-foreground">
+                      Select Delivery Destination
+                    </label>
+                    <button
+                      type="button"
+                      onClick={handleSelectNewAddress}
+                      className={`text-2xs font-semibold uppercase tracking-ui transition-colors ${
+                        selectedAddressId === "new"
+                          ? "text-primary font-bold"
+                          : "text-muted-foreground hover:text-foreground"
+                      }`}
+                    >
+                      + Enter New Address
+                    </button>
+                  </div>
+
+                  <div className="grid gap-2.5 sm:grid-cols-2">
+                    {savedAddresses.map((addr) => {
+                      const isSelected = selectedAddressId === addr.id;
+                      return (
+                        <div
+                          key={addr.id}
+                          onClick={() => handleSelectAddress(addr)}
+                          className={`cursor-pointer rounded-xl border p-3 transition-all text-xs ${
+                            isSelected
+                              ? "border-primary bg-primary/5 ring-1 ring-primary"
+                              : "border-border bg-card/60 hover:border-foreground/30"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="font-bold text-foreground">{addr.recipient}</span>
+                            {addr.isDefault && (
+                              <Badge
+                                variant="secondary"
+                                className="text-3xs uppercase tracking-ui bg-primary/10 text-primary border-primary/20"
+                              >
+                                Default
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-2xs text-muted-foreground truncate">{addr.line1}</p>
+                          <p className="text-2xs text-muted-foreground">
+                            {addr.city}, {addr.state} — <span className="font-mono">{addr.postcode}</span>
+                          </p>
+                          <p className="text-2xs text-muted-foreground mt-0.5 font-mono">
+                            Ph: {addr.phone}
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
                   <label className="block text-2xs font-semibold uppercase tracking-ui text-muted-foreground mb-1">
@@ -333,6 +454,20 @@ export function CheckoutView({ cart, initialEmail = "", initialName = "" }: Chec
                   />
                 </div>
               </div>
+
+              {isLoggedIn && selectedAddressId === "new" && (
+                <label className="flex items-center gap-2 cursor-pointer pt-1 text-xs">
+                  <input
+                    type="checkbox"
+                    checked={saveAddressToAccount}
+                    onChange={(e) => setSaveAddressToAccount(e.target.checked)}
+                    className="size-4 rounded border-border text-primary focus:ring-primary"
+                  />
+                  <span className="text-muted-foreground font-medium">
+                    Save this delivery address to my account for faster 1-click checkout next time
+                  </span>
+                </label>
+              )}
             </div>
 
             <div className="pt-4 border-t border-border">

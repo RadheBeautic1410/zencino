@@ -31,7 +31,16 @@ export default async function AccountPage() {
       </p>
 
       {/* Account Quick Cards */}
-      <div className="mt-6 grid gap-4 md:grid-cols-2">
+      <div className="mt-6 grid gap-4 sm:grid-cols-3">
+        <Link
+          className="border border-border bg-card p-5 rounded-xl hover:border-foreground/40 transition-colors"
+          href="/account/addresses"
+        >
+          <h2 className="text-base font-bold">Delivery Addresses</h2>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Manage your saved shipping addresses for fast 1-click checkout.
+          </p>
+        </Link>
         <Link
           className="border border-border bg-card p-5 rounded-xl hover:border-foreground/40 transition-colors"
           href="/account/profile"
@@ -43,11 +52,11 @@ export default async function AccountPage() {
         </Link>
         <Link
           className="border border-border bg-card p-5 rounded-xl hover:border-foreground/40 transition-colors"
-          href="/products"
+          href="/track-order"
         >
-          <h2 className="text-base font-bold">Explore Storefront</h2>
+          <h2 className="text-base font-bold">Track Shipment</h2>
           <p className="mt-1 text-xs text-muted-foreground">
-            Browse our curated acrylic storage and home essentials catalog.
+            Check delivery milestones and live courier tracking status.
           </p>
         </Link>
       </div>
@@ -96,11 +105,18 @@ export default async function AccountPage() {
                   )}
                 </div>
 
-                <Button asChild variant="outline" size="sm" className="self-start sm:self-auto h-7 text-xs">
-                  <Link href={`/checkout/success?orderNumber=${ord.orderNumber}`}>
-                    View Receipt
-                  </Link>
-                </Button>
+                <div className="flex items-center gap-2 self-start sm:self-auto">
+                  <Button asChild variant="outline" size="sm" className="h-7 text-xs">
+                    <Link href={`/orders/${ord.orderNumber}/invoice`} target="_blank">
+                      Invoice
+                    </Link>
+                  </Button>
+                  <Button asChild size="sm" className="h-7 text-xs">
+                    <Link href={`/account/orders/${ord.orderNumber}`}>
+                      View Details
+                    </Link>
+                  </Button>
+                </div>
               </div>
             ))}
           </div>

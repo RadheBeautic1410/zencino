@@ -29,6 +29,13 @@
       "when": 1789214767065,
       "tag": "0003_ancient_wolverine",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1789215506056,
+      "tag": "0004_daily_frank_castle",
+      "breakpoints": true
     }
   ]
 }

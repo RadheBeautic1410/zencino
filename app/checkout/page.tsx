@@ -10,6 +10,7 @@ export const metadata: Metadata = {
 };
 
 import { getCurrentSession } from "@/lib/authz";
+import { getCustomerAddresses } from "@/lib/commerce/customer-account";
 
 export default async function CheckoutPage() {
   const [cart, session] = await Promise.all([
@@ -21,12 +22,18 @@ export default async function CheckoutPage() {
     redirect("/cart");
   }
 
+  const savedAddresses = session?.user?.id
+    ? await getCustomerAddresses(session.user.id)
+    : [];
+
   return (
     <StoreShell>
       <CheckoutView
         cart={cart}
         initialEmail={session?.user?.email || ""}
         initialName={session?.user?.name || ""}
+        savedAddresses={savedAddresses}
+        isLoggedIn={Boolean(session?.user)}
       />
     </StoreShell>
   );

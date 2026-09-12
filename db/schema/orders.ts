@@ -1,5 +1,6 @@
 import { createId } from "@paralleldrive/cuid2";
 import {
+  boolean,
   index,
   integer,
   jsonb,
@@ -147,3 +148,29 @@ export const paymentProofs = pgTable(
     index("payment_proofs_upi_ref_idx").on(table.upiReference),
   ]
 );
+
+// 5. Customer Saved Addresses (Address book for repeat checkouts)
+export const customerAddresses = pgTable(
+  "customer_addresses",
+  {
+    id: text("id").primaryKey().$defaultFn(createId),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    isDefault: boolean("is_default").notNull().default(false),
+    recipient: text("recipient").notNull(),
+    phone: text("phone").notNull(),
+    line1: text("line1").notNull(),
+    line2: text("line2"),
+    city: text("city").notNull(),
+    state: text("state").notNull(),
+    postcode: text("postcode").notNull(),
+    countryCode: text("country_code").notNull().default("IN"),
+    ...dates(),
+  },
+  (table) => [
+    index("customer_addresses_user_id_idx").on(table.userId),
+    index("customer_addresses_user_default_idx").on(table.userId, table.isDefault),
+  ]
+);
+
