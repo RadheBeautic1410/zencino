@@ -1,5 +1,5 @@
 {
-  "name": "krova-scaffold",
+  "name": "zencino-scaffold",
   "version": "0.1.0",
   "type": "module",
   "private": true,
@@ -13,13 +13,18 @@
     "lint:fix": "biome check --write",
     "format": "biome format --write",
     "typecheck": "tsc --noEmit",
+    "test": "tsx --test tests/*.test.ts",
     "worker": "tsx --watch scripts/worker.ts",
     "worker:start": "tsx scripts/worker.ts",
     "db:local": "tsx scripts/dev-db.ts",
     "db:push": "drizzle-kit push --config=drizzle.config.ts",
     "db:generate": "drizzle-kit generate --config=drizzle.config.ts",
-    "db:migrate": "drizzle-kit migrate --config=drizzle.config.ts",
+    "db:migrate": "tsx scripts/migrate.ts",
+    "db:check": "tsx scripts/check-db.ts",
+    "worker:check": "tsx scripts/check-worker.ts",
+    "access:check": "tsx scripts/check-access.ts",
     "db:reset": "tsx db/reset.ts && pnpm db:migrate",
+    "catalog:seed": "tsx --env-file=.env scripts/seed-catalog.ts",
     "make:admin": "tsx scripts/make-admin.ts"
   },
   "dependencies": {

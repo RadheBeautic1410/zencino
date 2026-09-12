@@ -1,39 +1,28 @@
-# KROVA Scaffold
+# Zencino website
 
-KROVA is a lean application scaffold for projects that need a real control-plane backbone from day one:
+One Next.js application for the planned Zencino multi-category storefront and admin panel. Current code contains reusable authentication, account, admin, database, email and worker infrastructure. Commerce is not implemented yet.
 
-- Next.js App Router UI
-- Postgres and Drizzle
-- Better Auth magic-link login
-- pg-boss worker queues
-- durable email outbox via SMTP (nodemailer)
-- Orbit admin for users, queue state, and email visibility
+Start with the [detailed project plan](../../docs/README.md) for screens, schema, workflows, assets and delivery phases.
 
-## Quick Start
+## Current foundation
 
-```bash
+Next.js App Router, React, TypeScript/Tailwind, PostgreSQL/Drizzle, Better Auth magic links, pg-boss and a durable SMTP email outbox. Existing account routes use `/dashboard`, and operational admin uses `/orbit`; planned destinations are `/account` and `/admin`.
+
+## Local setup
+
+```powershell
 pnpm install
-cp .env.example .env
+Copy-Item .env.example .env
 pnpm db:local
+```
+
+Keep the database process running. In another terminal:
+
+```powershell
 pnpm db:migrate
 pnpm dev
 ```
 
-Open `http://localhost:3000`, sign in with a magic link, then promote your user:
+Configure a real random application secret in `.env`. Open `http://localhost:3000`, sign in, then promote the intended owner using `pnpm make:admin you@example.com`. Never commit real environment files.
 
-```bash
-pnpm make:admin you@example.com
-```
-
-Without `SMTP_HOST`, `SMTP_USER`, and `SMTP_PASS`, the worker logs emails locally instead of sending them.
-
-## Structure
-
-- `app/` contains the public page, auth page, user dashboard, profile, Orbit admin, and API routes.
-- `db/schema/` contains the scaffold tables.
-- `lib/auth.ts` wires Better Auth magic links.
-- `lib/email/` persists outbound email before enqueueing work.
-- `lib/worker/` owns pg-boss queues and handlers.
-- `components/` contains the small UI kit and scaffold shell.
-
-See [docs/commands.md](./docs/commands.md) for the command list.
+Without SMTP configuration, the worker logs email in development; configure delivery before production. See [commands](docs/commands.md). Product source assets belong in the workspace `amazon/` folder. The Z mark is an interim placeholder.

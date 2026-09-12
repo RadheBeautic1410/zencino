@@ -17,7 +17,7 @@ const user = decodeURIComponent(url.username) || "postgres";
 const password = decodeURIComponent(url.password) || "password";
 const port = Number(url.port) || 54_329;
 const database = url.pathname.replace(/^\//, "") || "postgres";
-const dataDir = path.resolve(process.cwd(), ".krova-postgres");
+const dataDir = path.resolve(process.cwd(), ".zencino-postgres");
 
 const postgres = new EmbeddedPostgres({
   databaseDir: dataDir,
@@ -35,7 +35,7 @@ async function main() {
   }
 
   await postgres.start();
-  console.log(`Postgres running at ${databaseUrl}`);
+  console.log(`Local Postgres running on port ${port}`);
 
   if (!alreadyInitialised && database !== "postgres") {
     try {

@@ -4,7 +4,8 @@ import * as schema from "@/db/schema";
 import { env } from "@/lib/env";
 
 export const dbClient = postgres(env.DATABASE_URL, {
-  max: 20,
+  max: 5,
+  prepare: false,
   idle_timeout: 30,
   connect_timeout: 10,
 });

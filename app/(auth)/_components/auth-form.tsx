@@ -14,6 +14,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { PRODUCT_NAME } from "@/config/platform";
 import { signIn, useSession } from "@/lib/auth-client";
+import { safeReturnPath } from "@/lib/auth-redirect";
 
 export function AuthForm() {
   return (
@@ -34,9 +35,9 @@ function AuthFormInner() {
 
   useEffect(() => {
     if (session) {
-      router.replace("/post-auth");
+      router.replace(safeReturnPath(searchParams.get("next")));
     }
-  }, [router, session]);
+  }, [router, session, searchParams]);
 
   if (isPending || session) {
     return null;
@@ -47,15 +48,23 @@ function AuthFormInner() {
     setError(null);
     setSubmitting(true);
 
-    const callbackURL = searchParams.get("next") ?? "/post-auth";
-    const result = await signIn.magicLink({ callbackURL, email });
-
-    setSubmitting(false);
-    if (result.error) {
-      setError(result.error.message ?? "Failed to send magic link.");
-      return;
+    try {
+      const callbackURL = safeReturnPath(searchParams.get("next"));
+      const result = await signIn.magicLink({
+        callbackURL,
+        email,
+        errorCallbackURL: "/login?error=invalid-link",
+      });
+      if (result.error) {
+        setError(result.error.message ?? "Failed to send magic link.");
+        return;
+      }
+      setSent(true);
+    } catch {
+      setError("Could not connect. Please try again.");
+    } finally {
+      setSubmitting(false);
     }
-    setSent(true);
   }
 
   return (
@@ -63,7 +72,7 @@ function AuthFormInner() {
       <div className="w-full max-w-md">
         <Link className="mb-6 flex items-center justify-center gap-3" href="/">
           <span className="grid size-10 place-items-center rounded-none bg-primary font-black text-primary-foreground text-xs">
-            KR
+            Z
           </span>
           <span className="font-black tracking-normal">{PRODUCT_NAME}</span>
         </Link>
@@ -74,10 +83,16 @@ function AuthFormInner() {
             <CardDescription>
               {sent
                 ? "Your one-time sign-in link is on its way."
-                : "Enter your email and KROVA will send a magic link."}
+                : "Enter your email and Zencino will send a magic link."}
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {searchParams.has("error") && (
+              <p className="mb-4 text-destructive text-sm" role="alert">
+                This sign-in link or account is unavailable. Request a new link
+                or contact support.
+              </p>
+            )}
             {sent ? (
               <div className="space-y-4">
                 <p className="rounded-none bg-success-subtle p-3 text-success-foreground text-sm">

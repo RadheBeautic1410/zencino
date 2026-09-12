@@ -22,6 +22,9 @@ export async function sendEmailViaSmtp(
   input: SmtpSendInput
 ): Promise<SmtpSendResult> {
   if (!isSmtpConfigured()) {
+    if (env.NODE_ENV === "production") {
+      throw new Error("SMTP must be configured for production email delivery");
+    }
     console.log("[email:dev]", {
       subject: input.subject,
       text: input.text,
@@ -36,6 +39,7 @@ export async function sendEmailViaSmtp(
   const transporter = nodemailer.createTransport({
     host: env.SMTP_HOST,
     port: env.SMTP_PORT ?? 587,
+    secure: env.SMTP_PORT === 465,
     auth: {
       user: env.SMTP_USER,
       pass: env.SMTP_PASS,

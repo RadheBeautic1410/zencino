@@ -35,7 +35,7 @@ pnpm-debug.log*
 
 # embedded postgres (dev)
 /.pgdata
-/.krova-postgres
+/.zencino-postgres
 
 # typescript
 *.tsbuildinfo
@@ -45,4 +45,8 @@ next-env.d.ts
 *.sql.gz
 *.sql.zst
 *.dump
-krova-db-*
+zencino-db-*
+
+# uploads
+/public/uploads/*
+!/public/uploads/.gitkeep

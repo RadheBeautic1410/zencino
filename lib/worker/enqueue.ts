@@ -1,6 +1,6 @@
 import { PgBoss } from "pg-boss";
 import { env } from "@/lib/env";
-import { normalizePgConnectionString } from "@/lib/pg-connection";
+import { directPgConnectionString } from "@/lib/pg-connection";
 import { ensureJobQueues } from "@/lib/worker/ensure-queues";
 import type { JobName, JobPayloads } from "@/lib/worker/job-types";
 
@@ -9,7 +9,10 @@ let initPromise: Promise<PgBoss> | null = null;
 
 async function initBoss() {
   const instance = new PgBoss({
-    connectionString: normalizePgConnectionString(env.DATABASE_URL),
+    connectionString: directPgConnectionString(
+      env.DATABASE_URL_UNPOOLED || env.DATABASE_URL
+    ),
+    max: 2,
     schedule: false,
     supervise: false,
   });

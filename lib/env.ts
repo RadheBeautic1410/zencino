@@ -7,13 +7,21 @@ const optionalString = z.preprocess(
 
 const envSchema = z.object({
   DATABASE_URL: z.string().min(1),
-  APP_SECRET: z.string().min(1),
+  DATABASE_URL_UNPOOLED: optionalString,
+  APP_SECRET: z
+    .string()
+    .min(32)
+    .refine((value) => !value.includes("replace-with")),
+  CHECKOUT_ENABLED: z.enum(["true", "false"]).default("false"),
   NEXT_PUBLIC_APP_URL: z.url(),
   NODE_ENV: z
     .enum(["development", "test", "production"])
     .default("development"),
   SMTP_HOST: optionalString,
-  SMTP_PORT: z.preprocess((v) => (v ? Number(v) : undefined), z.number().optional()),
+  SMTP_PORT: z.preprocess(
+    (v) => (v ? Number(v) : undefined),
+    z.number().optional()
+  ),
   SMTP_USER: optionalString,
   SMTP_PASS: optionalString,
   EMAIL_FROM: optionalString,

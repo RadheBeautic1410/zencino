@@ -2,9 +2,11 @@
 
 import { and, eq, inArray, ne } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { account, session as sessionTable, user } from "@/db/schema";
 import { audit } from "@/lib/audit";
+import { auth } from "@/lib/auth";
 import { requireSession } from "@/lib/authz";
 import { db } from "@/lib/db";
 
@@ -42,8 +44,8 @@ export async function updateNameAction(
     metadata: { name },
   });
 
-  revalidatePath("/dashboard");
-  revalidatePath("/dashboard/profile");
+  revalidatePath("/account");
+  revalidatePath("/account/profile");
   return { success: "Name updated." };
 }
 
@@ -60,38 +62,33 @@ export async function changeEmailAction(
     return { error: "Enter a valid email address." };
   }
 
-  const [existing] = await db
-    .select({ id: user.id })
-    .from(user)
-    .where(eq(user.email, newEmail))
-    .limit(1);
-
-  if (existing && existing.id !== current.user.id) {
-    return { error: "That email is already in use." };
+  try {
+    await auth.api.changeEmail({
+      headers: await headers(),
+      body: { newEmail, callbackURL: "/account/profile" },
+    });
+  } catch {
+    return {
+      error: "Could not start the email change. Sign in again and retry.",
+    };
   }
 
-  await db
-    .update(user)
-    .set({
-      email: newEmail,
-      emailVerified: false,
-      updatedAt: new Date(),
-    })
-    .where(eq(user.id, current.user.id));
-
   await audit({
-    action: "profile.email_updated",
+    action: "profile.email_change_requested",
     actorEmail: current.user.email,
     actorId: current.user.id,
-    description: "Updated account email",
+    description: "Requested verified account email change",
     entityId: current.user.id,
     entityType: "user",
     metadata: { newEmail, oldEmail: current.user.email },
   });
 
-  revalidatePath("/dashboard");
-  revalidatePath("/dashboard/profile");
-  return { success: "Email updated. Use the new email for future sign-ins." };
+  revalidatePath("/account");
+  revalidatePath("/account/profile");
+  return {
+    success:
+      "If this address is available, follow the verification instructions in your email. Your account email stays unchanged until verified.",
+  };
 }
 
 export async function revokeSessionAction(formData: FormData): Promise<void> {
@@ -125,7 +122,7 @@ export async function revokeSessionAction(formData: FormData): Promise<void> {
     entityType: "session",
   });
 
-  revalidatePath("/dashboard/profile");
+  revalidatePath("/account/profile");
 }
 
 export async function signOutOtherSessionsAction(): Promise<void> {
@@ -155,7 +152,7 @@ export async function signOutOtherSessionsAction(): Promise<void> {
     metadata: { revokedCount: ids.length },
   });
 
-  revalidatePath("/dashboard/profile");
+  revalidatePath("/account/profile");
 }
 
 export async function deleteAccountAction(
@@ -163,6 +160,11 @@ export async function deleteAccountAction(
   formData: FormData
 ): Promise<ActionState> {
   const current = await requireSession();
+  if (current.user.role === "admin") {
+    return {
+      error: "Owner accounts cannot be deleted from the customer profile.",
+    };
+  }
   const confirmEmail = String(formData.get("confirmEmail") ?? "")
     .trim()
     .toLowerCase();

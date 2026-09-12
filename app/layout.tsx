@@ -16,6 +16,7 @@ export const metadata: Metadata = {
     template: `%s | ${PRODUCT_NAME}`,
   },
   description: PRODUCT_DESCRIPTION,
+  icons: { icon: "/brand-mark.svg" },
 };
 
 export default function RootLayout({

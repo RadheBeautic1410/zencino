@@ -22,6 +22,31 @@ export const auth = betterAuth({
   }),
   secret: env.APP_SECRET,
   baseURL: env.NEXT_PUBLIC_APP_URL,
+  disabledPaths: ["/admin/impersonate-user"],
+  user: {
+    changeEmail: {
+      enabled: true,
+      updateEmailWithoutVerification: false,
+      sendChangeEmailConfirmation: async ({ user, url }) => {
+        await enqueueEmail({
+          to: user.email,
+          subject: "Confirm your Zencino email change",
+          html: `<p>Confirm your email change using <a href="${url.replaceAll("&", "&amp;").replaceAll('"', "&quot;")}">this secure link</a>.</p>`,
+          text: `Confirm your email change: ${url}`,
+        });
+      },
+    },
+  },
+  emailVerification: {
+    sendVerificationEmail: async ({ user, url }) => {
+      await enqueueEmail({
+        to: user.email,
+        subject: "Verify your Zencino email address",
+        html: `<p>Verify your email using <a href="${url.replaceAll("&", "&amp;").replaceAll('"', "&quot;")}">this secure link</a>.</p>`,
+        text: `Verify your email: ${url}`,
+      });
+    },
+  },
   plugins: [
     admin({
       impersonationSessionDuration: 3600,
@@ -53,7 +78,7 @@ export const auth = betterAuth({
   ],
   session: {
     cookieCache: {
-      enabled: true,
+      enabled: false,
       maxAge: 60,
     },
   },

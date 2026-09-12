@@ -5,6 +5,20 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  async redirects() {
+    return [
+      {
+        source: "/orbit/:path*",
+        destination: "/admin/:path*",
+        permanent: true,
+      },
+      {
+        source: "/dashboard/:path*",
+        destination: "/account/:path*",
+        permanent: true,
+      },
+    ];
+  },
   turbopack: {
     root: resolve(__dirname),
   },

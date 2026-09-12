@@ -35,7 +35,7 @@ export async function setUserRoleAction(formData: FormData): Promise<void> {
     metadata: { role },
   });
 
-  revalidatePath("/orbit/users");
+  revalidatePath("/admin/users");
 }
 
 export async function toggleUserBanAction(formData: FormData): Promise<void> {
@@ -65,5 +65,5 @@ export async function toggleUserBanAction(formData: FormData): Promise<void> {
     entityType: "user",
   });
 
-  revalidatePath("/orbit/users");
+  revalidatePath("/admin/users");
 }

@@ -15,7 +15,13 @@ export async function requireSession() {
   if (!session) {
     redirect("/login");
   }
-  return session;
+  const freshUser = await db.query.user.findFirst({
+    where: eq(user.id, session.user.id),
+  });
+  if (!freshUser || freshUser.banned) {
+    redirect("/login?error=account-unavailable");
+  }
+  return { ...session, user: { ...session.user, ...freshUser } };
 }
 
 export async function requireAdmin() {
@@ -32,7 +38,7 @@ export async function requireAdmin() {
     .limit(1);
 
   if (!freshUser || freshUser.banned || freshUser.role !== ADMIN_ROLE) {
-    redirect("/dashboard");
+    redirect("/account");
   }
 
   return {

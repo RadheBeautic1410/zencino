@@ -1,10 +1,13 @@
 "use client";
 
 import {
+  ArrowLeft,
   ChartBar,
   Envelope,
-  ArrowLeft,
+  FolderSimple,
+  Package,
   SignOut,
+  SquaresFour,
   Stack,
   Users,
 } from "@phosphor-icons/react";
@@ -15,21 +18,24 @@ import { Button } from "@/components/ui/button";
 import { PRODUCT_NAME } from "@/config/platform";
 
 const navItems = [
-  { href: "/orbit", label: "Overview", icon: ChartBar, exact: true },
-  { href: "/orbit/users", label: "Users", icon: Users, exact: false },
-  { href: "/orbit/queues", label: "Queues", icon: Stack, exact: false },
-  { href: "/orbit/email", label: "Email", icon: Envelope, exact: false },
+  { href: "/admin", label: "Overview", icon: ChartBar, exact: true },
+  { href: "/admin/products", label: "Products", icon: Package, exact: false },
+  { href: "/admin/categories", label: "Categories", icon: FolderSimple, exact: false },
+  { href: "/admin/collections", label: "Collections", icon: SquaresFour, exact: false },
+  { href: "/admin/users", label: "Users", icon: Users, exact: false },
+  { href: "/admin/queues", label: "Queues", icon: Stack, exact: false },
+  { href: "/admin/email", label: "Email", icon: Envelope, exact: false },
 ];
 
 export function AdminSidebar({ email }: { email: string }) {
   const pathname = usePathname();
 
   return (
-    <aside className="flex h-screen w-64 shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground">
+    <aside className="flex w-full shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground md:h-screen md:w-64">
       {/* Brand */}
       <div className="flex items-center gap-3 border-b border-sidebar-border px-5 py-5">
         <span className="grid size-9 shrink-0 place-items-center bg-sidebar-primary font-black text-sidebar-primary-foreground text-xs">
-          KR
+          Z
         </span>
         <div className="min-w-0">
           <p className="font-black text-sm leading-none">{PRODUCT_NAME}</p>
@@ -46,16 +52,18 @@ export function AdminSidebar({ email }: { email: string }) {
         </p>
         <div className="space-y-0.5">
           {navItems.map(({ href, label, icon: Icon, exact }) => {
-            const isActive = exact ? pathname === href : pathname.startsWith(href);
+            const isActive = exact
+              ? pathname === href
+              : pathname.startsWith(href);
             return (
               <Link
-                key={href}
-                href={href}
                 className={`flex items-center gap-3 border-l-2 px-3 py-2.5 text-xs font-semibold uppercase tracking-ui transition-colors ${
                   isActive
                     ? "border-sidebar-foreground bg-sidebar-accent text-sidebar-foreground"
                     : "border-transparent text-sidebar-foreground/50 hover:border-sidebar-foreground/20 hover:bg-sidebar-accent hover:text-sidebar-foreground"
                 }`}
+                href={href}
+                key={href}
               >
                 <Icon size={15} weight={isActive ? "fill" : "regular"} />
                 {label}
@@ -72,21 +80,21 @@ export function AdminSidebar({ email }: { email: string }) {
         </p>
         <Button
           asChild
-          variant="secondary"
-          size="sm"
           className="w-full justify-start gap-2"
+          size="sm"
+          variant="secondary"
         >
-          <Link href="/dashboard">
+          <Link href="/account">
             <ArrowLeft size={14} />
             Dashboard
           </Link>
         </Button>
         <form action={logoutAction}>
           <Button
+            className="w-full justify-start gap-2"
+            size="sm"
             type="submit"
             variant="secondary"
-            size="sm"
-            className="w-full justify-start gap-2"
           >
             <SignOut size={14} />
             Sign out

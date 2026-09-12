@@ -1,0 +1,9 @@
+<svg
+  aria-label="Zencino placeholder mark"
+  role="img"
+  viewBox="0 0 64 64"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <rect fill="#183b38" height="64" rx="12" width="64" />
+  <path d="M18 18h28v6L27 40h19v6H18v-6l19-16H18z" fill="#fff" />
+</svg>
