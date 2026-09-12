@@ -99,12 +99,12 @@ export function StoreShell({ children }: { children: ReactNode }) {
 
             {/* Cart Indicator */}
             <Link
-              href="/products"
-              className="relative flex items-center gap-1.5 rounded-full border border-border bg-muted/40 px-3 py-1.5 text-xs font-semibold uppercase tracking-ui hover:bg-muted"
-              title="Shopping Cart"
+              href="/cart"
+              className="relative flex items-center gap-1.5 rounded-full border border-border bg-muted/40 px-3.5 py-1.5 text-xs font-semibold uppercase tracking-ui hover:bg-muted transition-colors"
+              title="Shopping Bag"
             >
-              <Bag size={16} />
-              <span className="text-xs">Shop</span>
+              <Bag size={16} weight="bold" />
+              <span className="text-xs">Bag</span>
             </Link>
           </div>
         </div>
@@ -124,6 +124,14 @@ export function StoreShell({ children }: { children: ReactNode }) {
             </form>
 
             <nav className="flex flex-col space-y-3 pt-2 text-sm font-semibold uppercase tracking-ui">
+              <Link
+                href="/cart"
+                onClick={() => setMobileMenuOpen(false)}
+                className="py-1 border-b border-border/50 flex items-center justify-between text-primary font-bold"
+              >
+                <span>Shopping Bag</span>
+                <Bag size={18} weight="bold" />
+              </Link>
               <Link
                 href="/products"
                 onClick={() => setMobileMenuOpen(false)}

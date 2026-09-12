@@ -6,11 +6,14 @@ import Link from "next/link";
 import {
   ArrowSquareOut,
   Bag,
+  Check,
   CheckCircle,
   Package,
   ShieldCheck,
+  SpinnerGap,
   Truck,
 } from "@phosphor-icons/react";
+import { addToCartAction } from "@/app/actions/cart";
 
 export interface VariantData {
   id: string;
@@ -71,12 +74,36 @@ export function ProductDetailView({ product }: ProductDetailProps) {
   // Gallery active image
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
+  // Cart add state
+  const [isAdding, setIsAdding] = useState(false);
+  const [addedSuccess, setAddedSuccess] = useState(false);
+  const [cartError, setCartError] = useState<string | null>(null);
+
   // When variant changes, see if there's a variant-specific image
   const handleVariantSelect = (variantId: string) => {
     setSelectedVariantId(variantId);
+    setAddedSuccess(false);
+    setCartError(null);
     const varMediaIndex = product.media.findIndex((m) => m.variantId === variantId);
     if (varMediaIndex !== -1) {
       setActiveImageIndex(varMediaIndex);
+    }
+  };
+
+  const handleAddToCart = async (variantId: string) => {
+    setIsAdding(true);
+    setCartError(null);
+    try {
+      const res = await addToCartAction(variantId, 1);
+      if (res.error) {
+        setCartError(res.error);
+      } else {
+        setAddedSuccess(true);
+      }
+    } catch {
+      setCartError("Unable to add product to bag. Please try again.");
+    } finally {
+      setIsAdding(false);
     }
   };
 
@@ -254,16 +281,58 @@ export function ProductDetailView({ product }: ProductDetailProps) {
             {/* Path B: Direct Storefront Checkout */}
             {selectedVariant?.websiteEnabled && (
               <div className="pt-2">
-                <button
-                  type="button"
-                  className="flex w-full items-center justify-center gap-2 border-2 border-primary bg-primary text-primary-foreground py-3 px-6 font-semibold text-sm hover:bg-primary/90 transition-colors opacity-90"
-                  onClick={() => alert("Direct online checkout is launching soon in Phase 6! Please use the 'Buy on Amazon' option above for immediate delivery.")}
-                >
-                  <Bag size={18} />
-                  <span>Order Direct with Zencino</span>
-                </button>
+                {addedSuccess ? (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between rounded-md bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 p-3 text-xs font-semibold text-emerald-800 dark:text-emerald-200">
+                      <div className="flex items-center gap-1.5">
+                        <Check size={16} weight="bold" />
+                        <span>Added to your bag!</span>
+                      </div>
+                      <Link
+                        href="/cart"
+                        className="rounded bg-primary text-primary-foreground px-3 py-1 text-2xs font-bold hover:bg-primary/90 uppercase tracking-ui"
+                      >
+                        View Bag &rarr;
+                      </Link>
+                    </div>
+                    <button
+                      type="button"
+                      disabled={isAdding}
+                      onClick={() => handleAddToCart(selectedVariant.id)}
+                      className="w-full text-center text-2xs text-muted-foreground hover:text-foreground py-1 font-medium transition-colors"
+                    >
+                      + Add another piece
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    disabled={isAdding}
+                    onClick={() => handleAddToCart(selectedVariant.id)}
+                    className="flex w-full items-center justify-center gap-2 border-2 border-primary bg-primary text-primary-foreground py-3.5 px-6 font-bold text-sm hover:bg-primary/90 transition-colors disabled:opacity-50"
+                  >
+                    {isAdding ? (
+                      <>
+                        <SpinnerGap className="animate-spin" size={18} />
+                        <span>Adding to Bag...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Bag size={18} weight="bold" />
+                        <span>Order Direct with Zencino</span>
+                      </>
+                    )}
+                  </button>
+                )}
+
+                {cartError && (
+                  <p className="mt-2 text-xs text-destructive text-center font-medium">
+                    {cartError}
+                  </p>
+                )}
+
                 <p className="mt-1.5 text-center text-2xs text-muted-foreground">
-                  Direct website orders opening soon · Prepaid online payments & tracked shipping.
+                  Direct website orders · Free shipping over ₹999 · Secure checkout
                 </p>
               </div>
             )}

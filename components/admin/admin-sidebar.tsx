@@ -9,6 +9,7 @@ import {
   SignOut,
   SquaresFour,
   Stack,
+  Tray,
   Users,
 } from "@phosphor-icons/react";
 import Link from "next/link";
@@ -20,6 +21,7 @@ import { PRODUCT_NAME } from "@/config/platform";
 const navItems = [
   { href: "/admin", label: "Overview", icon: ChartBar, exact: true },
   { href: "/admin/products", label: "Products", icon: Package, exact: false },
+  { href: "/admin/inventory", label: "Inventory", icon: Tray, exact: false },
   { href: "/admin/categories", label: "Categories", icon: FolderSimple, exact: false },
   { href: "/admin/collections", label: "Collections", icon: SquaresFour, exact: false },
   { href: "/admin/users", label: "Users", icon: Users, exact: false },
