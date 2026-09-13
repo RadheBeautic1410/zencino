@@ -1,0 +1,23 @@
+import { OrbitPageHeader } from "@/components/admin/orbit-page-header";
+import { CampaignManager } from "@/components/admin/campaign-manager";
+import { getCampaignPerformanceReport } from "@/lib/commerce/campaigns";
+
+export const metadata = {
+  title: "Marketing Campaigns - Zencino Admin",
+};
+
+export default async function AdminCampaignsPage() {
+  const summaries = await getCampaignPerformanceReport();
+
+  return (
+    <div className="space-y-8">
+      <OrbitPageHeader
+        eyebrow="Marketing Operations"
+        title="Instagram & Social Campaigns"
+        description="Manage campaign attribution links, measure funnel conversion, and analyze Amazon outbound interest."
+      />
+
+      <CampaignManager summaries={summaries} />
+    </div>
+  );
+}

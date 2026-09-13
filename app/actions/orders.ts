@@ -41,6 +41,18 @@ export async function createOrderAction(formData: FormData): Promise<CreateOrder
       return { error: "Please complete all required delivery address and contact fields." };
     }
 
+    const { cookies } = await import("next/headers");
+    const cookieStore = await cookies();
+    const attributionCookie = cookieStore.get("zen_attribution")?.value;
+    let attribution: Record<string, unknown> | undefined;
+    if (attributionCookie) {
+      try {
+        attribution = JSON.parse(attributionCookie);
+      } catch {
+        attribution = { campaignCode: attributionCookie };
+      }
+    }
+
     const order = await createOrderFromCart({
       customerName: recipient,
       customerEmail,
@@ -57,6 +69,7 @@ export async function createOrderAction(formData: FormData): Promise<CreateOrder
       },
       paymentMethod: env.PAYMENT_MODE as "upi_qr" | "razorpay",
       userId: session?.user?.id,
+      attribution,
     });
 
     const upiId = env.UPI_ID;

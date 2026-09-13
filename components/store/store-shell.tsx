@@ -10,6 +10,7 @@ import {
   User,
   X,
 } from "@phosphor-icons/react";
+import { CampaignTracker } from "@/components/store/campaign-tracker";
 
 export function StoreShell({ children }: { children: ReactNode }) {
   const router = useRouter();
@@ -26,6 +27,7 @@ export function StoreShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-screen bg-page text-foreground flex flex-col">
+      <CampaignTracker />
       <a
         className="sr-only focus:not-sr-only focus:block focus:p-4 bg-primary text-primary-foreground font-semibold"
         href="#main-content"

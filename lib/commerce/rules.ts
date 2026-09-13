@@ -269,3 +269,43 @@ export function canTransitionOrderStatus(
   return true;
 }
 
+/**
+ * Generates unique customer support ticket numbers: SUP-YYYYMMDD-XXXX
+ */
+export function generateSupportTicketNumber(date: Date = new Date()): string {
+  const y = date.getUTCFullYear();
+  const m = String(date.getUTCMonth() + 1).padStart(2, "0");
+  const d = String(date.getUTCDate()).padStart(2, "0");
+  const entropy = Math.floor(Math.random() * 0xffff)
+    .toString(16)
+    .toUpperCase()
+    .padStart(4, "0");
+  return `SUP-${y}${m}${d}-${entropy}`;
+}
+
+/**
+ * Builds clean UTM deep link URL for marketing campaigns
+ */
+export function buildCampaignUtmUrl(input: {
+  landingPath: string;
+  source: string;
+  medium: string;
+  campaign: string;
+  content?: string | null;
+  origin?: string;
+}): string {
+  const path = input.landingPath.startsWith("/") ? input.landingPath : `/${input.landingPath}`;
+  const origin = input.origin || "https://zencino.com";
+  const url = new URL(path, origin);
+
+  url.searchParams.set("utm_source", input.source.trim().toLowerCase());
+  url.searchParams.set("utm_medium", input.medium.trim().toLowerCase());
+  url.searchParams.set("utm_campaign", input.campaign.trim().toLowerCase());
+  if (input.content && input.content.trim()) {
+    url.searchParams.set("utm_content", input.content.trim().toLowerCase());
+  }
+
+  return url.toString();
+}
+
+

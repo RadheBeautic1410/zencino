@@ -1,6 +1,18 @@
-import { count, desc } from "drizzle-orm";
+import Link from "next/link";
+import {
+  ArrowSquareOut,
+  Clock,
+  Headset,
+  Megaphone,
+  Package,
+  Receipt,
+  Tray,
+  Warning,
+} from "@phosphor-icons/react/dist/ssr";
+import { count } from "drizzle-orm";
 import { OrbitPageHeader } from "@/components/admin/orbit-page-header";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -8,89 +20,275 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { ADMIN_ROLE } from "@/config/platform";
 import { emailOutbox, user } from "@/db/schema";
+import { getExecutiveDashboardMetrics } from "@/lib/commerce/campaigns";
 import { db } from "@/lib/db";
 import { getQueueSummary } from "@/lib/worker/queue-inspection";
 
 export const metadata = {
-  title: "Orbit",
+  title: "Admin Executive Overview - Zencino",
 };
 
-export default async function OrbitPage() {
-  const [[userCount], [emailCount], queues, recentUsers] = await Promise.all([
+export default async function AdminOverviewPage() {
+  const [metrics, queues, [userCount], [emailCount]] = await Promise.all([
+    getExecutiveDashboardMetrics(),
+    getQueueSummary(),
     db.select({ count: count() }).from(user),
     db.select({ count: count() }).from(emailOutbox),
-    getQueueSummary(),
-    db.select().from(user).orderBy(desc(user.createdAt)).limit(5),
   ]);
 
   return (
-    <div>
+    <div className="space-y-8">
       <OrbitPageHeader
-        description="Operator surface for users, queues, email, and audit-ready admin actions."
-        eyebrow="Admin"
-        title="Overview"
+        eyebrow="Admin Operations"
+        title="Executive Overview"
+        description="Unified commercial performance, multichannel attribution, and operational status."
       />
 
-      <div className="grid gap-4 md:grid-cols-3">
-        <StatBlock label="Total Users" value={userCount.count} />
-        <StatBlock label="Outbox Emails" value={emailCount.count} />
-        <StatBlock label="Queue States" value={queues.length} />
+      {/* 1. Primary Commercial KPIs */}
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {/* Direct Paid Revenue */}
+        <div className="border border-border bg-card p-6 rounded-xl space-y-2 relative overflow-hidden">
+          <div className="flex items-center justify-between">
+            <p className="text-2xs font-bold uppercase tracking-ui text-success">
+              Direct Website Revenue
+            </p>
+            <Receipt size={20} className="text-success" />
+          </div>
+          <p className="font-black text-3xl md:text-4xl text-foreground">
+            ₹{(metrics.paidDirectRevenueMinor / 100).toLocaleString("en-IN")}
+          </p>
+          <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t border-border/50">
+            <span>{metrics.paidDirectOrdersCount} verified direct orders</span>
+            <Link href="/admin/orders" className="text-primary hover:underline font-semibold">
+              View orders →
+            </Link>
+          </div>
+        </div>
+
+        {/* Amazon Outbound Clicks (Strictly Separated from Direct Sales) */}
+        <div className="border border-amber-500/30 bg-amber-500/5 p-6 rounded-xl space-y-2 relative overflow-hidden">
+          <div className="flex items-center justify-between">
+            <p className="text-2xs font-bold uppercase tracking-ui text-amber-500">
+              Amazon Outbound Clicks
+            </p>
+            <ArrowSquareOut size={20} className="text-amber-500" />
+          </div>
+          <p className="font-black text-3xl md:text-4xl text-foreground">
+            {metrics.amazonOutboundClicks}
+          </p>
+          <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t border-border/50">
+            <span className="text-2xs font-medium">Referral intent only · No unverified sales</span>
+            <Link href="/admin/campaigns" className="text-amber-600 hover:underline font-semibold">
+              Attribution →
+            </Link>
+          </div>
+        </div>
+
+        {/* Unfulfilled Orders */}
+        <div className="border border-border bg-card p-6 rounded-xl space-y-2">
+          <div className="flex items-center justify-between">
+            <p className="text-2xs font-bold uppercase tracking-ui text-muted-foreground">
+              Awaiting Fulfilment
+            </p>
+            <Package size={20} className="text-primary" />
+          </div>
+          <p className="font-black text-3xl md:text-4xl text-foreground">
+            {metrics.unfulfilledOrdersCount}
+          </p>
+          <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t border-border/50">
+            <span>Pending carrier dispatch</span>
+            <Link href="/admin/orders?status=confirmed" className="text-primary hover:underline font-semibold">
+              Dispatch queue →
+            </Link>
+          </div>
+        </div>
+
+        {/* Low Stock Alerts */}
+        <div className="border border-border bg-card p-6 rounded-xl space-y-2">
+          <div className="flex items-center justify-between">
+            <p className="text-2xs font-bold uppercase tracking-ui text-muted-foreground">
+              Low Stock Alerts
+            </p>
+            <Tray size={20} className={metrics.lowStockCount > 0 ? "text-destructive" : "text-muted-foreground"} />
+          </div>
+          <p className="font-black text-3xl md:text-4xl text-foreground">
+            {metrics.lowStockCount}
+          </p>
+          <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t border-border/50">
+            <span>Variants at or below reorder level</span>
+            <Link href="/admin/inventory" className="text-primary hover:underline font-semibold">
+              Inventory →
+            </Link>
+          </div>
+        </div>
+
+        {/* Open Support Tickets */}
+        <div className="border border-border bg-card p-6 rounded-xl space-y-2">
+          <div className="flex items-center justify-between">
+            <p className="text-2xs font-bold uppercase tracking-ui text-muted-foreground">
+              Open Support Inquiries
+            </p>
+            <Headset size={20} className="text-primary" />
+          </div>
+          <p className="font-black text-3xl md:text-4xl text-foreground">
+            {metrics.openSupportTicketsCount}
+          </p>
+          <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t border-border/50">
+            <span>Customer tickets awaiting response</span>
+            <Link href="/admin/support" className="text-primary hover:underline font-semibold">
+              Inbox →
+            </Link>
+          </div>
+        </div>
+
+        {/* Active Campaigns */}
+        <div className="border border-border bg-card p-6 rounded-xl space-y-2">
+          <div className="flex items-center justify-between">
+            <p className="text-2xs font-bold uppercase tracking-ui text-muted-foreground">
+              Active Campaigns
+            </p>
+            <Megaphone size={20} className="text-primary" />
+          </div>
+          <p className="font-black text-3xl md:text-4xl text-foreground">
+            {metrics.activeCampaignsCount}
+          </p>
+          <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t border-border/50">
+            <span>Instagram & social tracking links</span>
+            <Link href="/admin/campaigns" className="text-primary hover:underline font-semibold">
+              Campaigns →
+            </Link>
+          </div>
+        </div>
       </div>
 
-      <Card className="mt-6">
-        <CardHeader>
-          <CardTitle>Recent Users</CardTitle>
-          <CardDescription>
-            The five most recently registered accounts.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="p-0">
-          <div className="divide-y divide-border">
-            {recentUsers.map((item) => (
-              <div
-                className="flex items-center gap-3 px-(--card-spacing) py-3"
-                key={item.id}
-              >
-                <span className="grid size-8 shrink-0 place-items-center bg-muted font-black text-xs text-muted-foreground">
-                  {(item.name ?? item.email).slice(0, 2).toUpperCase()}
-                </span>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-semibold">{item.email}</p>
-                  {item.name && (
-                    <p className="truncate text-muted-foreground text-xs">
-                      {item.name}
-                    </p>
-                  )}
-                </div>
-                <Badge
-                  className={
-                    item.role === ADMIN_ROLE ? "text-success" : undefined
-                  }
-                  variant={item.role === ADMIN_ROLE ? "default" : "secondary"}
-                >
-                  {item.role}
-                </Badge>
-                <span className="hidden font-mono text-muted-foreground text-xs sm:block">
-                  {item.id.slice(0, 8)}
-                </span>
+      {/* 2. Detailed Split: Recent Direct Orders vs Amazon Clicks */}
+      <div className="grid gap-6 lg:grid-cols-12">
+        {/* Left: Recent Direct Orders (7 cols) */}
+        <Card className="lg:col-span-7">
+          <CardHeader className="flex flex-row items-center justify-between pb-3">
+            <div>
+              <CardTitle className="text-base font-bold">Recent Direct Website Orders</CardTitle>
+              <CardDescription className="text-xs">
+                Verified store transactions with item snapshots and customer contacts.
+              </CardDescription>
+            </div>
+            <Button asChild size="xs" variant="secondary">
+              <Link href="/admin/orders">View All</Link>
+            </Button>
+          </CardHeader>
+          <CardContent className="p-0">
+            {metrics.recentOrders.length === 0 ? (
+              <div className="p-8 text-center text-xs text-muted-foreground">
+                No orders placed yet.
               </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-  );
-}
+            ) : (
+              <div className="divide-y divide-border">
+                {metrics.recentOrders.map((ord) => (
+                  <div key={ord.id} className="flex items-center justify-between p-4 hover:bg-muted/40 transition-colors">
+                    <div className="min-w-0 space-y-1">
+                      <div className="flex items-center gap-2">
+                        <Link
+                          href={`/admin/orders/${ord.id}`}
+                          className="font-mono font-bold text-xs text-foreground hover:underline"
+                        >
+                          {ord.orderNumber}
+                        </Link>
+                        <Badge
+                          variant={ord.paymentStatus === "verified" ? "default" : "secondary"}
+                          className="text-2xs"
+                        >
+                          {ord.paymentStatus}
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {ord.customerName} · {ord.customerEmail}
+                      </p>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <p className="font-bold text-sm">
+                        ₹{(ord.totalMinor / 100).toLocaleString("en-IN")}
+                      </p>
+                      <p className="text-2xs text-muted-foreground">
+                        {new Date(ord.createdAt).toLocaleDateString("en-IN", {
+                          month: "short",
+                          day: "numeric",
+                        })}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
-function StatBlock({ label, value }: { label: string; value: number }) {
-  return (
-    <div className="border border-border bg-card p-6">
-      <p className="text-2xs font-semibold uppercase tracking-ui text-muted-foreground">
-        {label}
-      </p>
-      <p className="mt-2 font-black text-4xl tracking-normal">{value}</p>
+        {/* Right: Amazon Clicks & System Health (5 cols) */}
+        <div className="lg:col-span-5 space-y-6">
+          {/* Recent Amazon Clicks */}
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-3">
+              <div>
+                <CardTitle className="text-base font-bold flex items-center gap-2">
+                  <ArrowSquareOut size={18} className="text-amber-500" />
+                  Recent Amazon Outbound Intent
+                </CardTitle>
+                <CardDescription className="text-xs">
+                  Logged customer redirects to verified Amazon India ASINs.
+                </CardDescription>
+              </div>
+            </CardHeader>
+            <CardContent className="p-0">
+              {metrics.recentAmazonClicks.length === 0 ? (
+                <div className="p-6 text-center text-xs text-muted-foreground">
+                  No outbound Amazon clicks logged yet.
+                </div>
+              ) : (
+                <div className="divide-y divide-border">
+                  {metrics.recentAmazonClicks.map((clk) => (
+                    <div key={clk.id} className="p-3 flex items-center justify-between text-xs">
+                      <div className="min-w-0">
+                        <p className="font-mono font-bold truncate">{clk.sku}</p>
+                        <p className="text-2xs text-muted-foreground">
+                          {clk.campaignCode ? `Campaign: ${clk.campaignCode}` : "Direct PDP click"}
+                        </p>
+                      </div>
+                      <span className="text-2xs text-muted-foreground shrink-0 flex items-center gap-1">
+                        <Clock size={12} />
+                        {new Date(clk.occurredAt).toLocaleTimeString("en-IN", {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Infrastructure Health */}
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm font-bold">System Infrastructure</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 text-xs">
+              <div className="flex items-center justify-between py-1 border-b border-border/50">
+                <span className="text-muted-foreground">Active Background Queues</span>
+                <span className="font-mono font-bold">{queues.length}</span>
+              </div>
+              <div className="flex items-center justify-between py-1 border-b border-border/50">
+                <span className="text-muted-foreground">Outbox Email Jobs</span>
+                <span className="font-mono font-bold">{emailCount.count}</span>
+              </div>
+              <div className="flex items-center justify-between py-1">
+                <span className="text-muted-foreground">Registered User Accounts</span>
+                <span className="font-mono font-bold">{userCount.count}</span>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }

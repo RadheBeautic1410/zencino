@@ -43,6 +43,7 @@ export interface CreateOrderParams {
   shippingAddress: ShippingAddressInput;
   paymentMethod?: "upi_qr" | "razorpay";
   userId?: string;
+  attribution?: Record<string, unknown>;
 }
 
 /**
@@ -109,6 +110,7 @@ export async function createOrderFromCart(params: CreateOrderParams) {
         status: "pending_payment",
         paymentStatus: "pending",
         paymentMethod,
+        attribution: params.attribution || null,
       })
       .returning();
 
@@ -373,6 +375,18 @@ export async function verifyPaymentAndConfirmOrder(params: {
         orderId: order.id,
         orderNumber: order.orderNumber,
         verifiedBy: adminId,
+      },
+    });
+
+    const { recordAnalyticsEvent } = await import("@/lib/commerce/campaigns");
+    await recordAnalyticsEvent({
+      eventName: "purchase_confirmed",
+      orderId: order.id,
+      campaignCode: (order.attribution as any)?.campaignCode || null,
+      dedupeKey: `purchase:${order.orderNumber}`,
+      properties: {
+        orderNumber: order.orderNumber,
+        totalMinor: order.totalMinor,
       },
     });
 

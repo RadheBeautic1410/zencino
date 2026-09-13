@@ -6,3 +6,7 @@ export * from "@/db/schema/job-logs";
 export * from "@/db/schema/catalog";
 export * from "@/db/schema/inventory";
 export * from "@/db/schema/orders";
+export * from "@/db/schema/content";
+export * from "@/db/schema/support";
+export * from "@/db/schema/campaigns";
+export * from "@/db/schema/settings";

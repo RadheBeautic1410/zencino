@@ -54,6 +54,14 @@ export async function GET(request: NextRequest) {
   }
 
   // Record outbound click for campaign & conversion attribution
+  const campaignCookie = request.cookies.get("zen_attribution")?.value;
+  const campaignCode =
+    searchParams.get("utm_campaign") ||
+    searchParams.get("campaign") ||
+    campaignCookie ||
+    null;
+  const sessionId = request.cookies.get("zen_anon_session")?.value || null;
+
   await audit({
     action: "catalog.amazon_outbound_click",
     entityType: "variant",
@@ -63,6 +71,22 @@ export async function GET(request: NextRequest) {
       sku: record.sku,
       asin: record.asin,
       productId: record.productId,
+      destination: record.externalUrl,
+      campaignCode,
+    },
+  });
+
+  const { recordAnalyticsEvent } = await import("@/lib/commerce/campaigns");
+  await recordAnalyticsEvent({
+    eventName: "amazon_outbound",
+    anonymousSessionId: sessionId,
+    campaignCode,
+    productId: record.productId,
+    variantId: record.id,
+    dedupeKey: `outbound:amazon:${record.id}:${sessionId || "anon"}:${Date.now()}`,
+    properties: {
+      sku: record.sku,
+      asin: record.asin,
       destination: record.externalUrl,
     },
   });

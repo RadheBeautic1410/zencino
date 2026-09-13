@@ -61,6 +61,7 @@ export const orders = pgTable(
     trackingNumber: text("tracking_number"),
     dispatchedAt: timestamp("dispatched_at", { withTimezone: true }),
     deliveredAt: timestamp("delivered_at", { withTimezone: true }),
+    attribution: jsonb("attribution").$type<Record<string, unknown>>(),
     ...dates(),
   },
   (table) => [

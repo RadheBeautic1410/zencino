@@ -15,13 +15,19 @@ import {
   getStorefrontFeaturedCollections,
   getStorefrontProducts,
 } from "@/lib/catalog/storefront";
+import {
+  type HomepageContentData,
+  getPublishedContent,
+} from "@/lib/commerce/content";
 
 export default async function HomePage() {
-  const [categories, collections, { products: featuredProducts }] = await Promise.all([
-    getStorefrontCategories(),
-    getStorefrontFeaturedCollections(),
-    getStorefrontProducts({ pageSize: 4 }),
-  ]);
+  const [categories, collections, { products: featuredProducts }, { data: heroContent }] =
+    await Promise.all([
+      getStorefrontCategories(),
+      getStorefrontFeaturedCollections(),
+      getStorefrontProducts({ pageSize: 4 }),
+      getPublishedContent<HomepageContentData>("home", "homepage"),
+    ]);
 
   const primaryCollection = collections.find((c) => c.slug === "acrylic-essentials") || collections[0];
 
@@ -32,23 +38,23 @@ export default async function HomePage() {
         <div className="mx-auto grid max-w-7xl gap-12 px-6 py-20 md:grid-cols-12 md:items-center md:py-28">
           <div className="md:col-span-7 space-y-6">
             <p className="inline-flex items-center gap-2 rounded-full bg-success/15 px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-success">
-              <Sparkle size={14} weight="fill" /> Modern Everyday Organization
+              <Sparkle size={14} weight="fill" /> {heroContent.eyebrowBadge}
             </p>
             <h1 className="text-4xl font-extrabold tracking-tight md:text-6xl lg:text-7xl leading-tight">
-              A little order.
+              {heroContent.headline}
               <br />
-              <span className="text-muted-foreground">A lot of possibility.</span>
+              <span className="text-muted-foreground">{heroContent.headlineSub}</span>
             </h1>
             <p className="max-w-xl text-base md:text-lg text-muted-foreground leading-relaxed">
-              Discover Zencino for your home, kitchen, and workspace. From crystal-clear acrylic organizers to functional daily essentials.
+              {heroContent.description}
             </p>
 
             <div className="flex flex-wrap items-center gap-4 pt-4">
               <Link
-                href="/products"
+                href={heroContent.ctaPrimaryLink || "/products"}
                 className="inline-flex items-center gap-2 bg-primary px-7 py-3.5 text-xs font-bold uppercase tracking-ui text-primary-foreground hover:bg-primary/90 transition-colors"
               >
-                Shop All Products <ArrowRight size={14} />
+                {heroContent.ctaPrimaryText || "Shop All Products"} <ArrowRight size={14} />
               </Link>
               {primaryCollection && (
                 <Link
