@@ -7,9 +7,35 @@ const money = z.number().int().nonnegative().max(2_000_000_000).nullable();
 
 export function isAmazonProductUrl(value: string) {
   try {
-    const url = new URL(value);
-    return url.protocol === "https:" && ["amazon.in", "www.amazon.in"].includes(url.hostname) && !url.username && !url.password && !url.port && /\/(dp|gp\/product)\/[A-Z0-9]{10}(?:\/|$)/i.test(url.pathname);
-  } catch { return false; }
+    const trimmed = value.trim();
+    if (!trimmed) return false;
+    const url = new URL(trimmed);
+
+    // Only HTTPS
+    if (url.protocol !== "https:") return false;
+
+    // Disallow credentials or custom ports for safety
+    if (url.username || url.password || url.port) return false;
+
+    const hostname = url.hostname.toLowerCase();
+
+    // 1. Amazon short links (e.g. https://amzn.in/d/0beM940h, https://amzn.in/0beM940h, https://amzn.to/...)
+    if (["amzn.in", "www.amzn.in", "amzn.to", "www.amzn.to"].includes(hostname)) {
+      return url.pathname.length > 1 && /^\/[a-zA-Z0-9_\-\/]+$/.test(url.pathname);
+    }
+
+    // 2. Full Amazon India domain (amazon.in, www.amazon.in)
+    if (["amazon.in", "www.amazon.in"].includes(hostname)) {
+      return (
+        /\/(?:dp|gp\/product)\/[A-Z0-9]{10}(?:[/?#]|$)/i.test(url.pathname) ||
+        /\/[^/]+\/dp\/[A-Z0-9]{10}(?:[/?#]|$)/i.test(url.pathname)
+      );
+    }
+
+    return false;
+  } catch {
+    return false;
+  }
 }
 
 export const variantInput = z.object({
@@ -21,7 +47,7 @@ export const variantInput = z.object({
 }).superRefine((value, ctx) => {
   if (value.websiteEnabled && (value.priceMinor === null || value.priceMinor <= 0 || value.weightG === null)) ctx.addIssue({code: "custom", message: "Website variants need a positive price and shipping weight", path: ["priceMinor"]});
   if (value.mrpMinor !== null && value.priceMinor !== null && value.mrpMinor < value.priceMinor) ctx.addIssue({code: "custom", message: "MRP cannot be below selling price", path: ["mrpMinor"]});
-  if (value.amazonEnabled && !isAmazonProductUrl(value.amazonUrl)) ctx.addIssue({code: "custom", message: "Use the full https://www.amazon.in/dp/ASIN product URL", path: ["amazonUrl"]});
+  if (value.amazonEnabled && !isAmazonProductUrl(value.amazonUrl)) ctx.addIssue({code: "custom", message: "Enter a valid Amazon India product URL (e.g. https://www.amazon.in/dp/ASIN or https://amzn.in/d/...)", path: ["amazonUrl"]});
 });
 export function optionSignature(options: Record<string,string>) {
   return JSON.stringify(Object.entries(options).sort(([a],[b]) => a.localeCompare(b)));

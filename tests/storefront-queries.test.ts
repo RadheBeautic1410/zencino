@@ -7,6 +7,7 @@ test("Amazon outbound destination strictly permits only amazon.in URLs", () => {
   assert.equal(isAmazonProductUrl("https://www.amazon.in/dp/B08XYZ1234"), true);
   assert.equal(isAmazonProductUrl("https://amazon.in/dp/B08XYZ1234/"), true);
   assert.equal(isAmazonProductUrl("https://www.amazon.in/gp/product/B08XYZ1234"), true);
+  assert.equal(isAmazonProductUrl("https://amzn.in/d/0beM940h"), true);
 
   // Inadmissible URLs
   assert.equal(isAmazonProductUrl("https://amazon.com/dp/B08XYZ1234"), false);

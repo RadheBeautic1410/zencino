@@ -491,10 +491,10 @@ export function ProductEditorTabs({
                       <Input
                         name="amazonUrl"
                         defaultValue={editingVariant?.amazonUrl ?? ""}
-                        placeholder="https://www.amazon.in/dp/B08XYZ1234"
+                        placeholder="https://www.amazon.in/dp/ASIN or https://amzn.in/d/..."
                       />
                       <p className="mt-1 text-2xs text-muted-foreground">
-                        Must be a full https://www.amazon.in/dp/ASIN URL.
+                        Supports full Amazon India URLs (e.g. /dp/ASIN) and mobile/share links (e.g. https://amzn.in/d/...).
                       </p>
                     </div>
 

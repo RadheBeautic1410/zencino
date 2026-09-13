@@ -259,12 +259,14 @@ export async function upsertVariantAction(
   const sig = optionSignature(options);
 
   try {
-    // Extract ASIN from Amazon URL if provided
+    // Extract ASIN from Amazon URL if present in standard path
     let asin: string | null = null;
     if (amazonUrl && isAmazonProductUrl(amazonUrl)) {
-      const match = amazonUrl.match(/\/(dp|gp\/product)\/([A-Z0-9]{10})/i);
-      if (match) asin = match[2].toUpperCase();
+      const match = amazonUrl.match(/\/(?:dp|gp\/product)\/([A-Z0-9]{10})/i);
+      if (match) asin = match[1].toUpperCase();
     }
+
+    const isVerifiedAmazon = Boolean(amazonEnabled && amazonUrl && isAmazonProductUrl(amazonUrl));
 
     if (id) {
       // Check SKU uniqueness
@@ -317,7 +319,7 @@ export async function upsertVariantAction(
           enabled: amazonEnabled,
           externalUrl: amazonUrl || null,
           asin,
-          verifiedAt: amazonEnabled && asin ? new Date() : null,
+          verifiedAt: isVerifiedAmazon ? new Date() : null,
         })
         .onConflictDoUpdate({
           target: [variantChannels.variantId, variantChannels.channel],
@@ -325,7 +327,7 @@ export async function upsertVariantAction(
             enabled: amazonEnabled,
             externalUrl: amazonUrl || null,
             asin,
-            verifiedAt: amazonEnabled && asin ? new Date() : null,
+            verifiedAt: isVerifiedAmazon ? new Date() : null,
             updatedAt: new Date(),
           },
         });
@@ -376,7 +378,7 @@ export async function upsertVariantAction(
           enabled: amazonEnabled,
           externalUrl: amazonUrl || null,
           asin,
-          verifiedAt: amazonEnabled && asin ? new Date() : null,
+          verifiedAt: isVerifiedAmazon ? new Date() : null,
         },
       ]);
 

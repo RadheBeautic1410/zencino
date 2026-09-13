@@ -16,12 +16,31 @@ test("isAmazonProductUrl accepts only valid Amazon India product URLs", () => {
     isAmazonProductUrl("https://amazon.in/gp/product/B08XYZ1234"),
     true
   );
+  // Amazon share short link formats
+  assert.equal(
+    isAmazonProductUrl("https://amzn.in/d/0beM940h"),
+    true
+  );
+  assert.equal(
+    isAmazonProductUrl("https://amzn.in/0beM940h"),
+    true
+  );
+  assert.equal(
+    isAmazonProductUrl("https://amzn.to/3xyz123"),
+    true
+  );
+  // Full Amazon product URL with title slug
+  assert.equal(
+    isAmazonProductUrl("https://www.amazon.in/Clear-Acrylic-Sports-Ball/dp/B0HHZ4FLKV/ref=sr_1_8"),
+    true
+  );
 
-  // Invalid: other domains, missing ASIN, http, malicious credentials
+  // Invalid: other domains, missing ASIN/slug, http, malicious credentials
   assert.equal(isAmazonProductUrl("https://www.amazon.com/dp/B08XYZ1234"), false);
   assert.equal(isAmazonProductUrl("http://www.amazon.in/dp/B08XYZ1234"), false);
   assert.equal(isAmazonProductUrl("https://user:pass@www.amazon.in/dp/B08XYZ1234"), false);
   assert.equal(isAmazonProductUrl("https://www.amazon.in/s?k=pencil+holder"), false);
+  assert.equal(isAmazonProductUrl("https://amzn.in/"), false);
   assert.equal(isAmazonProductUrl("not-a-url"), false);
 });
 
