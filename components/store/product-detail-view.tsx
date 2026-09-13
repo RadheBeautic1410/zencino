@@ -117,25 +117,25 @@ export function ProductDetailView({ product }: ProductDetailProps) {
     <div className="mx-auto max-w-7xl px-6 py-8 md:py-14">
       {/* Breadcrumb Navigation */}
       <nav aria-label="Breadcrumb" className="mb-6 flex items-center gap-2 text-xs text-muted-foreground">
-        <Link href="/" className="hover:text-foreground">Home</Link>
+        <Link href="/" className="hover:text-primary transition-colors">Home</Link>
         <span>/</span>
-        <Link href="/products" className="hover:text-foreground">Products</Link>
+        <Link href="/products" className="hover:text-primary transition-colors">Products</Link>
         {product.category && (
           <>
             <span>/</span>
-            <Link href={`/categories/${product.category.slug}`} className="hover:text-foreground">
+            <Link href={`/categories/${product.category.slug}`} className="hover:text-primary transition-colors">
               {product.category.name}
             </Link>
           </>
         )}
         <span>/</span>
-        <span className="text-foreground truncate max-w-xs">{product.name}</span>
+        <span className="text-foreground font-medium truncate max-w-xs">{product.name}</span>
       </nav>
 
       <div className="grid gap-12 lg:grid-cols-12 lg:items-start">
         {/* Gallery Section */}
         <div className="lg:col-span-7 space-y-4">
-          <div className="relative aspect-square w-full overflow-hidden border border-border bg-muted/20">
+          <div className="relative aspect-square w-full overflow-hidden rounded-3xl border border-border/80 bg-card shadow-sm">
             {activeMedia ? (
               <Image
                 src={activeMedia.url}
@@ -152,7 +152,7 @@ export function ProductDetailView({ product }: ProductDetailProps) {
             )}
 
             {discountPct && (
-              <span className="absolute top-4 left-4 bg-success px-2.5 py-1 text-xs font-bold uppercase tracking-ui text-success-foreground">
+              <span className="absolute top-4 left-4 rounded-full bg-emerald-700/90 text-white backdrop-blur-xs px-3 py-1 text-xs font-extrabold uppercase tracking-ui shadow-xs">
                 {discountPct}% OFF
               </span>
             )}
@@ -160,14 +160,16 @@ export function ProductDetailView({ product }: ProductDetailProps) {
 
           {/* Thumbnails Row */}
           {product.media.length > 1 && (
-            <div className="flex gap-3 overflow-x-auto pb-2">
+            <div className="flex gap-3 overflow-x-auto pb-2 pt-1">
               {product.media.map((m, idx) => (
                 <button
                   key={m.id}
                   type="button"
                   onClick={() => setActiveImageIndex(idx)}
-                  className={`relative size-20 shrink-0 overflow-hidden border-2 transition-all ${
-                    activeImageIndex === idx ? "border-primary" : "border-border hover:border-foreground/40"
+                  className={`relative size-20 shrink-0 overflow-hidden rounded-2xl border-2 transition-all duration-200 ${
+                    activeImageIndex === idx
+                      ? "border-primary ring-2 ring-primary/20 scale-102 shadow-xs"
+                      : "border-border/80 hover:border-foreground/40 opacity-75 hover:opacity-100"
                   }`}
                 >
                   <Image
@@ -186,30 +188,30 @@ export function ProductDetailView({ product }: ProductDetailProps) {
         {/* Product Purchase & Option Details */}
         <div className="lg:col-span-5 space-y-6">
           {product.category && (
-            <p className="text-xs font-bold uppercase tracking-ui text-success">
-              {product.category.name}
-            </p>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100/80 text-emerald-800 text-xs font-bold tracking-wider uppercase">
+              <span>{product.category.name}</span>
+            </div>
           )}
 
-          <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
+          <h1 className="font-heading text-3xl font-extrabold tracking-tight md:text-4xl text-foreground leading-tight">
             {product.name}
           </h1>
 
           {/* Price Header */}
-          <div className="border-b border-border pb-5">
+          <div className="border-b border-border/80 pb-5">
             <div className="flex items-baseline gap-3">
               {price !== null ? (
                 <>
-                  <span className="text-3xl font-black text-foreground">
+                  <span className="font-heading text-3xl md:text-4xl font-black text-foreground">
                     ₹{price.toLocaleString("en-IN")}
                   </span>
                   {mrp && mrp > price && (
-                    <span className="text-base text-muted-foreground line-through">
+                    <span className="text-base text-muted-foreground/75 line-through">
                       ₹{mrp.toLocaleString("en-IN")}
                     </span>
                   )}
                   {discountPct && (
-                    <span className="rounded bg-success/15 px-2 py-0.5 text-xs font-bold text-success">
+                    <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-bold text-emerald-800">
                       Save {discountPct}%
                     </span>
                   )}
@@ -218,13 +220,13 @@ export function ProductDetailView({ product }: ProductDetailProps) {
                 <span className="text-xl font-semibold text-muted-foreground">Price on Request</span>
               )}
             </div>
-            <p className="mt-1 text-2xs text-muted-foreground">Inclusive of all applicable taxes.</p>
+            <p className="mt-1 text-2xs text-muted-foreground">Inclusive of all applicable GST. Free shipping over ₹999.</p>
           </div>
 
           {/* Variant / Option Selector */}
           {product.variants.length > 1 && (
             <div className="space-y-3">
-              <label className="block text-xs font-semibold uppercase tracking-ui text-muted-foreground">
+              <label className="block text-xs font-bold uppercase tracking-ui text-foreground">
                 Select Option / Pack:
               </label>
               <div className="flex flex-wrap gap-2.5">
@@ -235,15 +237,15 @@ export function ProductDetailView({ product }: ProductDetailProps) {
                       key={v.id}
                       type="button"
                       onClick={() => handleVariantSelect(v.id)}
-                      className={`border px-4 py-2.5 text-xs font-semibold uppercase tracking-ui transition-all ${
+                      className={`rounded-xl border px-4 py-2.5 text-xs font-bold uppercase tracking-ui transition-all duration-200 ${
                         isSelected
-                          ? "border-primary bg-primary text-primary-foreground shadow-xs"
-                          : "border-border bg-background text-foreground hover:border-foreground/40"
+                          ? "border-primary bg-primary text-primary-foreground shadow-xs scale-102"
+                          : "border-border/80 bg-card text-foreground hover:border-primary/50"
                       }`}
                     >
-                      {v.title}
+                      <span>{v.title}</span>
                       {v.priceMinor && (
-                        <span className="ml-1.5 opacity-85">
+                        <span className="ml-1.5 opacity-80 font-normal">
                           · ₹{(v.priceMinor / 100).toLocaleString("en-IN")}
                         </span>
                       )}
@@ -255,24 +257,24 @@ export function ProductDetailView({ product }: ProductDetailProps) {
           )}
 
           {/* Dual Purchasing Action Buttons */}
-          <div className="space-y-3 rounded-2xl border border-border bg-card p-5">
-            <p className="text-xs font-bold uppercase tracking-ui text-muted-foreground">
+          <div className="space-y-4 rounded-3xl border border-border/80 bg-card p-6 shadow-sm">
+            <p className="text-xs font-bold uppercase tracking-ui text-foreground">
               Ways to Purchase
             </p>
 
             {/* Path A: Amazon Outbound Link */}
             {selectedVariant?.amazonEnabled && (
-              <div>
+              <div className="space-y-1.5">
                 <a
                   href={`/api/outbound/amazon?variantId=${selectedVariant.id}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex w-full items-center justify-center gap-2 bg-[#FF9900] hover:bg-[#FF9900]/90 text-black py-3.5 px-6 font-bold text-sm tracking-wide transition-colors"
+                  className="flex w-full items-center justify-center gap-2 rounded-full bg-[#FF9900] hover:bg-[#FF9900]/90 text-black py-3.5 px-6 font-extrabold text-sm tracking-wide shadow-xs transition-all hover:scale-101"
                 >
-                  <span>Buy on Amazon</span>
+                  <span>Buy on Amazon Prime</span>
                   <ArrowSquareOut size={16} weight="bold" />
                 </a>
-                <p className="mt-1.5 text-center text-2xs text-muted-foreground">
+                <p className="text-center text-2xs text-muted-foreground">
                   Order with your Amazon Prime account for fast delivery & verified returns.
                 </p>
               </div>
@@ -280,17 +282,17 @@ export function ProductDetailView({ product }: ProductDetailProps) {
 
             {/* Path B: Direct Storefront Checkout */}
             {selectedVariant?.websiteEnabled && (
-              <div className="pt-2">
+              <div className="pt-1 space-y-1.5">
                 {addedSuccess ? (
                   <div className="space-y-2">
-                    <div className="flex items-center justify-between rounded-md bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-300 dark:border-emerald-800 p-3 text-xs font-semibold text-emerald-800 dark:text-emerald-200">
-                      <div className="flex items-center gap-1.5">
-                        <Check size={16} weight="bold" />
-                        <span>Added to your bag!</span>
+                    <div className="flex items-center justify-between rounded-2xl bg-emerald-50 border border-emerald-200 p-3.5 text-xs font-semibold text-emerald-900">
+                      <div className="flex items-center gap-2">
+                        <Check size={18} weight="bold" className="text-emerald-700" />
+                        <span>Added to your shopping bag!</span>
                       </div>
                       <Link
                         href="/cart"
-                        className="rounded bg-primary text-primary-foreground px-3 py-1 text-2xs font-bold hover:bg-primary/90 uppercase tracking-ui"
+                        className="rounded-full bg-primary text-primary-foreground px-4 py-1.5 text-xs font-bold hover:bg-primary/90 uppercase tracking-ui shadow-2xs"
                       >
                         View Bag &rarr;
                       </Link>
@@ -309,7 +311,7 @@ export function ProductDetailView({ product }: ProductDetailProps) {
                     type="button"
                     disabled={isAdding}
                     onClick={() => handleAddToCart(selectedVariant.id)}
-                    className="flex w-full items-center justify-center gap-2 border-2 border-primary bg-primary text-primary-foreground py-3.5 px-6 font-bold text-sm hover:bg-primary/90 transition-colors disabled:opacity-50"
+                    className="flex w-full items-center justify-center gap-2 rounded-full bg-primary text-primary-foreground py-3.5 px-6 font-extrabold text-sm hover:bg-primary/90 shadow-sm transition-all hover:scale-101 disabled:opacity-50"
                   >
                     {isAdding ? (
                       <>
@@ -331,8 +333,8 @@ export function ProductDetailView({ product }: ProductDetailProps) {
                   </p>
                 )}
 
-                <p className="mt-1.5 text-center text-2xs text-muted-foreground">
-                  Direct website orders · Free shipping over ₹999 · Secure checkout
+                <p className="text-center text-2xs text-muted-foreground">
+                  Direct orders ship within 24h · Free delivery &gt; ₹999 · Secure checkout
                 </p>
               </div>
             )}
@@ -345,38 +347,38 @@ export function ProductDetailView({ product }: ProductDetailProps) {
           </div>
 
           {/* Trust Value Badges */}
-          <div className="grid grid-cols-2 gap-3 pt-2 text-xs text-muted-foreground">
-            <div className="flex items-center gap-2">
-              <ShieldCheck className="text-primary shrink-0" size={20} />
+          <div className="grid grid-cols-2 gap-3 pt-2">
+            <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-card border border-border/70 text-xs text-foreground">
+              <ShieldCheck className="text-emerald-700 shrink-0" size={20} weight="bold" />
               <span>Optical grade clear acrylic</span>
             </div>
-            <div className="flex items-center gap-2">
-              <Truck className="text-primary shrink-0" size={20} />
+            <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-card border border-border/70 text-xs text-foreground">
+              <Truck className="text-emerald-700 shrink-0" size={20} weight="bold" />
               <span>Protective cushioned packaging</span>
             </div>
           </div>
 
           {/* Specifications Table */}
           {Object.keys(product.specifications).length > 0 && (
-            <div className="border-t border-border pt-6">
+            <div className="border-t border-border/80 pt-6">
               <h3 className="text-xs font-bold uppercase tracking-ui text-foreground mb-3">
                 Product Specifications
               </h3>
-              <dl className="divide-y divide-border text-xs">
+              <dl className="divide-y divide-border/60 text-xs">
                 {Object.entries(product.specifications).map(([k, v]) => (
-                  <div key={k} className="grid grid-cols-3 py-2">
+                  <div key={k} className="grid grid-cols-3 py-2.5">
                     <dt className="text-muted-foreground font-medium">{k}</dt>
                     <dd className="col-span-2 text-foreground font-semibold">{v}</dd>
                   </div>
                 ))}
                 {selectedVariant?.weightG && (
-                  <div className="grid grid-cols-3 py-2">
+                  <div className="grid grid-cols-3 py-2.5">
                     <dt className="text-muted-foreground font-medium">Weight</dt>
                     <dd className="col-span-2 text-foreground font-semibold">{selectedVariant.weightG} grams</dd>
                   </div>
                 )}
                 {selectedVariant?.lengthMm && (
-                  <div className="grid grid-cols-3 py-2">
+                  <div className="grid grid-cols-3 py-2.5">
                     <dt className="text-muted-foreground font-medium">Dimensions</dt>
                     <dd className="col-span-2 text-foreground font-semibold">
                       {selectedVariant.lengthMm} × {selectedVariant.widthMm} × {selectedVariant.heightMm} mm
@@ -389,7 +391,7 @@ export function ProductDetailView({ product }: ProductDetailProps) {
 
           {/* Care Instructions */}
           {product.care && (
-            <div className="border-t border-border pt-6">
+            <div className="border-t border-border/80 pt-6">
               <h3 className="text-xs font-bold uppercase tracking-ui text-foreground mb-2">
                 Care Instructions
               </h3>
@@ -399,7 +401,7 @@ export function ProductDetailView({ product }: ProductDetailProps) {
 
           {/* Package Contents */}
           {product.packageContents && (
-            <div className="border-t border-border pt-6">
+            <div className="border-t border-border/80 pt-6">
               <h3 className="text-xs font-bold uppercase tracking-ui text-foreground mb-2">
                 What&apos;s Included
               </h3>

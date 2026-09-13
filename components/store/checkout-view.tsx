@@ -251,9 +251,9 @@ export function CheckoutView({
 
   return (
     <div className="mx-auto max-w-7xl px-6 py-10 md:py-16">
-      <div className="mb-6 flex items-center justify-between border-b border-border pb-4">
+      <div className="mb-6 flex items-center justify-between border-b border-border/80 pb-4">
         <div>
-          <h1 className="text-3xl font-black tracking-tight md:text-4xl">
+          <h1 className="font-heading text-3xl font-extrabold tracking-tight md:text-4xl text-foreground">
             Checkout & Delivery
           </h1>
           <p className="mt-1 text-xs text-muted-foreground">
@@ -262,14 +262,14 @@ export function CheckoutView({
         </div>
         <Link
           href="/cart"
-          className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-ui text-muted-foreground hover:text-foreground"
+          className="inline-flex items-center gap-1.5 text-xs font-bold uppercase tracking-ui text-muted-foreground hover:text-primary transition-colors"
         >
-          <ArrowLeft size={14} /> Back to Bag
+          <ArrowLeft size={14} weight="bold" /> Back to Bag
         </Link>
       </div>
 
       {error && (
-        <div className="mb-6 flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
+        <div className="mb-6 flex items-start gap-3 rounded-2xl border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
           <WarningCircle size={20} className="shrink-0 mt-0.5" />
           <p>{error}</p>
         </div>
@@ -278,9 +278,10 @@ export function CheckoutView({
       <div className="grid gap-12 lg:grid-cols-12 lg:items-start">
         {/* Left Column: Address Form */}
         <div className="lg:col-span-7 space-y-6">
-          <form onSubmit={handleCreateOrder} className="border border-border bg-card p-6 md:p-8 space-y-5 rounded-2xl">
-            <h2 className="text-base font-bold uppercase tracking-ui text-foreground flex items-center gap-2">
-              <Truck size={18} /> Shipping & Contact Details
+          <form onSubmit={handleCreateOrder} className="border border-border/80 bg-card p-6 md:p-8 space-y-5 rounded-3xl shadow-sm">
+            <h2 className="font-heading text-base font-bold uppercase tracking-ui text-foreground flex items-center gap-2">
+              <Truck size={20} weight="bold" className="text-emerald-700" />
+              <span>Shipping & Contact Details</span>
             </h2>
 
             <div className="space-y-4">
@@ -470,11 +471,11 @@ export function CheckoutView({
               )}
             </div>
 
-            <div className="pt-4 border-t border-border">
+            <div className="pt-4 border-t border-border/80">
               <Button
                 type="submit"
                 disabled={isPending || cart.items.length === 0}
-                className="w-full h-12 text-sm font-bold uppercase tracking-ui"
+                className="w-full h-12 text-sm font-extrabold uppercase tracking-ui rounded-full shadow-sm hover:scale-101 transition-all"
               >
                 {isPending ? (
                   <span className="flex items-center gap-2">
@@ -489,17 +490,17 @@ export function CheckoutView({
         </div>
 
         {/* Right Column: Order Items Summary */}
-        <div className="lg:col-span-5 rounded-2xl border border-border bg-card p-6 space-y-5">
-          <h2 className="text-base font-bold uppercase tracking-ui">Items in Bag ({cart.totalItems})</h2>
+        <div className="lg:col-span-5 rounded-3xl border border-border/80 bg-card p-6 md:p-8 space-y-5 shadow-sm">
+          <h2 className="font-heading text-base font-bold uppercase tracking-ui text-foreground">Items in Bag ({cart.totalItems})</h2>
 
-          <div className="divide-y divide-border max-h-96 overflow-y-auto pr-2">
+          <div className="divide-y divide-border/60 max-h-96 overflow-y-auto pr-2">
             {cart.items.map((item) => (
               <div key={item.id} className="py-3 flex gap-3 items-center">
-                <div className="relative size-14 shrink-0 overflow-hidden border border-border bg-muted/40 rounded-md">
+                <div className="relative size-14 shrink-0 overflow-hidden border border-border/80 bg-muted/30 rounded-xl">
                   {item.image ? (
                     <Image src={item.image} alt={item.productName} fill className="object-cover" sizes="56px" />
                   ) : (
-                    <div className="grid size-full place-items-center text-muted-foreground/40">
+                    <div className="grid size-full place-items-center text-muted-foreground/30">
                       <Package size={18} />
                     </div>
                   )}

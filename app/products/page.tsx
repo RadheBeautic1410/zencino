@@ -39,27 +39,27 @@ export default async function ProductsPage({
     <StoreShell>
       <div className="mx-auto max-w-7xl px-6 py-10 md:py-16">
         {/* Header */}
-        <div className="border-b border-border pb-8">
-          <p className="text-xs font-bold uppercase tracking-widest text-success mb-2">
-            Zencino Catalog
+        <div className="border-b border-border/80 pb-8">
+          <p className="text-xs font-bold uppercase tracking-widest text-emerald-800 mb-2">
+            Curated Catalog
           </p>
-          <h1 className="text-4xl font-bold tracking-tight md:text-5xl">
+          <h1 className="font-heading text-4xl font-extrabold tracking-tight md:text-5xl text-foreground">
             All Products
           </h1>
-          <p className="mt-3 text-sm text-muted-foreground max-w-xl">
-            Thoughtfully crafted organization solutions for your everyday spaces. Available directly or on Amazon.
+          <p className="mt-3 text-sm text-muted-foreground max-w-xl leading-relaxed">
+            Thoughtfully engineered crystal-clear organization solutions for your everyday spaces. Available directly or on Amazon Prime.
           </p>
         </div>
 
         {/* Categories Bar & Sort Controls */}
-        <div className="mt-6 flex flex-wrap items-center justify-between gap-4 border-b border-border pb-4">
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-4 border-b border-border/80 pb-4">
           <div className="flex flex-wrap items-center gap-2">
             <Link
               href="/products"
-              className={`rounded-full px-3.5 py-1.5 text-xs font-semibold uppercase tracking-ui transition-colors ${
+              className={`rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-ui transition-all ${
                 !categorySlug
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-muted/60 text-muted-foreground hover:text-foreground"
+                  ? "bg-primary text-primary-foreground shadow-2xs"
+                  : "bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted/70"
               }`}
             >
               All Categories
@@ -68,10 +68,10 @@ export default async function ProductsPage({
               <Link
                 key={c.id}
                 href={`/products?category=${c.slug}${sort !== "newest" ? `&sort=${sort}` : ""}`}
-                className={`rounded-full px-3.5 py-1.5 text-xs font-semibold uppercase tracking-ui transition-colors ${
+                className={`rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-ui transition-all ${
                   categorySlug === c.slug
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted/60 text-muted-foreground hover:text-foreground"
+                    ? "bg-primary text-primary-foreground shadow-2xs"
+                    : "bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted/70"
                 }`}
               >
                 {c.name}
@@ -81,25 +81,25 @@ export default async function ProductsPage({
 
           {/* Sort Selector */}
           <div className="flex items-center gap-2">
-            <span className="text-xs font-semibold uppercase tracking-ui text-muted-foreground">Sort:</span>
+            <span className="text-xs font-bold uppercase tracking-ui text-muted-foreground">Sort:</span>
             <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-ui">
               <Link
                 href={`/products?${categorySlug ? `category=${categorySlug}&` : ""}sort=newest`}
-                className={`px-2 py-1 ${sort === "newest" ? "text-foreground underline" : "text-muted-foreground hover:text-foreground"}`}
+                className={`px-2 py-1 ${sort === "newest" ? "text-primary font-bold underline" : "text-muted-foreground hover:text-foreground"}`}
               >
                 Newest
               </Link>
-              <span>·</span>
+              <span className="text-muted-foreground/40">·</span>
               <Link
                 href={`/products?${categorySlug ? `category=${categorySlug}&` : ""}sort=price-asc`}
-                className={`px-2 py-1 ${sort === "price-asc" ? "text-foreground underline" : "text-muted-foreground hover:text-foreground"}`}
+                className={`px-2 py-1 ${sort === "price-asc" ? "text-primary font-bold underline" : "text-muted-foreground hover:text-foreground"}`}
               >
                 Price: Low to High
               </Link>
-              <span>·</span>
+              <span className="text-muted-foreground/40">·</span>
               <Link
                 href={`/products?${categorySlug ? `category=${categorySlug}&` : ""}sort=price-desc`}
-                className={`px-2 py-1 ${sort === "price-desc" ? "text-foreground underline" : "text-muted-foreground hover:text-foreground"}`}
+                className={`px-2 py-1 ${sort === "price-desc" ? "text-primary font-bold underline" : "text-muted-foreground hover:text-foreground"}`}
               >
                 Price: High to Low
               </Link>
@@ -110,16 +110,16 @@ export default async function ProductsPage({
         {/* Product Grid */}
         <div className="mt-8">
           {products.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-border p-16 text-center">
-              <p className="text-base font-semibold">No products found in this selection</p>
+            <div className="rounded-3xl border border-dashed border-border/80 bg-card p-16 text-center shadow-2xs">
+              <p className="font-heading text-lg font-bold text-foreground">No products found in this selection</p>
               <p className="mt-1 text-xs text-muted-foreground">
                 Try switching categories or view all products.
               </p>
               <Link
                 href="/products"
-                className="mt-5 inline-block bg-primary px-5 py-2 text-xs font-semibold uppercase tracking-ui text-primary-foreground"
+                className="mt-6 inline-block rounded-full bg-primary px-6 py-2.5 text-xs font-bold uppercase tracking-ui text-primary-foreground hover:bg-primary/90 transition-all shadow-xs"
               >
-                Reset Filters
+                Reset Catalog Filter
               </Link>
             </div>
           ) : (

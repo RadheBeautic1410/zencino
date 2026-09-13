@@ -25,11 +25,15 @@ body {
 
   /* Typography scale */
   --text-2xs: 0.625rem; /* 10px — micro-labels, sidebar metadata */
+  --text-3xs: 0.5625rem; /* 9px */
   --tracking-eyebrow: 0.16em;
   --tracking-ui: 0.1em;
 
   /* Page & brand */
   --color-page: var(--page);
+  --color-gold: var(--gold);
+  --color-gold-foreground: var(--gold-foreground);
+  --color-gold-subtle: var(--gold-subtle);
 
   /* Semantic status */
   --color-success: var(--success);
@@ -73,58 +77,70 @@ body {
   --radius-sm: calc(var(--radius) * 0.6);
   --radius-md: calc(var(--radius) * 0.8);
   --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-xl: calc(var(--radius) * 1.35);
+  --radius-2xl: calc(var(--radius) * 1.75);
   --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+  --radius-4xl: calc(var(--radius) * 2.8);
 }
 
 :root {
-  /* ── Page background (warm beige) ─────────── */
-  --page: oklch(0.96 0.006 85);
+  /* ── Canvas page background (Warm Alabaster Silk) ─────────── */
+  --page: oklch(0.985 0.005 92);
 
-  /* ── Status colours ───────────────────────── */
-  --success: oklch(0.45 0.13 145); /* emerald-700 */
-  --success-foreground: oklch(0.25 0.09 145); /* emerald-900 */
-  --success-subtle: oklch(0.97 0.04 145); /* emerald-50  */
-  --success-light: oklch(0.78 0.13 145); /* emerald-300 (on dark bg) */
-  --warning: oklch(0.58 0.15 65); /* amber-700   */
+  /* ── Brand Primary: Deep Evergreen Forest ─────────────────── */
+  --primary: oklch(0.26 0.065 168);
+  --primary-foreground: oklch(0.985 0.005 90);
 
-  /* ── Shadcn core ──────────────────────────── */
+  /* ── Brand Accent: Champagne Gold ─────────────────────────── */
+  --gold: oklch(0.76 0.12 78);
+  --gold-foreground: oklch(0.22 0.05 78);
+  --gold-subtle: oklch(0.96 0.03 78);
+
+  /* ── Status colours ───────────────────────────────────────── */
+  --success: oklch(0.48 0.14 150); /* vibrant emerald */
+  --success-foreground: oklch(0.99 0.01 150);
+  --success-subtle: oklch(0.96 0.04 150);
+  --success-light: oklch(0.82 0.12 150);
+  --warning: oklch(0.68 0.16 65); /* warm amber */
+
+  /* ── Surfaces & Text ──────────────────────────────────────── */
   --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
+  --foreground: oklch(0.18 0.015 165); /* deep charcoal emerald */
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
+  --card-foreground: oklch(0.18 0.015 165);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0rem;
+  --popover-foreground: oklch(0.18 0.015 165);
 
-  /* ── Sidebar — always dark (admin panel) ───── */
-  --sidebar: oklch(0.145 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.985 0 0);
-  --sidebar-primary-foreground: oklch(0.145 0 0);
-  --sidebar-accent: oklch(0.22 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(0.22 0 0);
-  --sidebar-ring: oklch(0.556 0 0);
+  --secondary: oklch(0.965 0.008 92);
+  --secondary-foreground: oklch(0.26 0.065 168);
+  --muted: oklch(0.96 0.008 92);
+  --muted-foreground: oklch(0.50 0.015 165);
+  --accent: oklch(0.95 0.018 168);
+  --accent-foreground: oklch(0.26 0.065 168);
+  --destructive: oklch(0.577 0.245 27.325);
+
+  --border: oklch(0.92 0.008 85); /* warm stone border */
+  --input: oklch(0.92 0.008 85);
+  --ring: oklch(0.35 0.08 168);
+
+  --chart-1: oklch(0.35 0.08 168);
+  --chart-2: oklch(0.50 0.10 165);
+  --chart-3: oklch(0.76 0.12 78);
+  --chart-4: oklch(0.60 0.08 140);
+  --chart-5: oklch(0.26 0.065 168);
+
+  /* ── Modern Curved Radius (12px base) ─────────────────────── */
+  --radius: 0.75rem;
+
+  /* ── Admin Sidebar (Rich Deep Forest Slate) ────────────────── */
+  --sidebar: oklch(0.18 0.025 168);
+  --sidebar-foreground: oklch(0.96 0.008 90);
+  --sidebar-primary: oklch(0.88 0.06 168);
+  --sidebar-primary-foreground: oklch(0.18 0.025 168);
+  --sidebar-accent: oklch(0.25 0.04 168);
+  --sidebar-accent-foreground: oklch(0.99 0.005 90);
+  --sidebar-border: oklch(0.26 0.03 168);
+  --sidebar-ring: oklch(0.65 0.10 168);
 }
 
 .dark {
@@ -183,5 +199,20 @@ body {
   button,
   input {
     font: inherit;
+  }
+}
+
+@layer utilities {
+  .glass-card {
+    background: color-mix(in oklch, var(--background) 88%, transparent);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+  .card-hover {
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease;
+  }
+  .card-hover:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 16px 32px -8px rgba(19, 56, 50, 0.08), 0 4px 12px -2px rgba(0, 0, 0, 0.04);
   }
 }

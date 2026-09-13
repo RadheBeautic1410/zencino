@@ -24,7 +24,7 @@ import { logoutAction } from "@/app/actions/auth";
 import { Button } from "@/components/ui/button";
 import { PRODUCT_NAME } from "@/config/platform";
 
-const navItems = [
+const commerceNavItems = [
   { href: "/admin", label: "Overview", icon: ChartBar, exact: true },
   { href: "/admin/orders", label: "Orders", icon: Receipt, exact: false },
   { href: "/admin/returns", label: "Returns", icon: ArrowUUpLeft, exact: false },
@@ -32,9 +32,15 @@ const navItems = [
   { href: "/admin/inventory", label: "Inventory", icon: Tray, exact: false },
   { href: "/admin/categories", label: "Categories", icon: FolderSimple, exact: false },
   { href: "/admin/collections", label: "Collections", icon: SquaresFour, exact: false },
+];
+
+const operationsNavItems = [
   { href: "/admin/content", label: "Content", icon: Article, exact: false },
   { href: "/admin/support", label: "Support", icon: Headset, exact: false },
   { href: "/admin/campaigns", label: "Campaigns", icon: Megaphone, exact: false },
+];
+
+const systemNavItems = [
   { href: "/admin/settings", label: "Settings", icon: Gear, exact: false },
   { href: "/admin/users", label: "Users", icon: Users, exact: false },
   { href: "/admin/queues", label: "Queues", icon: Stack, exact: false },
@@ -44,71 +50,91 @@ const navItems = [
 export function AdminSidebar({ email }: { email: string }) {
   const pathname = usePathname();
 
+  const renderNavGroup = (items: typeof commerceNavItems) => (
+    <div className="space-y-1">
+      {items.map(({ href, label, icon: Icon, exact }) => {
+        const isActive = exact ? pathname === href : pathname.startsWith(href);
+        return (
+          <Link
+            key={href}
+            href={href}
+            className={`flex items-center gap-3 rounded-xl px-3 py-2 text-xs font-bold uppercase tracking-ui transition-all duration-150 ${
+              isActive
+                ? "bg-primary text-primary-foreground shadow-xs"
+                : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
+            }`}
+          >
+            <Icon size={16} weight={isActive ? "fill" : "bold"} />
+            <span>{label}</span>
+          </Link>
+        );
+      })}
+    </div>
+  );
+
   return (
     <aside className="flex w-full shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground md:h-screen md:w-64">
       {/* Brand */}
-      <div className="flex items-center gap-3 border-b border-sidebar-border px-5 py-5">
-        <span className="grid size-9 shrink-0 place-items-center bg-sidebar-primary font-black text-sidebar-primary-foreground text-xs">
+      <div className="flex items-center gap-3 border-b border-sidebar-border px-5 py-4">
+        <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary font-black text-primary-foreground text-sm shadow-xs">
           Z
         </span>
         <div className="min-w-0">
-          <p className="font-black text-sm leading-none">{PRODUCT_NAME}</p>
-          <p className="mt-1 text-2xs font-semibold uppercase tracking-ui text-sidebar-foreground/40">
-            Admin Panel
+          <p className="font-heading font-black text-sm leading-none tracking-tight">
+            zencino<span className="text-emerald-600">.</span>
+          </p>
+          <p className="mt-1 text-3xs font-bold uppercase tracking-ui text-emerald-800 bg-emerald-100/80 px-1.5 py-0.5 rounded">
+            Admin Console
           </p>
         </div>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 px-3 py-5">
-        <p className="mb-2 px-3 text-2xs font-semibold uppercase tracking-ui text-sidebar-foreground/30">
-          Navigation
-        </p>
-        <div className="space-y-0.5">
-          {navItems.map(({ href, label, icon: Icon, exact }) => {
-            const isActive = exact
-              ? pathname === href
-              : pathname.startsWith(href);
-            return (
-              <Link
-                className={`flex items-center gap-3 border-l-2 px-3 py-2.5 text-xs font-semibold uppercase tracking-ui transition-colors ${
-                  isActive
-                    ? "border-sidebar-foreground bg-sidebar-accent text-sidebar-foreground"
-                    : "border-transparent text-sidebar-foreground/50 hover:border-sidebar-foreground/20 hover:bg-sidebar-accent hover:text-sidebar-foreground"
-                }`}
-                href={href}
-                key={href}
-              >
-                <Icon size={15} weight={isActive ? "fill" : "regular"} />
-                {label}
-              </Link>
-            );
-          })}
+      <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-5">
+        <div>
+          <p className="mb-2 px-3 text-3xs font-bold uppercase tracking-widest text-sidebar-foreground/40">
+            Commerce
+          </p>
+          {renderNavGroup(commerceNavItems)}
+        </div>
+
+        <div>
+          <p className="mb-2 px-3 text-3xs font-bold uppercase tracking-widest text-sidebar-foreground/40">
+            Operations & Growth
+          </p>
+          {renderNavGroup(operationsNavItems)}
+        </div>
+
+        <div>
+          <p className="mb-2 px-3 text-3xs font-bold uppercase tracking-widest text-sidebar-foreground/40">
+            System
+          </p>
+          {renderNavGroup(systemNavItems)}
         </div>
       </nav>
 
       {/* Footer */}
-      <div className="space-y-2 border-t border-sidebar-border p-4">
-        <p className="truncate px-1 text-2xs font-semibold uppercase tracking-ui text-sidebar-foreground/30">
+      <div className="space-y-2 border-t border-sidebar-border p-4 bg-muted/20">
+        <p className="truncate px-1 text-3xs font-semibold uppercase tracking-ui text-sidebar-foreground/50">
           {email}
         </p>
         <Button
           asChild
-          className="w-full justify-start gap-2"
+          className="w-full justify-start gap-2 rounded-xl text-xs"
           size="sm"
-          variant="secondary"
+          variant="outline"
         >
-          <Link href="/account">
+          <Link href="/">
             <ArrowLeft size={14} />
-            Dashboard
+            Storefront
           </Link>
         </Button>
         <form action={logoutAction}>
           <Button
-            className="w-full justify-start gap-2"
+            className="w-full justify-start gap-2 rounded-xl text-xs"
             size="sm"
             type="submit"
-            variant="secondary"
+            variant="outline"
           >
             <SignOut size={14} />
             Sign out
