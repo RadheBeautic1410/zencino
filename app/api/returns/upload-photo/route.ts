@@ -1,8 +1,18 @@
-﻿import { NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { getMediaAssetUrl, isAllowedMimeType, saveMediaAsset } from "@/lib/media/storage";
+import { checkRateLimit, getClientIdentifier, RATE_LIMIT_POLICIES } from "@/lib/security/rate-limit";
 
 export async function POST(request: Request) {
   try {
+    const clientId = getClientIdentifier(request.headers);
+    const limitCheck = checkRateLimit(clientId, "return_photo", RATE_LIMIT_POLICIES.RETURN_PHOTO);
+    if (!limitCheck.success) {
+      return NextResponse.json(
+        { error: `Too many upload attempts. Please wait ${Math.ceil(limitCheck.resetMs / 1000)} seconds before trying again.` },
+        { status: 429 }
+      );
+    }
+
     const formData = await request.formData();
     const file = formData.get("file");
 

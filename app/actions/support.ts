@@ -9,9 +9,19 @@ import {
   createSupportInquiry,
   updateSupportTicketStatus,
 } from "@/lib/commerce/support";
+import { checkRateLimit, getClientIdentifier, RATE_LIMIT_POLICIES } from "@/lib/security/rate-limit";
 
 export async function submitSupportInquiryAction(formData: FormData) {
   const h = await headers();
+  const clientId = getClientIdentifier(h);
+  const limitCheck = checkRateLimit(clientId, "support_inquiry", RATE_LIMIT_POLICIES.SUPPORT_INQUIRY);
+  if (!limitCheck.success) {
+    return {
+      success: false,
+      error: `Too many inquiries submitted. Please wait ${Math.ceil(limitCheck.resetMs / 1000)} seconds before trying again.`,
+    };
+  }
+
   const session = await auth.api.getSession({ headers: h }).catch(() => null);
 
   const name = String(formData.get("name") || "").trim();

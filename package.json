@@ -25,6 +25,9 @@
     "access:check": "tsx scripts/check-access.ts",
     "db:reset": "tsx db/reset.ts && pnpm db:migrate",
     "catalog:seed": "tsx --env-file=.env scripts/seed-catalog.ts",
+    "catalog:onboard": "tsx --env-file=.env scripts/onboard-catalog.ts",
+    "db:backup": "tsx --env-file=.env scripts/backup-db.ts",
+    "db:restore": "tsx --env-file=.env scripts/restore-db.ts",
     "make:admin": "tsx scripts/make-admin.ts"
   },
   "dependencies": {

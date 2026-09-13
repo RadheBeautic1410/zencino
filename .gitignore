@@ -53,3 +53,7 @@ zencino-db-*
 
 # archives
 *.zip
+
+# backups
+/backups/*
+!/backups/.gitkeep
