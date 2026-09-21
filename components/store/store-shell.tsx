@@ -11,6 +11,7 @@ import {
   X,
 } from "@phosphor-icons/react";
 import { CampaignTracker } from "@/components/store/campaign-tracker";
+import { SELLER_INFO } from "@/config/platform";
 
 export function StoreShell({ children }: { children: ReactNode }) {
   const router = useRouter();
@@ -38,7 +39,7 @@ export function StoreShell({ children }: { children: ReactNode }) {
       {/* Announcement Bar */}
       <div className="bg-primary px-4 py-2 text-center text-xs font-medium text-primary-foreground tracking-wide border-b border-primary/20 shadow-xs">
         <div className="mx-auto max-w-7xl flex items-center justify-center gap-2">
-          <span className="inline-flex size-2 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="inline-flex size-2 animate-pulse rounded-full bg-gold" />
           <span>Complimentary Pan-India Delivery on orders above ₹999</span>
           <span className="hidden md:inline text-primary-foreground/50">·</span>
           <span className="hidden md:inline text-primary-foreground/90 font-semibold">Direct Website & Amazon Prime Channels</span>
@@ -64,7 +65,7 @@ export function StoreShell({ children }: { children: ReactNode }) {
                 Z
               </div>
               <span className="text-2xl font-extrabold tracking-tight text-foreground font-heading">
-                zencino<span className="text-emerald-600">.</span>
+                zencino<span className="text-gold">.</span>
               </span>
             </Link>
           </div>
@@ -82,7 +83,7 @@ export function StoreShell({ children }: { children: ReactNode }) {
             </Link>
             <Link href="/collections/acrylic-essentials" className="inline-flex items-center gap-1.5 text-foreground/75 hover:text-primary transition-colors">
               <span>Acrylic Essentials</span>
-              <span className="size-1.5 rounded-full bg-amber-500" />
+              <span className="size-1.5 rounded-full bg-gold" />
             </Link>
           </nav>
 
@@ -181,7 +182,7 @@ export function StoreShell({ children }: { children: ReactNode }) {
                 className="px-3 py-2.5 rounded-lg text-foreground/80 hover:bg-muted/50 hover:text-foreground transition-colors flex items-center justify-between"
               >
                 <span>Acrylic Essentials</span>
-                <span className="size-1.5 rounded-full bg-amber-500" />
+                <span className="size-1.5 rounded-full bg-gold" />
               </Link>
               <Link
                 href="/track-order"
@@ -255,21 +256,28 @@ export function StoreShell({ children }: { children: ReactNode }) {
           <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-5">
             {/* Column 1 & 2: Brand */}
             <div className="space-y-4 lg:col-span-2">
-              <Link className="flex items-center gap-2.5 group inline-block" href="/">
+              <Link className="group inline-flex items-center gap-2.5" href="/">
                 <div className="size-8 rounded-xl bg-primary text-primary-foreground flex items-center justify-center font-black text-base shadow-sm">
                   Z
                 </div>
                 <span className="text-2xl font-extrabold tracking-tight text-foreground font-heading">
-                  zencino<span className="text-emerald-600">.</span>
+                  zencino<span className="text-gold">.</span>
                 </span>
               </Link>
               <p className="text-sm leading-relaxed text-muted-foreground max-w-sm">
                 A little order. A lot of possibility. Thoughtfully engineered crystal-clear acrylic organizers and home essentials designed for serene, clutter-free spaces.
               </p>
               <div className="space-y-1 pt-2 text-2xs text-muted-foreground/80">
-                <p><span className="font-semibold text-foreground">Zencino Retail India Private Limited</span></p>
-                <p>GSTIN: 27AAACZ1234A1Z5 · CIN: U52100MH2025PTC998877</p>
-                <p>Registered Office: Unit 402, Trade Link Hub, Mumbai, Maharashtra 400013</p>
+                <p>
+                  <span className="font-semibold text-foreground">{SELLER_INFO.legalName}</span>
+                </p>
+                <p>
+                  GSTIN: {SELLER_INFO.gstin} · CIN: {SELLER_INFO.cin}
+                </p>
+                <p>
+                  Registered Office: {SELLER_INFO.addressLine1}, {SELLER_INFO.addressLine2},{" "}
+                  {SELLER_INFO.city}, {SELLER_INFO.state} {SELLER_INFO.pincode}
+                </p>
               </div>
             </div>
 
@@ -373,7 +381,7 @@ export function StoreShell({ children }: { children: ReactNode }) {
               <span className="px-2.5 py-1 rounded-md bg-muted/60 border border-border/60">RuPay</span>
               <span className="px-2.5 py-1 rounded-md bg-muted/60 border border-border/60">Visa / MC</span>
               <span className="px-2.5 py-1 rounded-md bg-muted/60 border border-border/60">NetBanking</span>
-              <span className="px-2.5 py-1 rounded-md bg-amber-500/10 text-amber-700 border border-amber-500/20 font-bold">Amazon Verified</span>
+              <span className="rounded-md border border-gold/30 bg-gold-subtle px-2.5 py-1 font-bold text-gold-foreground">Amazon Verified</span>
             </div>
           </div>
         </div>

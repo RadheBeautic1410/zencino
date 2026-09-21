@@ -25,7 +25,7 @@ export function ProductCard({ product }: ProductCardProps) {
   const discountPct = price && mrp && mrp > price ? Math.round(((mrp - price) / mrp) * 100) : null;
 
   return (
-    <article className="group relative flex flex-col rounded-2xl border border-border/80 bg-card overflow-hidden card-hover transition-all duration-300">
+    <article className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-border/80 bg-card card-hover transition-all duration-300">
       {/* Thumbnail Container */}
       <Link
         href={`/products/${product.slug}`}
@@ -47,7 +47,7 @@ export function ProductCard({ product }: ProductCardProps) {
 
         {/* Discount Badge */}
         {discountPct && (
-          <span className="absolute top-3 left-3 rounded-full bg-emerald-700/90 text-white backdrop-blur-xs px-2.5 py-0.5 text-3xs font-extrabold uppercase tracking-ui shadow-xs">
+          <span className="absolute top-3 left-3 rounded-full bg-primary/90 px-2.5 py-0.5 text-3xs font-bold uppercase tracking-ui text-primary-foreground shadow-xs backdrop-blur-xs">
             {discountPct}% OFF
           </span>
         )}
@@ -55,7 +55,7 @@ export function ProductCard({ product }: ProductCardProps) {
         {/* Channels Pill */}
         <div className="absolute top-3 right-3 flex flex-col items-end gap-1">
           {product.hasAmazonChannel && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-amber-400/95 px-2.5 py-0.5 text-3xs font-bold uppercase tracking-ui text-amber-950 shadow-xs backdrop-blur-xs">
+            <span className="inline-flex items-center gap-1 rounded-full bg-gold px-2.5 py-0.5 text-3xs font-bold uppercase tracking-ui text-gold-foreground shadow-xs backdrop-blur-xs">
               Prime <ArrowSquareOut size={10} weight="bold" />
             </span>
           )}
@@ -65,12 +65,12 @@ export function ProductCard({ product }: ProductCardProps) {
       {/* Product Information */}
       <div className="flex flex-1 flex-col p-5">
         {product.primaryCategoryName && (
-          <p className="text-2xs font-semibold uppercase tracking-ui text-emerald-800/80 mb-1">
+          <p className="mb-1 text-2xs font-semibold uppercase tracking-ui text-primary-soft">
             {product.primaryCategoryName}
           </p>
         )}
 
-        <h3 className="font-heading font-bold text-sm leading-snug line-clamp-2 text-foreground group-hover:text-primary transition-colors">
+        <h3 className="line-clamp-2 font-heading text-[0.9375rem] font-medium leading-snug tracking-tight text-foreground transition-colors group-hover:text-primary">
           <Link href={`/products/${product.slug}`}>
             {product.name}
           </Link>
@@ -81,7 +81,7 @@ export function ProductCard({ product }: ProductCardProps) {
           <div>
             {price !== null ? (
               <div className="flex items-baseline gap-1.5">
-                <span className="font-extrabold text-base text-foreground font-heading">
+                <span className="display text-lg text-foreground">
                   ₹{price.toLocaleString("en-IN")}
                 </span>
                 {mrp && mrp > price && (

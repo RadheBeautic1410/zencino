@@ -1,3 +1,4 @@
+import { getMediaAssetUrl } from "@/lib/media/url";
 import { createHash, randomUUID } from "node:crypto";
 import { cookies } from "next/headers";
 import { and, asc, eq, inArray } from "drizzle-orm";
@@ -313,7 +314,7 @@ export async function getCartDetails() {
         productId: line.productId,
         productName: line.productName,
         productSlug: line.productSlug,
-        image: media ? `/uploads/${media.storageKey}` : null,
+        image: media ? getMediaAssetUrl(media.storageKey) : null,
         stockAvailable: stock.available,
         isAvailable,
       };

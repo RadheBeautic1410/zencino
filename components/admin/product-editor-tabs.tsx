@@ -1,5 +1,6 @@
 "use client";
 
+import { getMediaAssetUrl } from "@/lib/media/url";
 import { useState, useTransition } from "react";
 import Image from "next/image";
 import {
@@ -683,7 +684,7 @@ export function ProductEditorTabs({
                     >
                       <div className="relative aspect-square w-full bg-muted">
                         <Image
-                          src={`/uploads/${item.storageKey}`}
+                          src={getMediaAssetUrl(item.storageKey)}
                           alt={item.altText}
                           fill
                           className="object-cover"

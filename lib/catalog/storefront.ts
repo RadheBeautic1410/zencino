@@ -1,3 +1,4 @@
+import { getMediaAssetUrl } from "@/lib/media/url";
 import { and, asc, desc, eq, ilike, inArray, or, sql } from "drizzle-orm";
 import {
   categories,
@@ -256,7 +257,7 @@ export async function getStorefrontProducts(filters: StorefrontProductFilters = 
       minPriceMinor,
       maxMrpMinor: maxMrpMinor > 0 ? maxMrpMinor : null,
       variantCount: prodVariants.length,
-      primaryImage: prodMedia[0] ? `/uploads/${prodMedia[0].storageKey}` : null,
+      primaryImage: prodMedia[0] ? getMediaAssetUrl(prodMedia[0].storageKey) : null,
       primaryImageAlt: prodMedia[0]?.altText || prod.name,
     };
   });
@@ -366,7 +367,7 @@ export async function getStorefrontProductBySlug(slug: string) {
       variants: variantsWithChannels,
       media: media.map((m) => ({
         ...m,
-        url: `/uploads/${m.storageKey}`,
+        url: getMediaAssetUrl(m.storageKey),
       })),
     },
     redirectUrl: null,

@@ -5,6 +5,8 @@ import path from "node:path";
 import { eq } from "drizzle-orm";
 import { mediaAssets } from "@/db/schema/catalog";
 import { db } from "@/lib/db";
+import { env } from "@/lib/env";
+export { getMediaAssetUrl } from "./url";
 
 const ALLOWED_MIME_TYPES: Record<string, string> = {
   "image/jpeg": ".jpg",
@@ -121,14 +123,17 @@ export async function saveMediaAsset(options: SaveMediaOptions) {
 
   const ext = ALLOWED_MIME_TYPES[mimeType] || path.extname(filename) || ".png";
   const uniqueKey = `${Date.now()}-${randomUUID()}${ext}`;
-  const uploadDir = path.join(process.cwd(), "public", "uploads");
-
-  if (!existsSync(uploadDir)) {
-    await mkdir(uploadDir, { recursive: true });
+  let storageKey = uniqueKey;
+  if (env.STORAGE_LOCATION === "firebase") {
+    const { uploadFirebaseImage } = await import("./firebase");
+    storageKey = await uploadFirebaseImage(uniqueKey, buffer, mimeType);
+  } else {
+    const uploadDir = path.join(process.cwd(), "public", "uploads");
+    if (!existsSync(uploadDir)) {
+      await mkdir(uploadDir, { recursive: true });
+    }
+    await writeFile(path.join(uploadDir, uniqueKey), buffer);
   }
-
-  const filePath = path.join(uploadDir, uniqueKey);
-  await writeFile(filePath, buffer);
 
   const detectedDims = parseImageDimensions(buffer, mimeType);
   const width = customWidth || detectedDims.width;
@@ -137,7 +142,7 @@ export async function saveMediaAsset(options: SaveMediaOptions) {
   const [asset] = await db
     .insert(mediaAssets)
     .values({
-      storageKey: uniqueKey,
+      storageKey,
       originalFilename: filename,
       mimeType,
       bytes: buffer.length,
@@ -151,11 +156,4 @@ export async function saveMediaAsset(options: SaveMediaOptions) {
     .returning();
 
   return asset;
-}
-
-export function getMediaAssetUrl(storageKey: string): string {
-  if (storageKey.startsWith("http://") || storageKey.startsWith("https://")) {
-    return storageKey;
-  }
-  return `/uploads/${storageKey}`;
 }

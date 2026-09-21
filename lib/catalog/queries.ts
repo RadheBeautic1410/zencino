@@ -1,3 +1,4 @@
+import { getMediaAssetUrl } from "@/lib/media/url";
 import { asc, desc, eq, inArray, sql } from "drizzle-orm";
 import {
   categories,
@@ -126,7 +127,7 @@ export async function getAdminProducts(params: ProductListParams = {}) {
         (min, v) => (v.priceMinor !== null && (min === null || v.priceMinor < min) ? v.priceMinor : min),
         null as number | null
       ),
-      primaryImage: prodMedia[0] ? `/uploads/${prodMedia[0].storageKey}` : null,
+      primaryImage: prodMedia[0] ? getMediaAssetUrl(prodMedia[0].storageKey) : null,
     };
   });
 }
