@@ -13,7 +13,10 @@ export default function AccountLoading() {
       {/* Quick Cards */}
       <div className="grid gap-4 sm:grid-cols-3">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="rounded-2xl border border-border/80 bg-card p-5 space-y-2 shadow-xs">
+          <div
+            className="rounded-2xl border border-border/80 bg-card p-5 space-y-2 shadow-xs"
+            key={i}
+          >
             <Skeleton className="h-5 w-36 rounded-full" />
             <Skeleton className="h-4 w-full rounded-full" />
             <Skeleton className="h-4 w-2/3 rounded-full" />
@@ -26,7 +29,10 @@ export default function AccountLoading() {
         <Skeleton className="h-6 w-36 rounded-full" />
         <div className="space-y-3 pt-2">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="flex items-center justify-between py-3 border-b border-border/60">
+            <div
+              className="flex items-center justify-between py-3 border-b border-border/60"
+              key={i}
+            >
               <div className="space-y-1">
                 <Skeleton className="h-4 w-32 rounded-full" />
                 <Skeleton className="h-3 w-48 rounded-full" />

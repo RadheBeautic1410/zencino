@@ -1,6 +1,6 @@
+import { ArrowSquareOut, Package } from "@phosphor-icons/react/dist/ssr";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowSquareOut, Package } from "@phosphor-icons/react/dist/ssr";
 
 export interface ProductCardProps {
   product: {
@@ -22,22 +22,25 @@ export interface ProductCardProps {
 export function ProductCard({ product }: ProductCardProps) {
   const price = product.minPriceMinor ? product.minPriceMinor / 100 : null;
   const mrp = product.maxMrpMinor ? product.maxMrpMinor / 100 : null;
-  const discountPct = price && mrp && mrp > price ? Math.round(((mrp - price) / mrp) * 100) : null;
+  const discountPct =
+    price && mrp && mrp > price
+      ? Math.round(((mrp - price) / mrp) * 100)
+      : null;
 
   return (
     <article className="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-border/80 bg-card card-hover transition-all duration-300">
       {/* Thumbnail Container */}
       <Link
-        href={`/products/${product.slug}`}
         className="relative aspect-square w-full overflow-hidden bg-muted/20"
+        href={`/products/${product.slug}`}
       >
         {product.primaryImage ? (
           <Image
-            src={product.primaryImage}
             alt={product.primaryImageAlt}
-            fill
             className="object-cover transition-transform duration-500 group-hover:scale-105"
+            fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+            src={product.primaryImage}
           />
         ) : (
           <div className="grid size-full place-items-center text-muted-foreground/30">
@@ -71,15 +74,17 @@ export function ProductCard({ product }: ProductCardProps) {
         )}
 
         <h3 className="line-clamp-2 font-heading text-[0.9375rem] font-medium leading-snug tracking-tight text-foreground transition-colors group-hover:text-primary">
-          <Link href={`/products/${product.slug}`}>
-            {product.name}
-          </Link>
+          <Link href={`/products/${product.slug}`}>{product.name}</Link>
         </h3>
 
         {/* Price & Variant count */}
         <div className="mt-auto pt-4 flex items-end justify-between gap-2 border-t border-border/60">
           <div>
-            {price !== null ? (
+            {price === null ? (
+              <span className="text-xs text-muted-foreground font-medium">
+                Pricing on request
+              </span>
+            ) : (
               <div className="flex items-baseline gap-1.5">
                 <span className="display text-lg text-foreground">
                   ₹{price.toLocaleString("en-IN")}
@@ -90,17 +95,16 @@ export function ProductCard({ product }: ProductCardProps) {
                   </span>
                 )}
               </div>
-            ) : (
-              <span className="text-xs text-muted-foreground font-medium">Pricing on request</span>
             )}
             <p className="text-2xs text-muted-foreground">
-              {product.variantCount} {product.variantCount === 1 ? "option" : "options"}
+              {product.variantCount}{" "}
+              {product.variantCount === 1 ? "option" : "options"}
             </p>
           </div>
 
           <Link
-            href={`/products/${product.slug}`}
             className="rounded-full bg-primary/10 text-primary px-3.5 py-1.5 text-xs font-bold uppercase tracking-ui hover:bg-primary hover:text-primary-foreground transition-all duration-200"
+            href={`/products/${product.slug}`}
           >
             View
           </Link>

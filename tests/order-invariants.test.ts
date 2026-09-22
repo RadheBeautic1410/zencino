@@ -19,7 +19,10 @@ test("generateUpiUri builds valid NPCI UPI payment URIs", () => {
   assert.equal(parsedUrl.searchParams.get("pn"), "Zencino");
   assert.equal(parsedUrl.searchParams.get("am"), "499.00");
   assert.equal(parsedUrl.searchParams.get("cu"), "INR");
-  assert.equal(parsedUrl.searchParams.get("tn"), "Zencino Order ZNC-20260912-A1B2");
+  assert.equal(
+    parsedUrl.searchParams.get("tn"),
+    "Zencino Order ZNC-20260912-A1B2"
+  );
 });
 
 test("isValidUtr validates Indian bank UTR / UPI transaction references", () => {
@@ -63,9 +66,8 @@ test("Order state machine invariants enforce valid progression", () => {
     cancelled: [],
   };
 
-  const canTransition = (from: string, to: string) => {
-    return validTransitions[from]?.includes(to) ?? false;
-  };
+  const canTransition = (from: string, to: string) =>
+    validTransitions[from]?.includes(to) ?? false;
 
   assert.equal(canTransition("pending_payment", "payment_review"), true);
   assert.equal(canTransition("payment_review", "confirmed"), true);

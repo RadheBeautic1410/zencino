@@ -5,6 +5,8 @@ import {
   getSupportTicketsList,
 } from "@/lib/commerce/support";
 
+type TicketDetails = Awaited<ReturnType<typeof getSupportTicketDetails>>;
+
 interface Props {
   searchParams: Promise<{ ticket?: string; status?: string; search?: string }>;
 }
@@ -22,7 +24,7 @@ export default async function AdminSupportPage({ searchParams }: Props) {
   const targetTicketNumber = ticketParam || tickets[0]?.ticketNumber;
 
   let initialSelectedTicket = null;
-  let initialMessages: any[] = [];
+  let initialMessages: TicketDetails["messages"] = [];
   let initialOrder = null;
 
   if (targetTicketNumber) {
@@ -35,16 +37,16 @@ export default async function AdminSupportPage({ searchParams }: Props) {
   return (
     <div className="space-y-8">
       <OrbitPageHeader
+        description="Review inbound inquiries, coordinate staff notes, and resolve customer orders."
         eyebrow="Admin Operations"
         title="Customer Support Inbox"
-        description="Review inbound inquiries, coordinate staff notes, and resolve customer orders."
       />
 
       <SupportInbox
-        tickets={tickets}
-        initialSelectedTicket={initialSelectedTicket}
         initialMessages={initialMessages}
         initialOrder={initialOrder}
+        initialSelectedTicket={initialSelectedTicket}
+        tickets={tickets}
       />
     </div>
   );

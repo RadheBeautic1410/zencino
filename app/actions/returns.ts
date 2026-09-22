@@ -1,9 +1,10 @@
 ﻿"use server";
 
 import { revalidatePath } from "next/cache";
-import { getCurrentSession, requireAdmin, requireSession } from "@/lib/authz";
+import { getCurrentSession, requireAdmin } from "@/lib/authz";
 import {
   approveOrderCancellation,
+  isReturnReason,
   issueOrderRefund,
   receiveAndInspectReturn,
   rejectOrderCancellation,
@@ -12,14 +13,17 @@ import {
   reviewReturnRequest,
   updateOrderFulfillmentWithTransitions,
 } from "@/lib/commerce/returns";
+import { isOrderStatus } from "@/lib/commerce/rules";
 
 export interface ReturnActionResult {
-  success?: boolean;
+  data?: unknown;
   error?: string;
-  data?: any;
+  success?: boolean;
 }
 
-export async function requestCancellationAction(formData: FormData): Promise<ReturnActionResult> {
+export async function requestCancellationAction(
+  formData: FormData
+): Promise<ReturnActionResult> {
   try {
     const session = await getCurrentSession();
     const orderId = String(formData.get("orderId") || "").trim();
@@ -42,7 +46,8 @@ export async function requestCancellationAction(formData: FormData): Promise<Ret
 
     return { success: true, data: result };
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Failed to submit cancellation";
+    const message =
+      error instanceof Error ? error.message : "Failed to submit cancellation";
     return { error: message };
   }
 }
@@ -64,7 +69,8 @@ export async function approveCancellationAction(
 
     return { success: true };
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Failed to approve cancellation";
+    const message =
+      error instanceof Error ? error.message : "Failed to approve cancellation";
     return { error: message };
   }
 }
@@ -84,18 +90,24 @@ export async function rejectCancellationAction(
     revalidatePath("/admin/orders");
     return { success: true };
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Failed to reject cancellation";
+    const message =
+      error instanceof Error ? error.message : "Failed to reject cancellation";
     return { error: message };
   }
 }
 
-export async function requestReturnAction(formData: FormData): Promise<ReturnActionResult> {
+export async function requestReturnAction(
+  formData: FormData
+): Promise<ReturnActionResult> {
   try {
     const session = await getCurrentSession();
     const orderId = String(formData.get("orderId") || "").trim();
     const orderItemId = String(formData.get("orderItemId") || "").trim();
-    const quantity = parseInt(String(formData.get("quantity") || "1"), 10);
-    const reason = String(formData.get("reason") || "").trim() as any;
+    const quantity = Number.parseInt(
+      String(formData.get("quantity") || "1"),
+      10
+    );
+    const reason = String(formData.get("reason") || "").trim();
     const customerNote = String(formData.get("customerNote") || "").trim();
     const photosJson = String(formData.get("photos") || "[]");
 
@@ -106,8 +118,12 @@ export async function requestReturnAction(formData: FormData): Promise<ReturnAct
       photos = [];
     }
 
-    if (!orderId || !orderItemId || !reason) {
+    if (!(orderId && orderItemId && reason)) {
       return { error: "Order ID, line item, and return reason are required." };
+    }
+
+    if (!isReturnReason(reason)) {
+      return { error: "Unknown return reason." };
     }
 
     const ret = await requestItemReturn({
@@ -126,7 +142,8 @@ export async function requestReturnAction(formData: FormData): Promise<ReturnAct
 
     return { success: true, data: ret };
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Failed to request return";
+    const message =
+      error instanceof Error ? error.message : "Failed to request return";
     return { error: message };
   }
 }
@@ -149,7 +166,8 @@ export async function reviewReturnAction(
     revalidatePath("/admin/returns");
     return { success: true, data: res };
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Failed to review return";
+    const message =
+      error instanceof Error ? error.message : "Failed to review return";
     return { error: message };
   }
 }
@@ -173,23 +191,33 @@ export async function inspectReturnAction(
     revalidatePath("/admin/inventory");
     return { success: true, data: res };
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Failed to inspect return";
+    const message =
+      error instanceof Error ? error.message : "Failed to inspect return";
     return { error: message };
   }
 }
 
-export async function processRefundAction(formData: FormData): Promise<ReturnActionResult> {
+export async function processRefundAction(
+  formData: FormData
+): Promise<ReturnActionResult> {
   try {
     const admin = await requireAdmin();
     const orderId = String(formData.get("orderId") || "").trim();
     const returnId = String(formData.get("returnId") || "").trim() || undefined;
-    const cancellationId = String(formData.get("cancellationId") || "").trim() || undefined;
-    const amountRupees = parseFloat(String(formData.get("amountRupees") || "0"));
-    const transactionReference = String(formData.get("transactionReference") || "").trim();
+    const cancellationId =
+      String(formData.get("cancellationId") || "").trim() || undefined;
+    const amountRupees = Number.parseFloat(
+      String(formData.get("amountRupees") || "0")
+    );
+    const transactionReference = String(
+      formData.get("transactionReference") || ""
+    ).trim();
     const reason = String(formData.get("reason") || "").trim();
 
     if (!orderId || !transactionReference || amountRupees <= 0) {
-      return { error: "Order ID, bank UTR reference, and refund amount are required." };
+      return {
+        error: "Order ID, bank UTR reference, and refund amount are required.",
+      };
     }
 
     const amountMinor = Math.round(amountRupees * 100);
@@ -210,21 +238,30 @@ export async function processRefundAction(formData: FormData): Promise<ReturnAct
 
     return { success: true, data: refund };
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Failed to process refund";
+    const message =
+      error instanceof Error ? error.message : "Failed to process refund";
     return { error: message };
   }
 }
 
-export async function updateFulfillmentAction(formData: FormData): Promise<ReturnActionResult> {
+export async function updateFulfillmentAction(
+  formData: FormData
+): Promise<ReturnActionResult> {
   try {
     const admin = await requireAdmin();
     const orderId = String(formData.get("orderId") || "").trim();
     const status = String(formData.get("status") || "").trim();
-    const trackingCourier = String(formData.get("trackingCourier") || "").trim();
+    const trackingCourier = String(
+      formData.get("trackingCourier") || ""
+    ).trim();
     const trackingNumber = String(formData.get("trackingNumber") || "").trim();
 
-    if (!orderId || !status) {
+    if (!(orderId && status)) {
       return { error: "Order ID and target status are required." };
+    }
+
+    if (!isOrderStatus(status)) {
+      return { error: "Unknown fulfillment status." };
     }
 
     const updated = await updateOrderFulfillmentWithTransitions({
@@ -238,11 +275,12 @@ export async function updateFulfillmentAction(formData: FormData): Promise<Retur
     revalidatePath("/admin/orders");
     revalidatePath(`/admin/orders/${orderId}`);
     revalidatePath(`/account/orders/${updated.orderNumber}`);
-    revalidatePath(`/track-order`);
+    revalidatePath("/track-order");
 
     return { success: true, data: updated };
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Failed to update fulfillment";
+    const message =
+      error instanceof Error ? error.message : "Failed to update fulfillment";
     return { error: message };
   }
 }

@@ -1,4 +1,3 @@
-import Link from "next/link";
 import {
   ArrowSquareOut,
   Clock,
@@ -7,9 +6,9 @@ import {
   Package,
   Receipt,
   Tray,
-  Warning,
 } from "@phosphor-icons/react/dist/ssr";
 import { count } from "drizzle-orm";
+import Link from "next/link";
 import { OrbitPageHeader } from "@/components/admin/orbit-page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -40,9 +39,9 @@ export default async function AdminOverviewPage() {
   return (
     <div className="space-y-8">
       <OrbitPageHeader
+        description="Unified commercial performance, multichannel attribution, and operational status."
         eyebrow="Admin Operations"
         title="Executive Overview"
-        description="Unified commercial performance, multichannel attribution, and operational status."
       />
 
       {/* 1. Primary Commercial KPIs */}
@@ -53,14 +52,17 @@ export default async function AdminOverviewPage() {
             <p className="text-2xs font-bold uppercase tracking-ui text-success">
               Direct Website Revenue
             </p>
-            <Receipt size={20} className="text-success" />
+            <Receipt className="text-success" size={20} />
           </div>
           <p className="font-black text-3xl md:text-4xl text-foreground">
             ₹{(metrics.paidDirectRevenueMinor / 100).toLocaleString("en-IN")}
           </p>
           <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t border-border/50">
             <span>{metrics.paidDirectOrdersCount} verified direct orders</span>
-            <Link href="/admin/orders" className="text-primary hover:underline font-semibold">
+            <Link
+              className="text-primary hover:underline font-semibold"
+              href="/admin/orders"
+            >
               View orders →
             </Link>
           </div>
@@ -72,14 +74,19 @@ export default async function AdminOverviewPage() {
             <p className="text-2xs font-bold uppercase tracking-ui text-amber-500">
               Amazon Outbound Clicks
             </p>
-            <ArrowSquareOut size={20} className="text-amber-500" />
+            <ArrowSquareOut className="text-amber-500" size={20} />
           </div>
           <p className="font-black text-3xl md:text-4xl text-foreground">
             {metrics.amazonOutboundClicks}
           </p>
           <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t border-border/50">
-            <span className="text-2xs font-medium">Referral intent only · No unverified sales</span>
-            <Link href="/admin/campaigns" className="text-amber-600 hover:underline font-semibold">
+            <span className="text-2xs font-medium">
+              Referral intent only · No unverified sales
+            </span>
+            <Link
+              className="text-amber-600 hover:underline font-semibold"
+              href="/admin/campaigns"
+            >
               Attribution →
             </Link>
           </div>
@@ -91,14 +98,17 @@ export default async function AdminOverviewPage() {
             <p className="text-2xs font-bold uppercase tracking-ui text-muted-foreground">
               Awaiting Fulfilment
             </p>
-            <Package size={20} className="text-primary" />
+            <Package className="text-primary" size={20} />
           </div>
           <p className="font-black text-3xl md:text-4xl text-foreground">
             {metrics.unfulfilledOrdersCount}
           </p>
           <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t border-border/50">
             <span>Pending carrier dispatch</span>
-            <Link href="/admin/orders?status=confirmed" className="text-primary hover:underline font-semibold">
+            <Link
+              className="text-primary hover:underline font-semibold"
+              href="/admin/orders?status=confirmed"
+            >
               Dispatch queue →
             </Link>
           </div>
@@ -110,14 +120,24 @@ export default async function AdminOverviewPage() {
             <p className="text-2xs font-bold uppercase tracking-ui text-muted-foreground">
               Low Stock Alerts
             </p>
-            <Tray size={20} className={metrics.lowStockCount > 0 ? "text-destructive" : "text-muted-foreground"} />
+            <Tray
+              className={
+                metrics.lowStockCount > 0
+                  ? "text-destructive"
+                  : "text-muted-foreground"
+              }
+              size={20}
+            />
           </div>
           <p className="font-black text-3xl md:text-4xl text-foreground">
             {metrics.lowStockCount}
           </p>
           <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t border-border/50">
             <span>Variants at or below reorder level</span>
-            <Link href="/admin/inventory" className="text-primary hover:underline font-semibold">
+            <Link
+              className="text-primary hover:underline font-semibold"
+              href="/admin/inventory"
+            >
               Inventory →
             </Link>
           </div>
@@ -129,14 +149,17 @@ export default async function AdminOverviewPage() {
             <p className="text-2xs font-bold uppercase tracking-ui text-muted-foreground">
               Open Support Inquiries
             </p>
-            <Headset size={20} className="text-primary" />
+            <Headset className="text-primary" size={20} />
           </div>
           <p className="font-black text-3xl md:text-4xl text-foreground">
             {metrics.openSupportTicketsCount}
           </p>
           <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t border-border/50">
             <span>Customer tickets awaiting response</span>
-            <Link href="/admin/support" className="text-primary hover:underline font-semibold">
+            <Link
+              className="text-primary hover:underline font-semibold"
+              href="/admin/support"
+            >
               Inbox →
             </Link>
           </div>
@@ -148,14 +171,17 @@ export default async function AdminOverviewPage() {
             <p className="text-2xs font-bold uppercase tracking-ui text-muted-foreground">
               Active Campaigns
             </p>
-            <Megaphone size={20} className="text-primary" />
+            <Megaphone className="text-primary" size={20} />
           </div>
           <p className="font-black text-3xl md:text-4xl text-foreground">
             {metrics.activeCampaignsCount}
           </p>
           <div className="flex items-center justify-between text-xs text-muted-foreground pt-1 border-t border-border/50">
             <span>Instagram & social tracking links</span>
-            <Link href="/admin/campaigns" className="text-primary hover:underline font-semibold">
+            <Link
+              className="text-primary hover:underline font-semibold"
+              href="/admin/campaigns"
+            >
               Campaigns →
             </Link>
           </div>
@@ -168,9 +194,12 @@ export default async function AdminOverviewPage() {
         <Card className="lg:col-span-7">
           <CardHeader className="flex flex-row items-center justify-between pb-3">
             <div>
-              <CardTitle className="text-base font-bold">Recent Direct Website Orders</CardTitle>
+              <CardTitle className="text-base font-bold">
+                Recent Direct Website Orders
+              </CardTitle>
               <CardDescription className="text-xs">
-                Verified store transactions with item snapshots and customer contacts.
+                Verified store transactions with item snapshots and customer
+                contacts.
               </CardDescription>
             </div>
             <Button asChild size="xs" variant="secondary">
@@ -185,18 +214,25 @@ export default async function AdminOverviewPage() {
             ) : (
               <div className="divide-y divide-border">
                 {metrics.recentOrders.map((ord) => (
-                  <div key={ord.id} className="flex items-center justify-between p-4 hover:bg-muted/40 transition-colors">
+                  <div
+                    className="flex items-center justify-between p-4 hover:bg-muted/40 transition-colors"
+                    key={ord.id}
+                  >
                     <div className="min-w-0 space-y-1">
                       <div className="flex items-center gap-2">
                         <Link
-                          href={`/admin/orders/${ord.id}`}
                           className="font-mono font-bold text-xs text-foreground hover:underline"
+                          href={`/admin/orders/${ord.id}`}
                         >
                           {ord.orderNumber}
                         </Link>
                         <Badge
-                          variant={ord.paymentStatus === "verified" ? "default" : "secondary"}
                           className="text-2xs"
+                          variant={
+                            ord.paymentStatus === "verified"
+                              ? "default"
+                              : "secondary"
+                          }
                         >
                           {ord.paymentStatus}
                         </Badge>
@@ -230,7 +266,7 @@ export default async function AdminOverviewPage() {
             <CardHeader className="flex flex-row items-center justify-between pb-3">
               <div>
                 <CardTitle className="text-base font-bold flex items-center gap-2">
-                  <ArrowSquareOut size={18} className="text-amber-500" />
+                  <ArrowSquareOut className="text-amber-500" size={18} />
                   Recent Amazon Outbound Intent
                 </CardTitle>
                 <CardDescription className="text-xs">
@@ -246,11 +282,18 @@ export default async function AdminOverviewPage() {
               ) : (
                 <div className="divide-y divide-border">
                   {metrics.recentAmazonClicks.map((clk) => (
-                    <div key={clk.id} className="p-3 flex items-center justify-between text-xs">
+                    <div
+                      className="p-3 flex items-center justify-between text-xs"
+                      key={clk.id}
+                    >
                       <div className="min-w-0">
-                        <p className="font-mono font-bold truncate">{clk.sku}</p>
+                        <p className="font-mono font-bold truncate">
+                          {clk.sku}
+                        </p>
                         <p className="text-2xs text-muted-foreground">
-                          {clk.campaignCode ? `Campaign: ${clk.campaignCode}` : "Direct PDP click"}
+                          {clk.campaignCode
+                            ? `Campaign: ${clk.campaignCode}`
+                            : "Direct PDP click"}
                         </p>
                       </div>
                       <span className="text-2xs text-muted-foreground shrink-0 flex items-center gap-1">
@@ -270,11 +313,15 @@ export default async function AdminOverviewPage() {
           {/* Infrastructure Health */}
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-bold">System Infrastructure</CardTitle>
+              <CardTitle className="text-sm font-bold">
+                System Infrastructure
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 text-xs">
               <div className="flex items-center justify-between py-1 border-b border-border/50">
-                <span className="text-muted-foreground">Active Background Queues</span>
+                <span className="text-muted-foreground">
+                  Active Background Queues
+                </span>
                 <span className="font-mono font-bold">{queues.length}</span>
               </div>
               <div className="flex items-center justify-between py-1 border-b border-border/50">
@@ -282,7 +329,9 @@ export default async function AdminOverviewPage() {
                 <span className="font-mono font-bold">{emailCount.count}</span>
               </div>
               <div className="flex items-center justify-between py-1">
-                <span className="text-muted-foreground">Registered User Accounts</span>
+                <span className="text-muted-foreground">
+                  Registered User Accounts
+                </span>
                 <span className="font-mono font-bold">{userCount.count}</span>
               </div>
             </CardContent>

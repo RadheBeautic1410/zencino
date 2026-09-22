@@ -1,31 +1,33 @@
-﻿import { and, desc, eq, inArray, sql } from "drizzle-orm";
+﻿import { and, desc, eq, sql } from "drizzle-orm";
 import {
   inventoryBalances,
   inventoryReservations,
-  orderAddresses,
   orderCancellations,
   orderItems,
   orderRefunds,
   orderReturns,
   orders,
-  productVariants,
 } from "@/db/schema";
 import { audit } from "@/lib/audit";
-import { adjustStock, getOrCreateDefaultLocation } from "@/lib/commerce/inventory";
+import {
+  adjustStock,
+  getOrCreateDefaultLocation,
+} from "@/lib/commerce/inventory";
 import {
   canTransitionOrderStatus,
   generateCreditNoteNumber,
   generateRefundNumber,
   generateReturnNumber,
   isReturnEligible,
+  type OrderStatus,
 } from "@/lib/commerce/rules";
 import { db } from "@/lib/db";
 
 export interface RequestCancellationParams {
   orderId: string;
-  userId?: string;
-  requestedBy?: "customer" | "admin";
   reason: string;
+  requestedBy?: "customer" | "admin";
+  userId?: string;
 }
 
 /**
@@ -33,7 +35,9 @@ export interface RequestCancellationParams {
  * If order is not yet paid or is pending review, cancels immediately and releases reservations.
  * If order is already confirmed / processing, queues cancellation request for operator review.
  */
-export async function requestOrderCancellation(params: RequestCancellationParams) {
+export async function requestOrderCancellation(
+  params: RequestCancellationParams
+) {
   const { orderId, userId, requestedBy = "customer", reason } = params;
   const cleanReason = reason.trim();
 
@@ -307,14 +311,43 @@ export async function rejectOrderCancellation(params: {
   return { success: true };
 }
 
+export const RETURN_REASONS = [
+  "damaged_in_transit",
+  "wrong_item",
+  "defective_quality",
+  "not_as_described",
+  "other",
+] as const;
+
+export type ReturnReason = (typeof RETURN_REASONS)[number];
+
+export function isReturnReason(value: string): value is ReturnReason {
+  return (RETURN_REASONS as readonly string[]).includes(value);
+}
+
+export const RETURN_STATUSES = [
+  "requested",
+  "approved",
+  "rejected",
+  "received",
+  "completed",
+  "cancelled",
+] as const;
+
+export type ReturnStatus = (typeof RETURN_STATUSES)[number];
+
+export function isReturnStatus(value: string): value is ReturnStatus {
+  return (RETURN_STATUSES as readonly string[]).includes(value);
+}
+
 export interface RequestItemReturnParams {
+  customerNote?: string;
   orderId: string;
   orderItemId: string;
-  userId?: string;
-  quantity: number;
-  reason: "damaged_in_transit" | "wrong_item" | "defective_quality" | "not_as_described" | "other";
-  customerNote?: string;
   photos?: string[];
+  quantity: number;
+  reason: ReturnReason;
+  userId?: string;
 }
 
 /**
@@ -349,14 +382,18 @@ export async function requestItemReturn(params: RequestItemReturnParams) {
   // Enforce 7-day delivery policy
   const eligibility = isReturnEligible(order.status, order.deliveredAt);
   if (!eligibility.eligible) {
-    throw new Error(eligibility.reason || "This order is not eligible for return.");
+    throw new Error(
+      eligibility.reason || "This order is not eligible for return."
+    );
   }
 
   // Find line item
   const [item] = await db
     .select()
     .from(orderItems)
-    .where(and(eq(orderItems.id, orderItemId), eq(orderItems.orderId, order.id)))
+    .where(
+      and(eq(orderItems.id, orderItemId), eq(orderItems.orderId, order.id))
+    )
     .limit(1);
 
   if (!item) {
@@ -364,7 +401,9 @@ export async function requestItemReturn(params: RequestItemReturnParams) {
   }
 
   if (quantity > item.quantity) {
-    throw new Error(`Cannot return ${quantity} units. Only ${item.quantity} purchased.`);
+    throw new Error(
+      `Cannot return ${quantity} units. Only ${item.quantity} purchased.`
+    );
   }
 
   // Transit damage and defects require unboxing photo proof
@@ -524,13 +563,13 @@ export async function receiveAndInspectReturn(params: {
 }
 
 export interface IssueOrderRefundParams {
-  orderId: string;
-  returnId?: string;
-  cancellationId?: string;
-  amountMinor: number;
-  transactionReference: string;
-  reason: string;
   adminId: string;
+  amountMinor: number;
+  cancellationId?: string;
+  orderId: string;
+  reason: string;
+  returnId?: string;
+  transactionReference: string;
 }
 
 /**
@@ -550,7 +589,9 @@ export async function issueOrderRefund(params: IssueOrderRefundParams) {
 
   const cleanUtr = transactionReference.trim();
   if (!cleanUtr || cleanUtr.length < 6) {
-    throw new Error("Valid bank refund transaction reference / UTR is required.");
+    throw new Error(
+      "Valid bank refund transaction reference / UTR is required."
+    );
   }
 
   if (!amountMinor || amountMinor <= 0) {
@@ -662,7 +703,7 @@ export async function issueOrderRefund(params: IssueOrderRefundParams) {
 export async function updateOrderFulfillmentWithTransitions(params: {
   orderId: string;
   adminId: string;
-  status: string;
+  status: OrderStatus;
   trackingCourier?: string;
   trackingNumber?: string;
 }) {
@@ -684,7 +725,7 @@ export async function updateOrderFulfillmentWithTransitions(params: {
     );
   }
 
-  const updateData: Record<string, any> = {
+  const updateData: Partial<typeof orders.$inferInsert> = {
     status,
     trackingCourier: trackingCourier?.trim() || order.trackingCourier,
     trackingNumber: trackingNumber?.trim() || order.trackingNumber,
@@ -793,8 +834,8 @@ export async function getAllAdminReturns(statusFilter?: string) {
     .innerJoin(orderItems, eq(orderReturns.orderItemId, orderItems.id))
     .$dynamic();
 
-  if (statusFilter && statusFilter !== "all") {
-    query = query.where(eq(orderReturns.status, statusFilter as any));
+  if (statusFilter && isReturnStatus(statusFilter)) {
+    query = query.where(eq(orderReturns.status, statusFilter));
   }
 
   return query.orderBy(desc(orderReturns.createdAt)).limit(100);

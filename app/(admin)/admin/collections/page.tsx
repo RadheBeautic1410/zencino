@@ -21,13 +21,13 @@ export default async function AdminCollectionsPage() {
   return (
     <div>
       <OrbitPageHeader
+        description="Curate thematic product collections across categories."
         eyebrow="Catalog"
         title="Collections"
-        description="Curate thematic product collections across categories."
       />
       <CollectionManager
-        collections={collections}
         availableProducts={availableProducts}
+        collections={collections}
       />
     </div>
   );

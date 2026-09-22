@@ -8,12 +8,17 @@ import { requireAdmin } from "@/lib/authz";
 import { categoryInput } from "@/lib/catalog/validation";
 import { db } from "@/lib/db";
 
-async function isDescendant(targetId: string, potentialAncestorId: string): Promise<boolean> {
+async function isDescendant(
+  targetId: string,
+  potentialAncestorId: string
+): Promise<boolean> {
   let currentId: string | null = potentialAncestorId;
   const visited = new Set<string>();
 
   while (currentId) {
-    if (visited.has(currentId)) break;
+    if (visited.has(currentId)) {
+      break;
+    }
     visited.add(currentId);
 
     const [parent] = await db
@@ -22,16 +27,20 @@ async function isDescendant(targetId: string, potentialAncestorId: string): Prom
       .where(eq(categories.id, currentId))
       .limit(1);
 
-    if (!parent || !parent.parentId) break;
-    if (parent.parentId === targetId) return true;
+    if (!parent?.parentId) {
+      break;
+    }
+    if (parent.parentId === targetId) {
+      return true;
+    }
     currentId = parent.parentId;
   }
   return false;
 }
 
 export interface CategoryFormState {
-  success?: boolean;
   error?: string;
+  success?: boolean;
 }
 
 export async function upsertCategoryAction(
@@ -43,15 +52,22 @@ export async function upsertCategoryAction(
   const raw = {
     id: String(formData.get("id") || "").trim() || undefined,
     name: String(formData.get("name") || "").trim(),
-    slug: String(formData.get("slug") || "").trim().toLowerCase(),
+    slug: String(formData.get("slug") || "")
+      .trim()
+      .toLowerCase(),
     description: String(formData.get("description") || "").trim(),
     parentId: String(formData.get("parentId") || "").trim() || null,
-    status: (String(formData.get("status") || "draft") as "draft" | "published" | "archived"),
+    status: String(formData.get("status") || "draft") as
+      | "draft"
+      | "published"
+      | "archived",
   };
 
   const parsed = categoryInput.safeParse(raw);
   if (!parsed.success) {
-    return { error: parsed.error.issues[0]?.message ?? "Invalid category data" };
+    return {
+      error: parsed.error.issues[0]?.message ?? "Invalid category data",
+    };
   }
 
   const { id, name, slug, description, parentId, status } = parsed.data;
@@ -63,7 +79,9 @@ export async function upsertCategoryAction(
     }
     const cyclic = await isDescendant(id, parentId);
     if (cyclic) {
-      return { error: "Cannot set a descendant category as parent (cyclic hierarchy)." };
+      return {
+        error: "Cannot set a descendant category as parent (cyclic hierarchy).",
+      };
     }
   }
 
@@ -138,12 +156,15 @@ export async function upsertCategoryAction(
     revalidatePath("/admin/categories");
     return { success: true };
   } catch (error: unknown) {
-    const msg = error instanceof Error ? error.message : "Failed to save category";
+    const msg =
+      error instanceof Error ? error.message : "Failed to save category";
     return { error: msg };
   }
 }
 
-export async function deleteCategoryAction(categoryId: string): Promise<CategoryFormState> {
+export async function deleteCategoryAction(
+  categoryId: string
+): Promise<CategoryFormState> {
   const admin = await requireAdmin();
 
   // Check children
@@ -154,7 +175,10 @@ export async function deleteCategoryAction(categoryId: string): Promise<Category
     .limit(1);
 
   if (children.length > 0) {
-    return { error: "Cannot delete a category that has subcategories. Reassign them first." };
+    return {
+      error:
+        "Cannot delete a category that has subcategories. Reassign them first.",
+    };
   }
 
   try {
@@ -172,7 +196,8 @@ export async function deleteCategoryAction(categoryId: string): Promise<Category
     revalidatePath("/admin/categories");
     return { success: true };
   } catch (error: unknown) {
-    const msg = error instanceof Error ? error.message : "Failed to delete category";
+    const msg =
+      error instanceof Error ? error.message : "Failed to delete category";
     return { error: msg };
   }
 }

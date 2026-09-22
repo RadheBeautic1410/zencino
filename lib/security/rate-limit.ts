@@ -4,8 +4,8 @@
  */
 
 interface RateLimitEntry {
-  tokens: number;
   lastRefill: number;
+  tokens: number;
 }
 
 interface RateLimitConfig {
@@ -23,7 +23,9 @@ let lastEviction = Date.now();
 
 function evictStale(windowMs: number) {
   const now = Date.now();
-  if (now - lastEviction < EVICTION_INTERVAL_MS) return;
+  if (now - lastEviction < EVICTION_INTERVAL_MS) {
+    return;
+  }
   lastEviction = now;
 
   for (const [key, entry] of rateLimitStore.entries()) {

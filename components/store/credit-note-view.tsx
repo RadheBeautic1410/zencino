@@ -1,13 +1,27 @@
 ﻿"use client";
 
+import { ArrowLeft, Printer } from "@phosphor-icons/react";
 import Link from "next/link";
-import { ArrowLeft, CheckCircle, Printer } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { SELLER_INFO } from "@/config/platform";
-import { calculateGstBreakdown, numberToWordsRupees } from "@/lib/commerce/rules";
+import {
+  calculateGstBreakdown,
+  numberToWordsRupees,
+} from "@/lib/commerce/rules";
 import { formatDateTime } from "@/lib/utils";
 
 interface CreditNoteViewProps {
+  address: {
+    recipient: string;
+    phone: string;
+    line1: string;
+    line2?: string | null;
+    city: string;
+    state: string;
+    postcode: string;
+    countryCode?: string;
+  } | null;
+  backHref?: string;
   order: {
     orderNumber: string;
     createdAt: Date | string;
@@ -30,17 +44,6 @@ interface CreditNoteViewProps {
     sku: string;
     quantity: number;
   } | null;
-  address: {
-    recipient: string;
-    phone: string;
-    line1: string;
-    line2?: string | null;
-    city: string;
-    state: string;
-    postcode: string;
-    countryCode?: string;
-  } | null;
-  backHref?: string;
 }
 
 export function CreditNoteView({
@@ -51,18 +54,23 @@ export function CreditNoteView({
   backHref = "/account",
 }: CreditNoteViewProps) {
   const buyerState = address?.state || "Maharashtra";
-  const isInterState = buyerState.trim().toLowerCase() !== SELLER_INFO.state.toLowerCase();
+  const isInterState =
+    buyerState.trim().toLowerCase() !== SELLER_INFO.state.toLowerCase();
 
   const refundRupees = Math.round(refund.amountMinor / 100);
   const amountInWords = numberToWordsRupees(refundRupees);
 
-  const taxInfo = calculateGstBreakdown(refund.amountMinor, buyerState, SELLER_INFO.state);
+  const taxInfo = calculateGstBreakdown(
+    refund.amountMinor,
+    buyerState,
+    SELLER_INFO.state
+  );
 
   return (
     <div className="min-h-screen bg-neutral-100 py-6 px-4 sm:px-6 print:bg-white print:p-0">
       {/* Print Action Bar */}
       <div className="mx-auto max-w-4xl mb-6 flex items-center justify-between print:hidden">
-        <Button asChild variant="outline" size="sm" className="gap-2 text-xs">
+        <Button asChild className="gap-2 text-xs" size="sm" variant="outline">
           <Link href={backHref}>
             <ArrowLeft size={16} /> Back
           </Link>
@@ -70,9 +78,9 @@ export function CreditNoteView({
 
         <div className="flex items-center gap-3">
           <Button
+            className="gap-2 text-xs font-bold uppercase tracking-ui"
             onClick={() => window.print()}
             size="sm"
-            className="gap-2 text-xs font-bold uppercase tracking-ui"
           >
             <Printer size={16} weight="bold" /> Print GST Credit Note
           </Button>
@@ -92,16 +100,23 @@ export function CreditNoteView({
                 Official Retailer
               </span>
             </div>
-            <p className="text-xs font-bold text-neutral-800">{SELLER_INFO.legalName}</p>
+            <p className="text-xs font-bold text-neutral-800">
+              {SELLER_INFO.legalName}
+            </p>
             <p className="text-2xs text-neutral-600 leading-relaxed max-w-sm mt-0.5">
-              {SELLER_INFO.addressLine1}, {SELLER_INFO.addressLine2}, {SELLER_INFO.city}, {SELLER_INFO.state} - {SELLER_INFO.pincode}, {SELLER_INFO.country}
+              {SELLER_INFO.addressLine1}, {SELLER_INFO.addressLine2},{" "}
+              {SELLER_INFO.city}, {SELLER_INFO.state} - {SELLER_INFO.pincode},{" "}
+              {SELLER_INFO.country}
             </p>
             <div className="mt-2 text-2xs space-y-0.5 text-neutral-700">
               <p>
-                <strong>GSTIN:</strong> {SELLER_INFO.gstin} · <strong>State Code:</strong> {SELLER_INFO.stateCode} ({SELLER_INFO.state})
+                <strong>GSTIN:</strong> {SELLER_INFO.gstin} ·{" "}
+                <strong>State Code:</strong> {SELLER_INFO.stateCode} (
+                {SELLER_INFO.state})
               </p>
               <p>
-                <strong>PAN:</strong> {SELLER_INFO.pan} · <strong>CIN:</strong> {SELLER_INFO.cin}
+                <strong>PAN:</strong> {SELLER_INFO.pan} · <strong>CIN:</strong>{" "}
+                {SELLER_INFO.cin}
               </p>
             </div>
           </div>
@@ -116,24 +131,40 @@ export function CreditNoteView({
 
             <div className="mt-4 rounded-lg bg-neutral-50 border border-neutral-200 p-3 text-2xs space-y-1 sm:text-right print:bg-transparent">
               <p>
-                <span className="text-neutral-500 uppercase tracking-ui">Credit Note No:</span>{" "}
-                <strong className="font-mono text-xs text-rose-700">{refund.creditNoteNumber}</strong>
+                <span className="text-neutral-500 uppercase tracking-ui">
+                  Credit Note No:
+                </span>{" "}
+                <strong className="font-mono text-xs text-rose-700">
+                  {refund.creditNoteNumber}
+                </strong>
               </p>
               <p>
-                <span className="text-neutral-500 uppercase tracking-ui">Credit Note Date:</span>{" "}
+                <span className="text-neutral-500 uppercase tracking-ui">
+                  Credit Note Date:
+                </span>{" "}
                 <strong>{formatDateTime(refund.processedAt)}</strong>
               </p>
               <p>
-                <span className="text-neutral-500 uppercase tracking-ui">Original Tax Invoice No:</span>{" "}
-                <strong className="font-mono text-neutral-900">{order.orderNumber}</strong>
+                <span className="text-neutral-500 uppercase tracking-ui">
+                  Original Tax Invoice No:
+                </span>{" "}
+                <strong className="font-mono text-neutral-900">
+                  {order.orderNumber}
+                </strong>
               </p>
               <p>
-                <span className="text-neutral-500 uppercase tracking-ui">Original Invoice Date:</span>{" "}
+                <span className="text-neutral-500 uppercase tracking-ui">
+                  Original Invoice Date:
+                </span>{" "}
                 <strong>{formatDateTime(order.createdAt)}</strong>
               </p>
               <p>
-                <span className="text-neutral-500 uppercase tracking-ui">Place of Supply:</span>{" "}
-                <strong>{buyerState} ({isInterState ? "Inter-State" : "Intra-State"})</strong>
+                <span className="text-neutral-500 uppercase tracking-ui">
+                  Place of Supply:
+                </span>{" "}
+                <strong>
+                  {buyerState} ({isInterState ? "Inter-State" : "Intra-State"})
+                </strong>
               </p>
             </div>
           </div>
@@ -147,22 +178,29 @@ export function CreditNoteView({
             </h2>
             {address ? (
               <div className="space-y-1 text-neutral-800">
-                <p className="text-sm font-bold text-neutral-900">{address.recipient}</p>
+                <p className="text-sm font-bold text-neutral-900">
+                  {address.recipient}
+                </p>
                 <p className="text-2xs">{address.line1}</p>
                 {address.line2 && <p className="text-2xs">{address.line2}</p>}
                 <p className="text-2xs">
-                  {address.city}, {address.state} — <strong>{address.postcode}</strong>
+                  {address.city}, {address.state} —{" "}
+                  <strong>{address.postcode}</strong>
                 </p>
                 <p className="text-2xs mt-1">
-                  <span className="text-neutral-500">Phone:</span> {address.phone}
+                  <span className="text-neutral-500">Phone:</span>{" "}
+                  {address.phone}
                 </p>
                 <p className="text-2xs">
-                  <span className="text-neutral-500">Email:</span> {order.customerEmail}
+                  <span className="text-neutral-500">Email:</span>{" "}
+                  {order.customerEmail}
                 </p>
               </div>
             ) : (
               <div className="space-y-1 text-neutral-800">
-                <p className="text-sm font-bold text-neutral-900">{order.customerName}</p>
+                <p className="text-sm font-bold text-neutral-900">
+                  {order.customerName}
+                </p>
                 <p className="text-2xs">Email: {order.customerEmail}</p>
                 <p className="text-2xs">Phone: {order.customerPhone}</p>
               </div>
@@ -203,7 +241,9 @@ export function CreditNoteView({
                 <th className="py-2.5 px-2">Adjustment Particulars</th>
                 <th className="py-2.5 px-2">HSN</th>
                 <th className="py-2.5 px-2 text-center">Qty</th>
-                <th className="py-2.5 px-2 text-right">Taxable Adjustment (₹)</th>
+                <th className="py-2.5 px-2 text-right">
+                  Taxable Adjustment (₹)
+                </th>
                 {isInterState ? (
                   <th className="py-2.5 px-2 text-right">IGST 18% (₹)</th>
                 ) : (
@@ -220,7 +260,8 @@ export function CreditNoteView({
                 <td className="py-3 px-2 font-mono text-neutral-500">1</td>
                 <td className="py-3 px-2">
                   <p className="font-bold text-neutral-900">
-                    {returnedItem?.productName || "Order Refund & Sales Return Adjustment"}
+                    {returnedItem?.productName ||
+                      "Order Refund & Sales Return Adjustment"}
                   </p>
                   <p className="text-3xs text-neutral-500">
                     {returnedItem
@@ -228,8 +269,12 @@ export function CreditNoteView({
                       : `Against Original Order ${order.orderNumber}`}
                   </p>
                 </td>
-                <td className="py-3 px-2 font-mono">{SELLER_INFO.defaultHsn}</td>
-                <td className="py-3 px-2 text-center font-bold">{returnedItem?.quantity || 1}</td>
+                <td className="py-3 px-2 font-mono">
+                  {SELLER_INFO.defaultHsn}
+                </td>
+                <td className="py-3 px-2 text-center font-bold">
+                  {returnedItem?.quantity || 1}
+                </td>
                 <td className="py-3 px-2 text-right font-mono">
                   {(taxInfo.taxableValueMinor / 100).toFixed(2)}
                 </td>
@@ -268,10 +313,14 @@ export function CreditNoteView({
             </div>
 
             <div className="rounded border border-neutral-200 p-3 text-3xs text-neutral-600 space-y-1">
-              <p className="font-bold uppercase tracking-wider text-neutral-700">Legal Declaration:</p>
+              <p className="font-bold uppercase tracking-wider text-neutral-700">
+                Legal Declaration:
+              </p>
               <p>
-                This GST Credit Note is issued under Section 34 of the Central Goods and Services Tax Act, 2017.
-                The output tax liability of the supplier and input tax credit (if applicable) shall be adjusted accordingly.
+                This GST Credit Note is issued under Section 34 of the Central
+                Goods and Services Tax Act, 2017. The output tax liability of
+                the supplier and input tax credit (if applicable) shall be
+                adjusted accordingly.
               </p>
             </div>
           </div>
@@ -279,30 +328,43 @@ export function CreditNoteView({
           <div className="sm:col-span-5 space-y-2 text-2xs">
             <div className="flex justify-between text-neutral-600">
               <span>Taxable Value Adjusted:</span>
-              <span className="font-mono">₹{(taxInfo.taxableValueMinor / 100).toFixed(2)}</span>
+              <span className="font-mono">
+                ₹{(taxInfo.taxableValueMinor / 100).toFixed(2)}
+              </span>
             </div>
 
             {isInterState ? (
               <div className="flex justify-between text-neutral-600">
                 <span>Integrated GST (IGST 18%):</span>
-                <span className="font-mono">₹{(taxInfo.igstMinor / 100).toFixed(2)}</span>
+                <span className="font-mono">
+                  ₹{(taxInfo.igstMinor / 100).toFixed(2)}
+                </span>
               </div>
             ) : (
               <>
                 <div className="flex justify-between text-neutral-600">
                   <span>Central GST (CGST 9%):</span>
-                  <span className="font-mono">₹{(taxInfo.cgstMinor / 100).toFixed(2)}</span>
+                  <span className="font-mono">
+                    ₹{(taxInfo.cgstMinor / 100).toFixed(2)}
+                  </span>
                 </div>
                 <div className="flex justify-between text-neutral-600">
                   <span>State GST (SGST 9%):</span>
-                  <span className="font-mono">₹{(taxInfo.sgstMinor / 100).toFixed(2)}</span>
+                  <span className="font-mono">
+                    ₹{(taxInfo.sgstMinor / 100).toFixed(2)}
+                  </span>
                 </div>
               </>
             )}
 
             <div className="border-t-2 border-neutral-900 pt-2 flex justify-between text-sm font-black text-rose-700">
               <span>Total Credit Amount (INR):</span>
-              <span className="font-mono">₹{(refund.amountMinor / 100).toLocaleString("en-IN", { minimumFractionDigits: 2 })}</span>
+              <span className="font-mono">
+                ₹
+                {(refund.amountMinor / 100).toLocaleString("en-IN", {
+                  minimumFractionDigits: 2,
+                })}
+              </span>
             </div>
           </div>
         </div>
@@ -310,18 +372,27 @@ export function CreditNoteView({
         {/* Footer: Signatory */}
         <div className="pt-6 flex flex-col sm:flex-row sm:items-end justify-between gap-6 text-2xs text-neutral-600">
           <div className="space-y-0.5">
-            <p className="font-semibold text-neutral-800">Computer Generated Credit Note</p>
+            <p className="font-semibold text-neutral-800">
+              Computer Generated Credit Note
+            </p>
             <p className="text-3xs">
-              No physical signature is required under Section 10A of the Information Technology Act, 2000.
+              No physical signature is required under Section 10A of the
+              Information Technology Act, 2000.
             </p>
           </div>
 
           <div className="text-left sm:text-right space-y-1">
-            <p className="font-bold text-neutral-900">For {SELLER_INFO.legalName}</p>
+            <p className="font-bold text-neutral-900">
+              For {SELLER_INFO.legalName}
+            </p>
             <div className="h-10 flex items-center justify-end">
-              <span className="font-mono text-3xs text-neutral-400 italic">[Authorized Signatory / Digitally Verified]</span>
+              <span className="font-mono text-3xs text-neutral-400 italic">
+                [Authorized Signatory / Digitally Verified]
+              </span>
             </div>
-            <p className="text-3xs uppercase tracking-wider text-neutral-500">Authorized Signatory</p>
+            <p className="text-3xs uppercase tracking-wider text-neutral-500">
+              Authorized Signatory
+            </p>
           </div>
         </div>
       </div>

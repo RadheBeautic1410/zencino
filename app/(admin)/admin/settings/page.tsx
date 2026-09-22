@@ -30,12 +30,12 @@ export default async function AdminSettingsPage() {
   return (
     <div className="space-y-8">
       <OrbitPageHeader
+        description="Configure legal business disclosures, support channels, checkout switches, and inspect system audit trail."
         eyebrow="Admin Operations"
         title="Store Settings & Audit"
-        description="Configure legal business disclosures, support channels, checkout switches, and inspect system audit trail."
       />
 
-      <SettingsManager initialConfig={config} auditLogs={recentLogs} />
+      <SettingsManager auditLogs={recentLogs} initialConfig={config} />
     </div>
   );
 }

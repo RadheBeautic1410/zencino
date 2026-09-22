@@ -1,30 +1,27 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import Link from "next/link";
 import {
-  ArrowRight,
   Check,
-  CheckCircle,
-  Clock,
-  DownloadSimple,
   MagnifyingGlass,
   Package,
   Printer,
-  ShieldCheck,
   SpinnerGap,
   Truck,
   WarningCircle,
 } from "@phosphor-icons/react";
-import { trackOrderAction, type TrackOrderResult } from "@/app/actions/tracking";
-import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
+import { useState, useTransition } from "react";
+import {
+  type TrackOrderResult,
+  trackOrderAction,
+} from "@/app/actions/tracking";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { formatDateTime } from "@/lib/utils";
 
 interface OrderTrackingViewProps {
-  initialOrderNumber?: string;
   initialContact?: string;
+  initialOrderNumber?: string;
 }
 
 export function OrderTrackingView({
@@ -35,7 +32,9 @@ export function OrderTrackingView({
   const [contact, setContact] = useState(initialContact);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
-  const [orderData, setOrderData] = useState<TrackOrderResult["data"] | null>(null);
+  const [orderData, setOrderData] = useState<TrackOrderResult["data"] | null>(
+    null
+  );
 
   const handleTrackOrder = (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,8 +69,8 @@ export function OrderTrackingView({
         orderData?.order.paymentStatus === "verified"
           ? "Bank transfer confirmed"
           : orderData?.order.paymentStatus === "under_review"
-          ? "Verification in progress"
-          : "Payment pending",
+            ? "Verification in progress"
+            : "Payment pending",
       completed: orderData?.order.paymentStatus === "verified",
       current:
         orderData?.order.status === "payment_review" ||
@@ -111,62 +110,75 @@ export function OrderTrackingView({
         <div className="inline-flex size-14 items-center justify-center rounded-full bg-primary/10 text-primary mb-2">
           <Truck size={28} weight="bold" />
         </div>
-        <h1 className="text-3xl font-black tracking-tight md:text-4xl">Track Your Order</h1>
+        <h1 className="text-3xl font-black tracking-tight md:text-4xl">
+          Track Your Order
+        </h1>
         <p className="text-xs text-muted-foreground max-w-md mx-auto">
-          Enter your Order Reference and contact email or phone to check live delivery milestones and courier AWB.
+          Enter your Order Reference and contact email or phone to check live
+          delivery milestones and courier AWB.
         </p>
       </div>
 
       {/* Lookup Form */}
       <form
-        onSubmit={handleTrackOrder}
         className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-sm space-y-4 mb-10"
+        onSubmit={handleTrackOrder}
       >
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <label className="block text-2xs font-semibold uppercase tracking-ui text-muted-foreground mb-1.5">
+            <label
+              className="block text-2xs font-semibold uppercase tracking-ui text-muted-foreground mb-1.5"
+              htmlFor="order-tracking-view-order-number"
+            >
               Order Number <span className="text-destructive">*</span>
             </label>
             <Input
-              type="text"
-              required
-              placeholder="e.g. ZNC-20260912-A1B2"
-              value={orderNumber}
-              onChange={(e) => setOrderNumber(e.target.value)}
               className="font-mono text-xs"
+              id="order-tracking-view-order-number"
+              onChange={(e) => setOrderNumber(e.target.value)}
+              placeholder="e.g. ZNC-20260912-A1B2"
+              required
+              type="text"
+              value={orderNumber}
             />
           </div>
 
           <div>
-            <label className="block text-2xs font-semibold uppercase tracking-ui text-muted-foreground mb-1.5">
-              Email Address or Phone Number <span className="text-destructive">*</span>
+            <label
+              className="block text-2xs font-semibold uppercase tracking-ui text-muted-foreground mb-1.5"
+              htmlFor="order-tracking-view-email-address-or-phone"
+            >
+              Email Address or Phone Number{" "}
+              <span className="text-destructive">*</span>
             </label>
             <Input
-              type="text"
-              required
-              placeholder="name@example.com or 9876543210"
-              value={contact}
-              onChange={(e) => setContact(e.target.value)}
               className="text-xs"
+              id="order-tracking-view-email-address-or-phone"
+              onChange={(e) => setContact(e.target.value)}
+              placeholder="name@example.com or 9876543210"
+              required
+              type="text"
+              value={contact}
             />
           </div>
         </div>
 
         {error && (
           <div className="flex items-center gap-2 rounded-md bg-destructive/10 border border-destructive/30 p-3 text-xs text-destructive">
-            <WarningCircle size={16} className="shrink-0" />
+            <WarningCircle className="shrink-0" size={16} />
             <span>{error}</span>
           </div>
         )}
 
         <Button
-          type="submit"
-          disabled={isPending}
           className="w-full h-11 text-xs font-bold uppercase tracking-ui"
+          disabled={isPending}
+          type="submit"
         >
           {isPending ? (
             <span className="flex items-center gap-2">
-              <SpinnerGap className="animate-spin" size={16} /> Searching Orders...
+              <SpinnerGap className="animate-spin" size={16} /> Searching
+              Orders...
             </span>
           ) : (
             <span className="flex items-center gap-1.5">
@@ -195,13 +207,18 @@ export function OrderTrackingView({
               </div>
 
               <div className="flex items-center gap-2">
-                <Button asChild variant="outline" size="sm" className="h-8 text-xs">
+                <Button
+                  asChild
+                  className="h-8 text-xs"
+                  size="sm"
+                  variant="outline"
+                >
                   <Link
                     href={`/orders/${orderData.order.orderNumber}/invoice?contact=${encodeURIComponent(contact.trim())}`}
-                    target="_blank"
                     rel="noopener noreferrer"
+                    target="_blank"
                   >
-                    <Printer size={14} className="mr-1.5" />
+                    <Printer className="mr-1.5" size={14} />
                     <span>Print Tax Invoice</span>
                   </Link>
                 </Button>
@@ -220,15 +237,18 @@ export function OrderTrackingView({
                   const isCurrent = step.current;
 
                   return (
-                    <div key={idx} className="relative flex items-start gap-4">
+                    <div
+                      className="relative flex items-start gap-4"
+                      key={step.label}
+                    >
                       {/* Step Marker */}
                       <span
                         className={`absolute -left-6 grid size-5 place-items-center rounded-full text-2xs font-bold ${
                           isDone
                             ? "bg-emerald-600 text-white"
                             : isCurrent
-                            ? "border-2 border-primary bg-background text-primary"
-                            : "border border-border bg-muted text-muted-foreground"
+                              ? "border-2 border-primary bg-background text-primary"
+                              : "border border-border bg-muted text-muted-foreground"
                         }`}
                       >
                         {isDone ? <Check size={12} weight="bold" /> : idx + 1}
@@ -237,7 +257,9 @@ export function OrderTrackingView({
                       <div>
                         <p
                           className={`text-xs font-bold ${
-                            isDone || isCurrent ? "text-foreground" : "text-muted-foreground"
+                            isDone || isCurrent
+                              ? "text-foreground"
+                              : "text-muted-foreground"
                           }`}
                         >
                           {step.label}
@@ -257,10 +279,14 @@ export function OrderTrackingView({
               <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
                 <div>
                   <span className="font-bold text-primary block">
-                    Shipment Dispatched via {orderData.order.trackingCourier || "Courier Partner"}
+                    Shipment Dispatched via{" "}
+                    {orderData.order.trackingCourier || "Courier Partner"}
                   </span>
                   <span className="text-2xs text-muted-foreground">
-                    AWB / Waybill: <strong className="font-mono text-foreground">{orderData.order.trackingNumber}</strong>
+                    AWB / Waybill:{" "}
+                    <strong className="font-mono text-foreground">
+                      {orderData.order.trackingNumber}
+                    </strong>
                   </span>
                 </div>
               </div>
@@ -272,14 +298,20 @@ export function OrderTrackingView({
             {/* Ordered Items */}
             <div className="md:col-span-7 rounded-2xl border border-border bg-card p-6 space-y-4">
               <h3 className="text-xs font-bold uppercase tracking-ui flex items-center gap-1.5">
-                <Package size={16} /> Package Contents ({orderData.items.length})
+                <Package size={16} /> Package Contents ({orderData.items.length}
+                )
               </h3>
 
               <div className="divide-y divide-border">
                 {orderData.items.map((it) => (
-                  <div key={it.id} className="py-3 flex justify-between items-center text-xs">
+                  <div
+                    className="py-3 flex justify-between items-center text-xs"
+                    key={it.id}
+                  >
                     <div>
-                      <p className="font-semibold text-foreground">{it.productName}</p>
+                      <p className="font-semibold text-foreground">
+                        {it.productName}
+                      </p>
                       <p className="text-2xs text-muted-foreground">
                         {it.variantTitle} · SKU: {it.sku} · Qty: {it.quantity}
                       </p>
@@ -300,11 +332,14 @@ export function OrderTrackingView({
 
               {orderData.address && (
                 <div className="space-y-1 text-muted-foreground">
-                  <p className="font-semibold text-foreground">{orderData.address.recipient}</p>
+                  <p className="font-semibold text-foreground">
+                    {orderData.address.recipient}
+                  </p>
                   <p>{orderData.address.line1}</p>
                   {orderData.address.line2 && <p>{orderData.address.line2}</p>}
                   <p>
-                    {orderData.address.city}, {orderData.address.state} — {orderData.address.postcode}
+                    {orderData.address.city}, {orderData.address.state} —{" "}
+                    {orderData.address.postcode}
                   </p>
                 </div>
               )}

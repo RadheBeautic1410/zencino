@@ -1,21 +1,21 @@
 export interface HomepageContentData {
+  announcementBanner?: string;
+  ctaPrimaryLink: string;
+  ctaPrimaryText: string;
+  ctaSecondaryLink: string;
+  ctaSecondaryText: string;
+  description: string;
   eyebrowBadge: string;
   headline: string;
   headlineSub: string;
-  description: string;
-  ctaPrimaryText: string;
-  ctaPrimaryLink: string;
-  ctaSecondaryText: string;
-  ctaSecondaryLink: string;
-  announcementBanner?: string;
   highlights: Array<{ title: string; subtitle: string; icon: string }>;
 }
 
 export interface FaqContentData {
   eyebrow?: string;
-  title?: string;
-  subtitle?: string;
   items: Array<{ q: string; a: string }>;
+  subtitle?: string;
+  title?: string;
 }
 
 export interface AboutContentData {
@@ -26,10 +26,22 @@ export interface AboutContentData {
 }
 
 export interface PolicyContentData {
-  title: string;
-  subtitle: string;
   content: Array<{ heading: string; body: string }>;
+  subtitle: string;
+  title: string;
 }
+
+/**
+ * Loose union of every editable content shape, used by the admin editor where a
+ * single form state holds whichever page type is selected.
+ */
+export type EditableContentData = Partial<HomepageContentData> &
+  Partial<FaqContentData> &
+  Partial<AboutContentData> &
+  Partial<PolicyContentData>;
+
+export type EditableContentValue =
+  EditableContentData[keyof EditableContentData];
 
 export const DEFAULT_HOMEPAGE_CONTENT: HomepageContentData = {
   eyebrowBadge: "Modern Everyday Organization",
@@ -43,16 +55,29 @@ export const DEFAULT_HOMEPAGE_CONTENT: HomepageContentData = {
   ctaSecondaryLink: "/collections/acrylic-essentials",
   announcementBanner: "Complimentary pan-India delivery on orders above ₹999",
   highlights: [
-    { title: "Diamond Polished", subtitle: "Edge-buffed optical clarity", icon: "ShieldCheck" },
-    { title: "Amazon Available", subtitle: "Prime-eligible fast checkout", icon: "ArrowSquareOut" },
-    { title: "Pan-India Delivery", subtitle: "Standard 3-5 day transit", icon: "Truck" },
+    {
+      title: "Diamond Polished",
+      subtitle: "Edge-buffed optical clarity",
+      icon: "ShieldCheck",
+    },
+    {
+      title: "Amazon Available",
+      subtitle: "Prime-eligible fast checkout",
+      icon: "ArrowSquareOut",
+    },
+    {
+      title: "Pan-India Delivery",
+      subtitle: "Standard 3-5 day transit",
+      icon: "Truck",
+    },
   ],
 };
 
 export const DEFAULT_FAQ_CONTENT: FaqContentData = {
   eyebrow: "Help & Information",
   title: "Frequently Asked Questions",
-  subtitle: "Everything you need to know about shopping with Zencino, product care, and shipping.",
+  subtitle:
+    "Everything you need to know about shopping with Zencino, product care, and shipping.",
   items: [
     {
       q: "Can I buy Zencino products on Amazon?",
@@ -104,7 +129,8 @@ export const DEFAULT_ABOUT_CONTENT: AboutContentData = {
 export const DEFAULT_POLICIES: Record<string, PolicyContentData> = {
   shipping: {
     title: "Shipping Policy",
-    subtitle: "Transparent delivery times, dispatch promises, and coverage across India.",
+    subtitle:
+      "Transparent delivery times, dispatch promises, and coverage across India.",
     content: [
       {
         heading: "1. Order Processing & Dispatch",
@@ -170,7 +196,8 @@ export const DEFAULT_POLICIES: Record<string, PolicyContentData> = {
   },
   terms: {
     title: "Terms of Service",
-    subtitle: "Operating terms governing the use of Zencino's website and services.",
+    subtitle:
+      "Operating terms governing the use of Zencino's website and services.",
     content: [
       {
         heading: "1. Acceptance of Terms",

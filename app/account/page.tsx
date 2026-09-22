@@ -2,7 +2,6 @@ import Link from "next/link";
 import { AppShell } from "@/components/scaffold/app-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ADMIN_ROLE } from "@/config/platform";
 import { requireSession } from "@/lib/authz";
 import { getCustomerOrders } from "@/lib/commerce/orders";
@@ -22,7 +21,9 @@ export default async function AccountPage() {
       email={current.user.email}
       isAdmin={current.user.role === ADMIN_ROLE}
     >
-      <p className="mb-2 text-xs font-bold uppercase tracking-ui text-muted-foreground">My Zencino</p>
+      <p className="mb-2 text-xs font-bold uppercase tracking-ui text-muted-foreground">
+        My Zencino
+      </p>
       <h1 className="text-3xl font-black tracking-tight">
         Welcome, {current.user.name || "there"}
       </h1>
@@ -76,42 +77,54 @@ export default async function AccountPage() {
           <div className="space-y-3">
             {customerOrders.map((ord) => (
               <div
-                key={ord.id}
                 className="flex flex-col sm:flex-row sm:items-center justify-between rounded-xl border border-border bg-card p-4 text-xs gap-3"
+                key={ord.id}
               >
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="font-mono font-bold text-foreground">{ord.orderNumber}</span>
+                    <span className="font-mono font-bold text-foreground">
+                      {ord.orderNumber}
+                    </span>
                     <Badge
+                      className="text-2xs uppercase"
                       variant={
                         ord.status === "confirmed" || ord.status === "delivered"
                           ? "secondary"
                           : ord.status === "cancelled"
-                          ? "destructive"
-                          : "outline"
+                            ? "destructive"
+                            : "outline"
                       }
-                      className="text-2xs uppercase"
                     >
                       {ord.status.replace("_", " ")}
                     </Badge>
                   </div>
                   <p className="text-2xs text-muted-foreground mt-0.5">
-                    Placed on {formatDateTime(ord.createdAt)} · Total: ₹{(ord.totalMinor / 100).toLocaleString("en-IN")}
+                    Placed on {formatDateTime(ord.createdAt)} · Total: ₹
+                    {(ord.totalMinor / 100).toLocaleString("en-IN")}
                   </p>
                   {ord.trackingNumber && (
                     <p className="text-2xs text-primary mt-1 font-medium">
-                      Tracking ({ord.trackingCourier || "Courier"}): {ord.trackingNumber}
+                      Tracking ({ord.trackingCourier || "Courier"}):{" "}
+                      {ord.trackingNumber}
                     </p>
                   )}
                 </div>
 
                 <div className="flex items-center gap-2 self-start sm:self-auto">
-                  <Button asChild variant="outline" size="sm" className="h-7 text-xs">
-                    <Link href={`/orders/${ord.orderNumber}/invoice`} target="_blank">
+                  <Button
+                    asChild
+                    className="h-7 text-xs"
+                    size="sm"
+                    variant="outline"
+                  >
+                    <Link
+                      href={`/orders/${ord.orderNumber}/invoice`}
+                      target="_blank"
+                    >
                       Invoice
                     </Link>
                   </Button>
-                  <Button asChild size="sm" className="h-7 text-xs">
+                  <Button asChild className="h-7 text-xs" size="sm">
                     <Link href={`/account/orders/${ord.orderNumber}`}>
                       View Details
                     </Link>

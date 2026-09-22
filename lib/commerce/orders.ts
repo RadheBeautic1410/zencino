@@ -1,24 +1,24 @@
-import { randomBytes } from "node:crypto";
-import { and, desc, eq, inArray, sql } from "drizzle-orm";
+import { and, desc, eq, sql } from "drizzle-orm";
 import {
   inventoryBalances,
-  inventoryLocations,
   inventoryMovements,
   inventoryReservations,
   orderAddresses,
   orderItems,
   orders,
   paymentProofs,
-  products,
-  productVariants,
 } from "@/db/schema";
 import { audit } from "@/lib/audit";
 import { clearCart, getCartDetails } from "@/lib/commerce/cart";
-import { getOrCreateDefaultLocation, getVariantStock } from "@/lib/commerce/inventory";
+import {
+  getOrCreateDefaultLocation,
+  getVariantStock,
+} from "@/lib/commerce/inventory";
 import {
   calculateInclusiveGst,
   calculateShippingFee,
   generateOrderNumber,
+  isOrderStatus,
   isPincodeServiceable,
 } from "@/lib/commerce/rules";
 import { db } from "@/lib/db";
@@ -26,24 +26,24 @@ import { db } from "@/lib/db";
 export { generateOrderNumber };
 
 export interface ShippingAddressInput {
-  recipient: string;
-  phone: string;
+  city: string;
+  countryCode?: string;
   line1: string;
   line2?: string;
-  city: string;
-  state: string;
+  phone: string;
   postcode: string;
-  countryCode?: string;
+  recipient: string;
+  state: string;
 }
 
 export interface CreateOrderParams {
-  customerName: string;
-  customerEmail: string;
-  customerPhone: string;
-  shippingAddress: ShippingAddressInput;
-  paymentMethod?: "upi_qr" | "razorpay";
-  userId?: string;
   attribution?: Record<string, unknown>;
+  customerEmail: string;
+  customerName: string;
+  customerPhone: string;
+  paymentMethod?: "upi_qr" | "razorpay";
+  shippingAddress: ShippingAddressInput;
+  userId?: string;
 }
 
 /**
@@ -195,10 +195,10 @@ export async function createOrderFromCart(params: CreateOrderParams) {
 }
 
 export interface SubmitPaymentProofParams {
-  orderId: string;
-  upiReference: string;
-  screenshotUrl: string;
   cartIdToClear?: string;
+  orderId: string;
+  screenshotUrl: string;
+  upiReference: string;
 }
 
 /**
@@ -210,7 +210,9 @@ export async function submitPaymentProof(params: SubmitPaymentProofParams) {
   const cleanUtr = upiReference.trim().replace(/\s+/g, "");
 
   if (cleanUtr.length < 8) {
-    throw new Error("Please enter a valid UPI transaction reference / UTR number.");
+    throw new Error(
+      "Please enter a valid UPI transaction reference / UTR number."
+    );
   }
 
   if (!screenshotUrl) {
@@ -382,7 +384,7 @@ export async function verifyPaymentAndConfirmOrder(params: {
     await recordAnalyticsEvent({
       eventName: "purchase_confirmed",
       orderId: order.id,
-      campaignCode: (order.attribution as any)?.campaignCode || null,
+      campaignCode: readAttributionCampaignCode(order.attribution),
       dedupeKey: `purchase:${order.orderNumber}`,
       properties: {
         orderNumber: order.orderNumber,
@@ -405,7 +407,9 @@ export async function rejectPaymentProof(params: {
   const { orderId, adminId, reason } = params;
 
   if (!reason || reason.trim().length < 3) {
-    throw new Error("A clear rejection reason is required (e.g. 'UTR not found in bank statement').");
+    throw new Error(
+      "A clear rejection reason is required (e.g. 'UTR not found in bank statement')."
+    );
   }
 
   const [order] = await db
@@ -557,7 +561,9 @@ export async function getOrderDetails(orderIdOrNumber: string) {
     )
     .limit(1);
 
-  if (!order) return null;
+  if (!order) {
+    return null;
+  }
 
   const [items, [address], [proof]] = await Promise.all([
     db.select().from(orderItems).where(eq(orderItems.orderId, order.id)),
@@ -580,6 +586,13 @@ export async function getOrderDetails(orderIdOrNumber: string) {
     address,
     proof: proof || null,
   };
+}
+
+function readAttributionCampaignCode(
+  attribution: Record<string, unknown> | null
+): string | null {
+  const value = attribution?.campaignCode;
+  return typeof value === "string" && value ? value : null;
 }
 
 /**
@@ -611,14 +624,11 @@ export async function getAdminOrders(params?: {
     .from(orders)
     .$dynamic();
 
-  if (status && status !== "all") {
-    query = query.where(eq(orders.status, status as any));
+  if (status && isOrderStatus(status)) {
+    query = query.where(eq(orders.status, status));
   }
 
-  return query
-    .orderBy(desc(orders.createdAt))
-    .limit(limit)
-    .offset(offset);
+  return query.orderBy(desc(orders.createdAt)).limit(limit).offset(offset);
 }
 
 /**

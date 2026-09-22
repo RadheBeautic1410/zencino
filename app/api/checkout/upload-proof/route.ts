@@ -1,14 +1,28 @@
 import { NextResponse } from "next/server";
-import { getMediaAssetUrl, isAllowedMimeType, saveMediaAsset } from "@/lib/media/storage";
-import { checkRateLimit, getClientIdentifier, RATE_LIMIT_POLICIES } from "@/lib/security/rate-limit";
+import {
+  getMediaAssetUrl,
+  isAllowedMimeType,
+  saveMediaAsset,
+} from "@/lib/media/storage";
+import {
+  checkRateLimit,
+  getClientIdentifier,
+  RATE_LIMIT_POLICIES,
+} from "@/lib/security/rate-limit";
 
 export async function POST(request: Request) {
   try {
     const clientId = getClientIdentifier(request.headers);
-    const limitCheck = checkRateLimit(clientId, "payment_proof", RATE_LIMIT_POLICIES.PAYMENT_PROOF);
+    const limitCheck = checkRateLimit(
+      clientId,
+      "payment_proof",
+      RATE_LIMIT_POLICIES.PAYMENT_PROOF
+    );
     if (!limitCheck.success) {
       return NextResponse.json(
-        { error: `Too many upload attempts. Please wait ${Math.ceil(limitCheck.resetMs / 1000)} seconds before trying again.` },
+        {
+          error: `Too many upload attempts. Please wait ${Math.ceil(limitCheck.resetMs / 1000)} seconds before trying again.`,
+        },
         { status: 429 }
       );
     }
@@ -25,7 +39,9 @@ export async function POST(request: Request) {
 
     if (!isAllowedMimeType(file.type)) {
       return NextResponse.json(
-        { error: `File type ${file.type} is not supported. Please upload a JPG, PNG, or WebP screenshot.` },
+        {
+          error: `File type ${file.type} is not supported. Please upload a JPG, PNG, or WebP screenshot.`,
+        },
         { status: 400 }
       );
     }
@@ -56,7 +72,10 @@ export async function POST(request: Request) {
       assetId: asset.id,
     });
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Failed to upload payment screenshot";
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Failed to upload payment screenshot";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

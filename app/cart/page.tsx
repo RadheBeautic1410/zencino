@@ -5,7 +5,8 @@ import { getCartDetails } from "@/lib/commerce/cart";
 
 export const metadata: Metadata = {
   title: "Shopping Bag - Zencino",
-  description: "Review items in your Zencino shopping bag before proceeding to delivery checkout.",
+  description:
+    "Review items in your Zencino shopping bag before proceeding to delivery checkout.",
 };
 
 export default async function CartPage() {

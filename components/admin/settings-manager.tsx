@@ -1,43 +1,50 @@
 "use client";
 
-import { useState, useTransition } from "react";
 import {
   Building,
   CheckCircle,
   Clock,
   FloppyDisk,
-  Gear,
   ListBullets,
-  ShieldCheck,
   WarningCircle,
 } from "@phosphor-icons/react";
+import { useState, useTransition } from "react";
 import { updateSettingsAction } from "@/app/actions/settings";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import type { StoreProfileConfig } from "@/lib/commerce/settings";
 
 interface AuditLogRow {
-  id: string;
-  actorEmail: string | null;
   action: string;
-  entityType: string;
-  entityId: string | null;
-  description: string;
+  actorEmail: string | null;
   createdAt: Date;
+  description: string;
+  entityId: string | null;
+  entityType: string;
+  id: string;
 }
 
 interface Props {
-  initialConfig: StoreProfileConfig;
   auditLogs: AuditLogRow[];
+  initialConfig: StoreProfileConfig;
 }
 
 export function SettingsManager({ initialConfig, auditLogs }: Props) {
   const [activeTab, setActiveTab] = useState<"profile" | "audit">("profile");
   const [config, setConfig] = useState(initialConfig);
   const [isPending, startTransition] = useTransition();
-  const [feedback, setFeedback] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [feedback, setFeedback] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -66,25 +73,25 @@ export function SettingsManager({ initialConfig, auditLogs }: Props) {
       {/* Tabs Header */}
       <div className="flex items-center gap-2 border-b border-border pb-4">
         <button
-          type="button"
-          onClick={() => setActiveTab("profile")}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-ui transition-colors ${
             activeTab === "profile"
               ? "bg-primary text-primary-foreground shadow-xs"
               : "bg-muted/40 text-muted-foreground hover:text-foreground"
           }`}
+          onClick={() => setActiveTab("profile")}
+          type="button"
         >
           <Building size={16} />
           Store Profile & Details
         </button>
         <button
-          type="button"
-          onClick={() => setActiveTab("audit")}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-ui transition-colors ${
             activeTab === "audit"
               ? "bg-primary text-primary-foreground shadow-xs"
               : "bg-muted/40 text-muted-foreground hover:text-foreground"
           }`}
+          onClick={() => setActiveTab("audit")}
+          type="button"
         >
           <ListBullets size={16} />
           Audit Trail Log
@@ -111,153 +118,230 @@ export function SettingsManager({ initialConfig, auditLogs }: Props) {
       {activeTab === "profile" ? (
         <Card>
           <CardHeader className="border-b border-border pb-4">
-            <CardTitle className="text-base font-bold">Business & Legal Information</CardTitle>
+            <CardTitle className="text-base font-bold">
+              Business & Legal Information
+            </CardTitle>
             <CardDescription className="text-xs">
-              Configured entity details appear on statutory GST Tax Invoices and Credit Notes.
+              Configured entity details appear on statutory GST Tax Invoices and
+              Credit Notes.
             </CardDescription>
           </CardHeader>
           <CardContent className="p-6">
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form className="space-y-6" onSubmit={handleSubmit}>
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="block text-xs font-semibold uppercase tracking-ui text-muted-foreground mb-1">
+                  <label
+                    className="block text-xs font-semibold uppercase tracking-ui text-muted-foreground mb-1"
+                    htmlFor="settings-manager-store-brand-name"
+                  >
                     Store Brand Name *
                   </label>
                   <Input
+                    id="settings-manager-store-brand-name"
                     name="storeName"
+                    onChange={(e) =>
+                      setConfig({ ...config, storeName: e.target.value })
+                    }
                     required
                     value={config.storeName}
-                    onChange={(e) => setConfig({ ...config, storeName: e.target.value })}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold uppercase tracking-ui text-muted-foreground mb-1">
+                  <label
+                    className="block text-xs font-semibold uppercase tracking-ui text-muted-foreground mb-1"
+                    htmlFor="settings-manager-legal-registered-entity-name"
+                  >
                     Legal Registered Entity Name *
                   </label>
                   <Input
+                    id="settings-manager-legal-registered-entity-name"
                     name="legalEntityName"
+                    onChange={(e) =>
+                      setConfig({ ...config, legalEntityName: e.target.value })
+                    }
                     required
                     value={config.legalEntityName}
-                    onChange={(e) => setConfig({ ...config, legalEntityName: e.target.value })}
                   />
                 </div>
               </div>
 
               <div className="grid gap-4 sm:grid-cols-3">
                 <div>
-                  <label className="block text-xs font-semibold uppercase tracking-ui text-muted-foreground mb-1">
+                  <label
+                    className="block text-xs font-semibold uppercase tracking-ui text-muted-foreground mb-1"
+                    htmlFor="settings-manager-gstin"
+                  >
                     GSTIN *
                   </label>
                   <Input
+                    id="settings-manager-gstin"
                     name="gstin"
+                    onChange={(e) =>
+                      setConfig({ ...config, gstin: e.target.value })
+                    }
                     required
                     value={config.gstin}
-                    onChange={(e) => setConfig({ ...config, gstin: e.target.value })}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold uppercase tracking-ui text-muted-foreground mb-1">
+                  <label
+                    className="block text-xs font-semibold uppercase tracking-ui text-muted-foreground mb-1"
+                    htmlFor="settings-manager-pan"
+                  >
                     PAN
                   </label>
                   <Input
+                    id="settings-manager-pan"
                     name="pan"
+                    onChange={(e) =>
+                      setConfig({ ...config, pan: e.target.value })
+                    }
                     value={config.pan}
-                    onChange={(e) => setConfig({ ...config, pan: e.target.value })}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold uppercase tracking-ui text-muted-foreground mb-1">
+                  <label
+                    className="block text-xs font-semibold uppercase tracking-ui text-muted-foreground mb-1"
+                    htmlFor="settings-manager-cin"
+                  >
                     CIN
                   </label>
                   <Input
+                    id="settings-manager-cin"
                     name="cin"
+                    onChange={(e) =>
+                      setConfig({ ...config, cin: e.target.value })
+                    }
                     value={config.cin}
-                    onChange={(e) => setConfig({ ...config, cin: e.target.value })}
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-ui text-muted-foreground mb-1">
+                <label
+                  className="block text-xs font-semibold uppercase tracking-ui text-muted-foreground mb-1"
+                  htmlFor="settings-manager-registered-office-address"
+                >
                   Registered Office Address *
                 </label>
                 <textarea
+                  className="w-full border border-border bg-background p-3 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary rounded"
+                  id="settings-manager-registered-office-address"
                   name="registeredAddress"
+                  onChange={(e) =>
+                    setConfig({ ...config, registeredAddress: e.target.value })
+                  }
                   required
                   rows={2}
-                  className="w-full border border-border bg-background p-3 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-primary rounded"
                   value={config.registeredAddress}
-                  onChange={(e) => setConfig({ ...config, registeredAddress: e.target.value })}
                 />
               </div>
 
               <div className="grid gap-4 sm:grid-cols-3">
                 <div>
-                  <label className="block text-xs font-semibold uppercase tracking-ui text-muted-foreground mb-1">
+                  <label
+                    className="block text-xs font-semibold uppercase tracking-ui text-muted-foreground mb-1"
+                    htmlFor="settings-manager-customer-support-email"
+                  >
                     Customer Support Email *
                   </label>
                   <Input
+                    id="settings-manager-customer-support-email"
                     name="supportEmail"
+                    onChange={(e) =>
+                      setConfig({ ...config, supportEmail: e.target.value })
+                    }
                     required
                     type="email"
                     value={config.supportEmail}
-                    onChange={(e) => setConfig({ ...config, supportEmail: e.target.value })}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold uppercase tracking-ui text-muted-foreground mb-1">
+                  <label
+                    className="block text-xs font-semibold uppercase tracking-ui text-muted-foreground mb-1"
+                    htmlFor="settings-manager-customer-support-phone"
+                  >
                     Customer Support Phone
                   </label>
                   <Input
+                    id="settings-manager-customer-support-phone"
                     name="supportPhone"
+                    onChange={(e) =>
+                      setConfig({ ...config, supportPhone: e.target.value })
+                    }
                     value={config.supportPhone}
-                    onChange={(e) => setConfig({ ...config, supportPhone: e.target.value })}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold uppercase tracking-ui text-muted-foreground mb-1">
+                  <label
+                    className="block text-xs font-semibold uppercase tracking-ui text-muted-foreground mb-1"
+                    htmlFor="settings-manager-support-working-hours"
+                  >
                     Support Working Hours
                   </label>
                   <Input
+                    id="settings-manager-support-working-hours"
                     name="supportHours"
+                    onChange={(e) =>
+                      setConfig({ ...config, supportHours: e.target.value })
+                    }
                     value={config.supportHours}
-                    onChange={(e) => setConfig({ ...config, supportHours: e.target.value })}
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-ui text-muted-foreground mb-1">
+                <label
+                  className="block text-xs font-semibold uppercase tracking-ui text-muted-foreground mb-1"
+                  htmlFor="settings-manager-dispatch-sla-promise-statement"
+                >
                   Dispatch SLA Promise Statement
                 </label>
                 <Input
+                  id="settings-manager-dispatch-sla-promise-statement"
                   name="dispatchPromise"
+                  onChange={(e) =>
+                    setConfig({ ...config, dispatchPromise: e.target.value })
+                  }
                   value={config.dispatchPromise}
-                  onChange={(e) => setConfig({ ...config, dispatchPromise: e.target.value })}
                 />
               </div>
 
               {/* Direct Checkout Switch */}
               <div className="p-4 border border-border rounded-xl bg-muted/10 flex items-center justify-between">
                 <div>
-                  <h4 className="font-bold text-xs uppercase tracking-ui">Direct Website Checkout</h4>
+                  <h4 className="font-bold text-xs uppercase tracking-ui">
+                    Direct Website Checkout
+                  </h4>
                   <p className="text-2xs text-muted-foreground mt-0.5">
-                    Controls whether customers can place prepaid direct website orders via UPI QR / gateway.
+                    Controls whether customers can place prepaid direct website
+                    orders via UPI QR / gateway.
                   </p>
                 </div>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input
-                    type="checkbox"
                     checked={config.checkoutEnabled}
-                    onChange={(e) => setConfig({ ...config, checkoutEnabled: e.target.checked })}
                     className="size-4 rounded text-primary focus:ring-primary"
+                    onChange={(e) =>
+                      setConfig({
+                        ...config,
+                        checkoutEnabled: e.target.checked,
+                      })
+                    }
+                    type="checkbox"
                   />
-                  <span className="text-xs font-semibold">{config.checkoutEnabled ? "Enabled" : "Disabled"}</span>
+                  <span className="text-xs font-semibold">
+                    {config.checkoutEnabled ? "Enabled" : "Disabled"}
+                  </span>
                 </label>
               </div>
 
               <div className="flex justify-end pt-4 border-t border-border">
-                <Button type="submit" disabled={isPending} className="gap-2 text-xs">
+                <Button
+                  className="gap-2 text-xs"
+                  disabled={isPending}
+                  type="submit"
+                >
                   <FloppyDisk size={14} />
                   {isPending ? "Saving..." : "Save Settings"}
                 </Button>
@@ -269,9 +353,12 @@ export function SettingsManager({ initialConfig, auditLogs }: Props) {
         /* Audit Trail Tab */
         <Card>
           <CardHeader className="border-b border-border pb-4">
-            <CardTitle className="text-base font-bold">System Audit Log Trail</CardTitle>
+            <CardTitle className="text-base font-bold">
+              System Audit Log Trail
+            </CardTitle>
             <CardDescription className="text-xs">
-              Chronological, tamper-evident log of administrative events and operations.
+              Chronological, tamper-evident log of administrative events and
+              operations.
             </CardDescription>
           </CardHeader>
           <CardContent className="p-0">
@@ -282,10 +369,13 @@ export function SettingsManager({ initialConfig, auditLogs }: Props) {
             ) : (
               <div className="divide-y divide-border">
                 {auditLogs.map((log) => (
-                  <div key={log.id} className="p-4 hover:bg-muted/20 transition-colors text-xs space-y-1">
+                  <div
+                    className="p-4 hover:bg-muted/20 transition-colors text-xs space-y-1"
+                    key={log.id}
+                  >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="font-mono text-2xs">
+                        <Badge className="font-mono text-2xs" variant="outline">
                           {log.action}
                         </Badge>
                         <span className="font-semibold text-foreground">

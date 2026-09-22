@@ -1,5 +1,5 @@
-import { type NextRequest, NextResponse } from "next/server";
 import { and, eq } from "drizzle-orm";
+import { type NextRequest, NextResponse } from "next/server";
 import { productVariants, variantChannels } from "@/db/schema/catalog";
 import { audit } from "@/lib/audit";
 import { isAmazonProductUrl } from "@/lib/catalog/validation";
@@ -11,7 +11,10 @@ export async function GET(request: NextRequest) {
   const sku = searchParams.get("sku");
 
   if (!variantId && !sku) {
-    return NextResponse.json({ error: "Missing variantId or sku parameter" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Missing variantId or sku parameter" },
+      { status: 400 }
+    );
   }
 
   const condition = variantId
@@ -39,7 +42,7 @@ export async function GET(request: NextRequest) {
     .where(condition)
     .limit(1);
 
-  if (!record || !record.enabled || !record.externalUrl) {
+  if (!record?.enabled || !record.externalUrl) {
     return NextResponse.json(
       { error: "Amazon purchase link is not available for this variant." },
       { status: 404 }

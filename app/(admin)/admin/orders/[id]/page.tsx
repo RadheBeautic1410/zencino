@@ -6,7 +6,8 @@ import { getOrderReturnAndRefundDetails } from "@/lib/commerce/returns";
 
 export const metadata = {
   title: "Order Details - Zencino Admin",
-  description: "Review payment proof, verify UTR, manage fulfillment, and process returns and refunds.",
+  description:
+    "Review payment proof, verify UTR, manage fulfillment, and process returns and refunds.",
 };
 
 export default async function AdminOrderDetailPage({
@@ -22,19 +23,18 @@ export default async function AdminOrderDetailPage({
     notFound();
   }
 
-  const { returns, refunds, cancellations } = await getOrderReturnAndRefundDetails(
-    details.order.id
-  );
+  const { returns, refunds, cancellations } =
+    await getOrderReturnAndRefundDetails(details.order.id);
 
   return (
     <OrderDetailView
-      order={details.order}
-      items={details.items}
       address={details.address}
-      proof={details.proof}
-      returns={returns}
-      refunds={refunds}
       cancellations={cancellations}
+      items={details.items}
+      order={details.order}
+      proof={details.proof}
+      refunds={refunds}
+      returns={returns}
     />
   );
 }

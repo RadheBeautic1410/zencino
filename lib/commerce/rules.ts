@@ -1,8 +1,8 @@
 import { createHash, randomBytes } from "node:crypto";
 
-export const FREE_SHIPPING_THRESHOLD_PAISE = 99900; // ₹999
-export const STANDARD_SHIPPING_PAISE = 7900;        // ₹79
-export const GST_RATE = 0.18;                       // 18% inclusive
+export const FREE_SHIPPING_THRESHOLD_PAISE = 99_900; // ₹999
+export const STANDARD_SHIPPING_PAISE = 7900; // ₹79
+export const GST_RATE = 0.18; // 18% inclusive
 
 /**
  * Validates Indian 6-digit postal PIN codes:
@@ -19,7 +19,9 @@ export function isPincodeServiceable(pincode: string): boolean {
  * - ₹79 (7,900 paise) otherwise
  */
 export function calculateShippingFee(subtotalMinor: number): number {
-  return subtotalMinor >= FREE_SHIPPING_THRESHOLD_PAISE ? 0 : STANDARD_SHIPPING_PAISE;
+  return subtotalMinor >= FREE_SHIPPING_THRESHOLD_PAISE
+    ? 0
+    : STANDARD_SHIPPING_PAISE;
 }
 
 /**
@@ -31,12 +33,12 @@ export function calculateInclusiveGst(subtotalMinor: number): number {
 }
 
 export interface GstBreakdown {
-  taxableValueMinor: number;
-  taxMinor: number;
   cgstMinor: number;
-  sgstMinor: number;
   igstMinor: number;
   isInterState: boolean;
+  sgstMinor: number;
+  taxableValueMinor: number;
+  taxMinor: number;
 }
 
 /**
@@ -47,14 +49,16 @@ export interface GstBreakdown {
 export function calculateGstBreakdown(
   grossTotalMinor: number,
   buyerState?: string | null,
-  sellerState: string = "Maharashtra"
+  sellerState = "Maharashtra"
 ): GstBreakdown {
   const taxMinor = calculateInclusiveGst(grossTotalMinor);
   const taxableValueMinor = grossTotalMinor - taxMinor;
 
   const normalizedBuyer = (buyerState || "").trim().toLowerCase();
   const normalizedSeller = sellerState.trim().toLowerCase();
-  const isInterState = Boolean(normalizedBuyer && normalizedBuyer !== normalizedSeller);
+  const isInterState = Boolean(
+    normalizedBuyer && normalizedBuyer !== normalizedSeller
+  );
 
   if (isInterState) {
     return {
@@ -85,21 +89,53 @@ export function calculateGstBreakdown(
  * Example: 1498 -> "One Thousand Four Hundred Ninety-Eight Rupees Only"
  */
 export function numberToWordsRupees(rupees: number): string {
-  if (!rupees || rupees <= 0) return "Zero Rupees Only";
+  if (!rupees || rupees <= 0) {
+    return "Zero Rupees Only";
+  }
 
   const num = Math.floor(rupees);
   const ones = [
-    "", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine",
-    "Ten", "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen",
-    "Seventeen", "Eighteen", "Nineteen",
+    "",
+    "One",
+    "Two",
+    "Three",
+    "Four",
+    "Five",
+    "Six",
+    "Seven",
+    "Eight",
+    "Nine",
+    "Ten",
+    "Eleven",
+    "Twelve",
+    "Thirteen",
+    "Fourteen",
+    "Fifteen",
+    "Sixteen",
+    "Seventeen",
+    "Eighteen",
+    "Nineteen",
   ];
   const tens = [
-    "", "", "Twenty", "Thirty", "Forty", "Fifty", "Sixty", "Seventy", "Eighty", "Ninety",
+    "",
+    "",
+    "Twenty",
+    "Thirty",
+    "Forty",
+    "Fifty",
+    "Sixty",
+    "Seventy",
+    "Eighty",
+    "Ninety",
   ];
 
   function convertTwoDigits(n: number): string {
-    if (n === 0) return "";
-    if (n < 20) return ones[n];
+    if (n === 0) {
+      return "";
+    }
+    if (n < 20) {
+      return ones[n];
+    }
     const t = Math.floor(n / 10);
     const u = n % 10;
     return u > 0 ? `${tens[t]}-${ones[u]}` : tens[t];
@@ -117,9 +153,9 @@ export function numberToWordsRupees(rupees: number): string {
     return convertTwoDigits(rest);
   }
 
-  const crore = Math.floor(num / 10000000);
-  const lakh = Math.floor((num % 10000000) / 100000);
-  const thousand = Math.floor((num % 100000) / 1000);
+  const crore = Math.floor(num / 10_000_000);
+  const lakh = Math.floor((num % 10_000_000) / 100_000);
+  const thousand = Math.floor((num % 100_000) / 1000);
   const remaining = num % 1000;
 
   const parts: string[] = [];
@@ -144,7 +180,10 @@ export function numberToWordsRupees(rupees: number): string {
  * Computes sellable units available from on-hand minus active reservations.
  * Always clamped at 0.
  */
-export function calculateAvailableStock(onHand: number, reserved: number): number {
+export function calculateAvailableStock(
+  onHand: number,
+  reserved: number
+): number {
   return Math.max(0, onHand - reserved);
 }
 
@@ -211,7 +250,8 @@ export function isReturnEligible(
   if (orderStatus !== "delivered") {
     return {
       eligible: false,
-      reason: "Returns are only applicable once the package has been delivered.",
+      reason:
+        "Returns are only applicable once the package has been delivered.",
     };
   }
 
@@ -226,11 +266,28 @@ export function isReturnEligible(
   if (now - deliveryTime > RETURN_WINDOW_MS) {
     return {
       eligible: false,
-      reason: `The 7-day replacement and return window has expired for this delivered order.`,
+      reason:
+        "The 7-day replacement and return window has expired for this delivered order.",
     };
   }
 
   return { eligible: true };
+}
+
+export const ORDER_STATUSES = [
+  "pending_payment",
+  "payment_review",
+  "confirmed",
+  "processing",
+  "shipped",
+  "delivered",
+  "cancelled",
+] as const;
+
+export type OrderStatus = (typeof ORDER_STATUSES)[number];
+
+export function isOrderStatus(value: string): value is OrderStatus {
+  return (ORDER_STATUSES as readonly string[]).includes(value);
 }
 
 /**
@@ -243,7 +300,9 @@ export function canTransitionOrderStatus(
   targetStatus: string,
   paymentStatus: string
 ): boolean {
-  if (currentStatus === targetStatus) return true;
+  if (currentStatus === targetStatus) {
+    return true;
+  }
 
   // Terminal states
   if (currentStatus === "cancelled" || currentStatus === "delivered") {
@@ -258,8 +317,11 @@ export function canTransitionOrderStatus(
     shipped: ["delivered"],
   };
 
-  const allowed = validTransitions[currentStatus]?.includes(targetStatus) ?? false;
-  if (!allowed) return false;
+  const allowed =
+    validTransitions[currentStatus]?.includes(targetStatus) ?? false;
+  if (!allowed) {
+    return false;
+  }
 
   // Invariant: cannot ship without verified payment
   if (targetStatus === "shipped" && paymentStatus !== "verified") {
@@ -276,7 +338,7 @@ export function generateSupportTicketNumber(date: Date = new Date()): string {
   const y = date.getUTCFullYear();
   const m = String(date.getUTCMonth() + 1).padStart(2, "0");
   const d = String(date.getUTCDate()).padStart(2, "0");
-  const entropy = Math.floor(Math.random() * 0xffff)
+  const entropy = Math.floor(Math.random() * 0xff_ff)
     .toString(16)
     .toUpperCase()
     .padStart(4, "0");
@@ -294,18 +356,18 @@ export function buildCampaignUtmUrl(input: {
   content?: string | null;
   origin?: string;
 }): string {
-  const path = input.landingPath.startsWith("/") ? input.landingPath : `/${input.landingPath}`;
+  const path = input.landingPath.startsWith("/")
+    ? input.landingPath
+    : `/${input.landingPath}`;
   const origin = input.origin || "https://zencino.com";
   const url = new URL(path, origin);
 
   url.searchParams.set("utm_source", input.source.trim().toLowerCase());
   url.searchParams.set("utm_medium", input.medium.trim().toLowerCase());
   url.searchParams.set("utm_campaign", input.campaign.trim().toLowerCase());
-  if (input.content && input.content.trim()) {
+  if (input.content?.trim()) {
     url.searchParams.set("utm_content", input.content.trim().toLowerCase());
   }
 
   return url.toString();
 }
-
-

@@ -3,7 +3,6 @@
 import { eq, inArray } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import {
-  categories,
   productCategories,
   productMedia,
   products,
@@ -13,13 +12,17 @@ import {
 } from "@/db/schema/catalog";
 import { audit } from "@/lib/audit";
 import { requireAdmin } from "@/lib/authz";
-import { isAmazonProductUrl, optionSignature, variantInput } from "@/lib/catalog/validation";
+import {
+  isAmazonProductUrl,
+  optionSignature,
+  variantInput,
+} from "@/lib/catalog/validation";
 import { db } from "@/lib/db";
 
 export interface ActionResult {
-  success?: boolean;
   error?: string;
   id?: string;
+  success?: boolean;
 }
 
 export async function upsertProductAction(
@@ -30,9 +33,12 @@ export async function upsertProductAction(
 
   const id = String(formData.get("id") || "").trim() || undefined;
   const name = String(formData.get("name") || "").trim();
-  const slug = String(formData.get("slug") || "").trim().toLowerCase();
+  const slug = String(formData.get("slug") || "")
+    .trim()
+    .toLowerCase();
   const description = String(formData.get("description") || "").trim();
-  const primaryCategoryId = String(formData.get("primaryCategoryId") || "").trim() || null;
+  const primaryCategoryId =
+    String(formData.get("primaryCategoryId") || "").trim() || null;
   const care = String(formData.get("care") || "").trim();
   const packageContents = String(formData.get("packageContents") || "").trim();
   const seoTitle = String(formData.get("seoTitle") || "").trim();
@@ -53,12 +59,18 @@ export async function upsertProductAction(
   }
 
   if (!slug || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
-    return { error: "Slug must contain only lowercase letters, numbers, and hyphens." };
+    return {
+      error: "Slug must contain only lowercase letters, numbers, and hyphens.",
+    };
   }
 
   try {
     if (id) {
-      const [existing] = await db.select().from(products).where(eq(products.id, id)).limit(1);
+      const [existing] = await db
+        .select()
+        .from(products)
+        .where(eq(products.id, id))
+        .limit(1);
       if (!existing) {
         return { error: "Product not found" };
       }
@@ -123,76 +135,79 @@ export async function upsertProductAction(
       revalidatePath("/admin/products");
       revalidatePath(`/admin/products/${id}`);
       return { success: true, id };
-    } else {
-      // Create new product
-      const [slugTaken] = await db
-        .select({ id: products.id })
-        .from(products)
-        .where(eq(products.slug, slug))
-        .limit(1);
-
-      if (slugTaken) {
-        return { error: `Product slug "${slug}" is already in use.` };
-      }
-
-      const [newProduct] = await db
-        .insert(products)
-        .values({
-          name,
-          slug,
-          description,
-          primaryCategoryId,
-          specifications,
-          care,
-          packageContents,
-          seoTitle,
-          seoDescription,
-          status: "draft",
-        })
-        .returning();
-
-      // Automatically create a default base variant
-      const baseSku = `${slug.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 10)}-DEFAULT`;
-      const [variant] = await db
-        .insert(productVariants)
-        .values({
-          productId: newProduct.id,
-          sku: baseSku,
-          title: "Standard",
-          options: {},
-          optionSignature: "[]",
-          currency: "INR",
-          active: true,
-        })
-        .returning();
-
-      // Create default channels for variant
-      await db.insert(variantChannels).values([
-        { variantId: variant.id, channel: "website", enabled: false },
-        { variantId: variant.id, channel: "amazon", enabled: false },
-      ]);
-
-      if (primaryCategoryId) {
-        await db
-          .insert(productCategories)
-          .values({ productId: newProduct.id, categoryId: primaryCategoryId })
-          .onConflictDoNothing();
-      }
-
-      await audit({
-        action: "catalog.product_created",
-        actorEmail: admin.user.email,
-        actorId: admin.user.id,
-        description: `Created product "${name}" (${slug})`,
-        entityId: newProduct.id,
-        entityType: "product",
-      });
-
-      revalidatePath("/admin/products");
-      return { success: true, id: newProduct.id };
     }
+    // Create new product
+    const [slugTaken] = await db
+      .select({ id: products.id })
+      .from(products)
+      .where(eq(products.slug, slug))
+      .limit(1);
+
+    if (slugTaken) {
+      return { error: `Product slug "${slug}" is already in use.` };
+    }
+
+    const [newProduct] = await db
+      .insert(products)
+      .values({
+        name,
+        slug,
+        description,
+        primaryCategoryId,
+        specifications,
+        care,
+        packageContents,
+        seoTitle,
+        seoDescription,
+        status: "draft",
+      })
+      .returning();
+
+    // Automatically create a default base variant
+    const baseSku = `${slug
+      .toUpperCase()
+      .replace(/[^A-Z0-9]/g, "")
+      .slice(0, 10)}-DEFAULT`;
+    const [variant] = await db
+      .insert(productVariants)
+      .values({
+        productId: newProduct.id,
+        sku: baseSku,
+        title: "Standard",
+        options: {},
+        optionSignature: "[]",
+        currency: "INR",
+        active: true,
+      })
+      .returning();
+
+    // Create default channels for variant
+    await db.insert(variantChannels).values([
+      { variantId: variant.id, channel: "website", enabled: false },
+      { variantId: variant.id, channel: "amazon", enabled: false },
+    ]);
+
+    if (primaryCategoryId) {
+      await db
+        .insert(productCategories)
+        .values({ productId: newProduct.id, categoryId: primaryCategoryId })
+        .onConflictDoNothing();
+    }
+
+    await audit({
+      action: "catalog.product_created",
+      actorEmail: admin.user.email,
+      actorId: admin.user.id,
+      description: `Created product "${name}" (${slug})`,
+      entityId: newProduct.id,
+      entityType: "product",
+    });
+
+    revalidatePath("/admin/products");
+    return { success: true, id: newProduct.id };
   } catch (error: unknown) {
-    const msg = error instanceof Error ? error.message : "Failed to save product";
+    const msg =
+      error instanceof Error ? error.message : "Failed to save product";
     return { error: msg };
   }
 }
@@ -204,7 +219,9 @@ export async function upsertVariantAction(
   const admin = await requireAdmin();
 
   const id = String(formData.get("id") || "").trim() || undefined;
-  const sku = String(formData.get("sku") || "").trim().toUpperCase();
+  const sku = String(formData.get("sku") || "")
+    .trim()
+    .toUpperCase();
   const title = String(formData.get("title") || "").trim();
   const priceInput = formData.get("priceINR");
   const mrpInput = formData.get("mrpINR");
@@ -212,9 +229,14 @@ export async function upsertVariantAction(
   const lengthInput = formData.get("lengthMm");
   const widthInput = formData.get("widthMm");
   const heightInput = formData.get("heightMm");
-  const active = formData.get("active") === "true" || formData.get("active") === "on";
-  const websiteEnabled = formData.get("websiteEnabled") === "true" || formData.get("websiteEnabled") === "on";
-  const amazonEnabled = formData.get("amazonEnabled") === "true" || formData.get("amazonEnabled") === "on";
+  const active =
+    formData.get("active") === "true" || formData.get("active") === "on";
+  const websiteEnabled =
+    formData.get("websiteEnabled") === "true" ||
+    formData.get("websiteEnabled") === "on";
+  const amazonEnabled =
+    formData.get("amazonEnabled") === "true" ||
+    formData.get("amazonEnabled") === "on";
   const amazonUrl = String(formData.get("amazonUrl") || "").trim();
 
   let options: Record<string, string> = {};
@@ -228,12 +250,28 @@ export async function upsertVariantAction(
   }
 
   // Convert rupees to minor units (paise)
-  const priceMinor = priceInput && !Number.isNaN(Number(priceInput)) ? Math.round(Number(priceInput) * 100) : null;
-  const mrpMinor = mrpInput && !Number.isNaN(Number(mrpInput)) ? Math.round(Number(mrpInput) * 100) : null;
-  const weightG = weightInput && !Number.isNaN(Number(weightInput)) ? Number(weightInput) : null;
-  const lengthMm = lengthInput && !Number.isNaN(Number(lengthInput)) ? Number(lengthInput) : null;
-  const widthMm = widthInput && !Number.isNaN(Number(widthInput)) ? Number(widthInput) : null;
-  const heightMm = heightInput && !Number.isNaN(Number(heightInput)) ? Number(heightInput) : null;
+  const priceMinor =
+    priceInput && !Number.isNaN(Number(priceInput))
+      ? Math.round(Number(priceInput) * 100)
+      : null;
+  const mrpMinor =
+    mrpInput && !Number.isNaN(Number(mrpInput))
+      ? Math.round(Number(mrpInput) * 100)
+      : null;
+  const weightG =
+    weightInput && !Number.isNaN(Number(weightInput))
+      ? Number(weightInput)
+      : null;
+  const lengthMm =
+    lengthInput && !Number.isNaN(Number(lengthInput))
+      ? Number(lengthInput)
+      : null;
+  const widthMm =
+    widthInput && !Number.isNaN(Number(widthInput)) ? Number(widthInput) : null;
+  const heightMm =
+    heightInput && !Number.isNaN(Number(heightInput))
+      ? Number(heightInput)
+      : null;
 
   const validation = variantInput.safeParse({
     id,
@@ -253,7 +291,9 @@ export async function upsertVariantAction(
   });
 
   if (!validation.success) {
-    return { error: validation.error.issues[0]?.message ?? "Invalid variant values" };
+    return {
+      error: validation.error.issues[0]?.message ?? "Invalid variant values",
+    };
   }
 
   const sig = optionSignature(options);
@@ -263,10 +303,14 @@ export async function upsertVariantAction(
     let asin: string | null = null;
     if (amazonUrl && isAmazonProductUrl(amazonUrl)) {
       const match = amazonUrl.match(/\/(?:dp|gp\/product)\/([A-Z0-9]{10})/i);
-      if (match) asin = match[1].toUpperCase();
+      if (match) {
+        asin = match[1].toUpperCase();
+      }
     }
 
-    const isVerifiedAmazon = Boolean(amazonEnabled && amazonUrl && isAmazonProductUrl(amazonUrl));
+    const isVerifiedAmazon = Boolean(
+      amazonEnabled && amazonUrl && isAmazonProductUrl(amazonUrl)
+    );
 
     if (id) {
       // Check SKU uniqueness
@@ -277,7 +321,9 @@ export async function upsertVariantAction(
         .limit(1);
 
       if (skuTaken && skuTaken.id !== id) {
-        return { error: `SKU "${sku}" is already assigned to another variant.` };
+        return {
+          error: `SKU "${sku}" is already assigned to another variant.`,
+        };
       }
 
       await db
@@ -395,12 +441,16 @@ export async function upsertVariantAction(
     revalidatePath(`/admin/products/${productId}`);
     return { success: true };
   } catch (error: unknown) {
-    const msg = error instanceof Error ? error.message : "Failed to save variant";
+    const msg =
+      error instanceof Error ? error.message : "Failed to save variant";
     return { error: msg };
   }
 }
 
-export async function deleteVariantAction(productId: string, variantId: string): Promise<ActionResult> {
+export async function deleteVariantAction(
+  productId: string,
+  variantId: string
+): Promise<ActionResult> {
   const admin = await requireAdmin();
 
   // Ensure product has at least one variant remaining
@@ -414,7 +464,9 @@ export async function deleteVariantAction(productId: string, variantId: string):
   }
 
   try {
-    await db.delete(variantChannels).where(eq(variantChannels.variantId, variantId));
+    await db
+      .delete(variantChannels)
+      .where(eq(variantChannels.variantId, variantId));
     await db.delete(productVariants).where(eq(productVariants.id, variantId));
 
     await audit({
@@ -429,7 +481,8 @@ export async function deleteVariantAction(productId: string, variantId: string):
     revalidatePath(`/admin/products/${productId}`);
     return { success: true };
   } catch (error: unknown) {
-    const msg = error instanceof Error ? error.message : "Failed to delete variant";
+    const msg =
+      error instanceof Error ? error.message : "Failed to delete variant";
     return { error: msg };
   }
 }
@@ -440,8 +493,14 @@ export async function updateProductStatusAction(
 ): Promise<ActionResult> {
   const admin = await requireAdmin();
 
-  const [product] = await db.select().from(products).where(eq(products.id, productId)).limit(1);
-  if (!product) return { error: "Product not found" };
+  const [product] = await db
+    .select()
+    .from(products)
+    .where(eq(products.id, productId))
+    .limit(1);
+  if (!product) {
+    return { error: "Product not found" };
+  }
 
   if (newStatus === "published") {
     // Publish validation
@@ -471,17 +530,24 @@ export async function updateProductStatusAction(
 
       if (web?.enabled) {
         if (!v.priceMinor || v.priceMinor <= 0) {
-          return { error: `Variant ${v.sku} has website sales enabled but has no valid selling price.` };
+          return {
+            error: `Variant ${v.sku} has website sales enabled but has no valid selling price.`,
+          };
         }
         if (!v.weightG || v.weightG <= 0) {
-          return { error: `Variant ${v.sku} has website sales enabled but has no shipping weight (weight_g).` };
+          return {
+            error: `Variant ${v.sku} has website sales enabled but has no shipping weight (weight_g).`,
+          };
         }
       }
 
-      if (amz?.enabled) {
-        if (!amz.externalUrl || !isAmazonProductUrl(amz.externalUrl)) {
-          return { error: `Variant ${v.sku} has Amazon sales enabled but lacks a valid Amazon product URL.` };
-        }
+      if (
+        amz?.enabled &&
+        (!amz.externalUrl || !isAmazonProductUrl(amz.externalUrl))
+      ) {
+        return {
+          error: `Variant ${v.sku} has Amazon sales enabled but lacks a valid Amazon product URL.`,
+        };
       }
     }
   }
@@ -491,7 +557,10 @@ export async function updateProductStatusAction(
       .update(products)
       .set({
         status: newStatus,
-        publishedAt: newStatus === "published" ? product.publishedAt || new Date() : product.publishedAt,
+        publishedAt:
+          newStatus === "published"
+            ? product.publishedAt || new Date()
+            : product.publishedAt,
         updatedAt: new Date(),
       })
       .where(eq(products.id, productId));
@@ -509,7 +578,10 @@ export async function updateProductStatusAction(
     revalidatePath(`/admin/products/${productId}`);
     return { success: true };
   } catch (error: unknown) {
-    const msg = error instanceof Error ? error.message : "Failed to update product status";
+    const msg =
+      error instanceof Error
+        ? error.message
+        : "Failed to update product status";
     return { error: msg };
   }
 }
@@ -548,12 +620,16 @@ export async function attachProductMediaAction(
     revalidatePath(`/admin/products/${productId}`);
     return { success: true };
   } catch (error: unknown) {
-    const msg = error instanceof Error ? error.message : "Failed to attach media";
+    const msg =
+      error instanceof Error ? error.message : "Failed to attach media";
     return { error: msg };
   }
 }
 
-export async function detachProductMediaAction(productMediaId: string, productId: string): Promise<ActionResult> {
+export async function detachProductMediaAction(
+  productMediaId: string,
+  productId: string
+): Promise<ActionResult> {
   const admin = await requireAdmin();
 
   try {
@@ -571,7 +647,8 @@ export async function detachProductMediaAction(productMediaId: string, productId
     revalidatePath(`/admin/products/${productId}`);
     return { success: true };
   } catch (error: unknown) {
-    const msg = error instanceof Error ? error.message : "Failed to detach media";
+    const msg =
+      error instanceof Error ? error.message : "Failed to detach media";
     return { error: msg };
   }
 }

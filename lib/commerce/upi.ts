@@ -1,11 +1,11 @@
 import QRCode from "qrcode";
 
 export interface GenerateUpiParams {
+  amountRupees: number;
+  note?: string;
+  orderNumber: string;
   upiId: string;
   upiName: string;
-  amountRupees: number;
-  orderNumber: string;
-  note?: string;
 }
 
 /**

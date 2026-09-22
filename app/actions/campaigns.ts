@@ -41,8 +41,11 @@ export async function saveCampaignAction(formData: FormData) {
 
     revalidatePath("/admin/campaigns");
     return { success: true, code: saved.code };
-  } catch (error: any) {
-    return { success: false, error: error.message || "Failed to save campaign" };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to save campaign",
+    };
   }
 }
 
@@ -55,7 +58,7 @@ export async function recordClientAnalyticsAction(input: {
   anonymousSessionId?: string;
 }) {
   // Dedupe key: event:sessionId:path:minute
-  const minuteStamp = Math.floor(Date.now() / 60000);
+  const minuteStamp = Math.floor(Date.now() / 60_000);
   const dedupeKey = `${input.eventName}:${input.anonymousSessionId || "anon"}:${input.path}:${minuteStamp}`;
 
   await recordAnalyticsEvent({

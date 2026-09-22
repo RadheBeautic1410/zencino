@@ -9,22 +9,28 @@ import {
   updateOrderFulfillment,
   verifyPaymentAndConfirmOrder,
 } from "@/lib/commerce/orders";
-import { generateQrCodeSvg, generateUpiUri, isValidUtr } from "@/lib/commerce/upi";
+import {
+  generateQrCodeSvg,
+  generateUpiUri,
+  isValidUtr,
+} from "@/lib/commerce/upi";
 import { env } from "@/lib/env";
 
 export interface CreateOrderResult {
-  success?: boolean;
   error?: string;
   orderId?: string;
   orderNumber?: string;
-  totalRupees?: number;
-  upiUri?: string;
   qrSvg?: string;
+  success?: boolean;
+  totalRupees?: number;
   upiId?: string;
   upiName?: string;
+  upiUri?: string;
 }
 
-export async function createOrderAction(formData: FormData): Promise<CreateOrderResult> {
+export async function createOrderAction(
+  formData: FormData
+): Promise<CreateOrderResult> {
   try {
     const session = await getCurrentSession();
 
@@ -37,8 +43,19 @@ export async function createOrderAction(formData: FormData): Promise<CreateOrder
     const postcode = String(formData.get("postcode") || "").trim();
     const customerEmail = String(formData.get("customerEmail") || "").trim();
 
-    if (!recipient || !phone || !line1 || !city || !state || !postcode || !customerEmail) {
-      return { error: "Please complete all required delivery address and contact fields." };
+    if (
+      !recipient ||
+      !phone ||
+      !line1 ||
+      !city ||
+      !state ||
+      !postcode ||
+      !customerEmail
+    ) {
+      return {
+        error:
+          "Please complete all required delivery address and contact fields.",
+      };
     }
 
     const { cookies } = await import("next/headers");
@@ -98,15 +115,18 @@ export async function createOrderAction(formData: FormData): Promise<CreateOrder
       upiName,
     };
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Failed to initiate order checkout";
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Failed to initiate order checkout";
     return { error: message };
   }
 }
 
 export interface PaymentProofResult {
-  success?: boolean;
   error?: string;
   orderNumber?: string;
+  success?: boolean;
 }
 
 export async function submitPaymentProofAction(
@@ -118,7 +138,10 @@ export async function submitPaymentProofAction(
     const cleanUtr = upiReference.trim().replace(/\s+/g, "");
 
     if (!isValidUtr(cleanUtr)) {
-      return { error: "Please enter a valid 8 to 24 character UPI UTR or Transaction Reference number." };
+      return {
+        error:
+          "Please enter a valid 8 to 24 character UPI UTR or Transaction Reference number.",
+      };
     }
 
     if (!screenshotUrl) {
@@ -138,7 +161,8 @@ export async function submitPaymentProofAction(
 
     return { success: true, orderNumber: result.orderNumber };
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Failed to submit payment proof";
+    const message =
+      error instanceof Error ? error.message : "Failed to submit payment proof";
     return { error: message };
   }
 }
@@ -162,7 +186,8 @@ export async function verifyPaymentAction(
 
     return { success: true };
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Failed to verify payment";
+    const message =
+      error instanceof Error ? error.message : "Failed to verify payment";
     return { error: message };
   }
 }
@@ -186,7 +211,8 @@ export async function rejectPaymentAction(
 
     return { success: true };
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Failed to reject payment proof";
+    const message =
+      error instanceof Error ? error.message : "Failed to reject payment proof";
     return { error: message };
   }
 }
@@ -213,7 +239,10 @@ export async function updateOrderFulfillmentAction(
 
     return { success: true };
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Failed to update fulfillment status";
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Failed to update fulfillment status";
     return { error: message };
   }
 }

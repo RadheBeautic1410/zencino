@@ -24,20 +24,22 @@ export default async function CustomerOrderPage({
     notFound();
   }
 
-  const { returns, refunds, cancellations } = await getOrderReturnAndRefundDetails(
-    details.order.id
-  );
+  const { returns, refunds, cancellations } =
+    await getOrderReturnAndRefundDetails(details.order.id);
 
   return (
-    <AppShell email={current.user.email} isAdmin={current.user.role === ADMIN_ROLE}>
+    <AppShell
+      email={current.user.email}
+      isAdmin={current.user.role === ADMIN_ROLE}
+    >
       <CustomerOrderDetail
-        order={details.order}
-        items={details.items}
         address={details.address}
-        proof={details.proof}
-        returns={returns}
-        refunds={refunds}
         cancellations={cancellations}
+        items={details.items}
+        order={details.order}
+        proof={details.proof}
+        refunds={refunds}
+        returns={returns}
       />
     </AppShell>
   );

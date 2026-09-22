@@ -1,16 +1,42 @@
 import { and, desc, eq, ilike, or } from "drizzle-orm";
+import { orders } from "@/db/schema/orders";
 import {
   type SupportMessage,
   type SupportRequest,
   supportMessages,
   supportRequests,
 } from "@/db/schema/support";
-import { orders } from "@/db/schema/orders";
 import { audit } from "@/lib/audit";
-import { db } from "@/lib/db";
 import { generateSupportTicketNumber } from "@/lib/commerce/rules";
+import { db } from "@/lib/db";
 
 export { generateSupportTicketNumber };
+
+export const SUPPORT_TICKET_STATUSES = [
+  "open",
+  "in_progress",
+  "resolved",
+  "closed",
+] as const;
+
+export type SupportTicketStatus = (typeof SUPPORT_TICKET_STATUSES)[number];
+
+export function isSupportTicketStatus(
+  value: string
+): value is SupportTicketStatus {
+  return (SUPPORT_TICKET_STATUSES as readonly string[]).includes(value);
+}
+
+export const SUPPORT_MESSAGE_VISIBILITIES = ["internal", "customer"] as const;
+
+export type SupportMessageVisibility =
+  (typeof SUPPORT_MESSAGE_VISIBILITIES)[number];
+
+export function isSupportMessageVisibility(
+  value: string
+): value is SupportMessageVisibility {
+  return (SUPPORT_MESSAGE_VISIBILITIES as readonly string[]).includes(value);
+}
 
 export async function createSupportInquiry(input: {
   name: string;
@@ -51,8 +77,10 @@ export async function createSupportInquiry(input: {
       .values({
         ticketNumber,
         userId: input.userId ?? null,
-        orderId: orderId,
-        orderNumber: input.orderNumber ? input.orderNumber.trim().toUpperCase() : null,
+        orderId,
+        orderNumber: input.orderNumber
+          ? input.orderNumber.trim().toUpperCase()
+          : null,
         name,
         email,
         phone: input.phone ? input.phone.trim() : null,
@@ -98,7 +126,7 @@ export async function createSupportInquiry(input: {
 export async function addSupportMessage(input: {
   requestId: string;
   body: string;
-  visibility: "internal" | "customer";
+  visibility: SupportMessageVisibility;
   authorId?: string;
   authorName: string;
   actorEmail?: string;
@@ -168,7 +196,7 @@ export async function addSupportMessage(input: {
 
 export async function updateSupportTicketStatus(input: {
   requestId: string;
-  status: "open" | "in_progress" | "resolved" | "closed";
+  status: SupportTicketStatus;
   actorId?: string;
   actorEmail?: string;
 }): Promise<SupportRequest> {
@@ -214,8 +242,8 @@ export async function getSupportTicketsList(filter?: {
 }): Promise<SupportRequest[]> {
   const conditions = [];
 
-  if (filter?.status && filter.status !== "all") {
-    conditions.push(eq(supportRequests.status, filter.status as any));
+  if (filter?.status && isSupportTicketStatus(filter.status)) {
+    conditions.push(eq(supportRequests.status, filter.status));
   }
 
   if (filter?.search) {
@@ -239,7 +267,9 @@ export async function getSupportTicketsList(filter?: {
   return await query;
 }
 
-export async function getSupportTicketDetails(requestIdOrNumber: string): Promise<{
+export async function getSupportTicketDetails(
+  requestIdOrNumber: string
+): Promise<{
   ticket: SupportRequest | null;
   messages: SupportMessage[];
   order: {

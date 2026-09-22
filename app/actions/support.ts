@@ -1,20 +1,30 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
+import { auth } from "@/lib/auth";
 import { requireAdmin } from "@/lib/authz";
 import {
   addSupportMessage,
   createSupportInquiry,
+  isSupportMessageVisibility,
+  isSupportTicketStatus,
   updateSupportTicketStatus,
 } from "@/lib/commerce/support";
-import { checkRateLimit, getClientIdentifier, RATE_LIMIT_POLICIES } from "@/lib/security/rate-limit";
+import {
+  checkRateLimit,
+  getClientIdentifier,
+  RATE_LIMIT_POLICIES,
+} from "@/lib/security/rate-limit";
 
 export async function submitSupportInquiryAction(formData: FormData) {
   const h = await headers();
   const clientId = getClientIdentifier(h);
-  const limitCheck = checkRateLimit(clientId, "support_inquiry", RATE_LIMIT_POLICIES.SUPPORT_INQUIRY);
+  const limitCheck = checkRateLimit(
+    clientId,
+    "support_inquiry",
+    RATE_LIMIT_POLICIES.SUPPORT_INQUIRY
+  );
   if (!limitCheck.success) {
     return {
       success: false,
@@ -29,10 +39,14 @@ export async function submitSupportInquiryAction(formData: FormData) {
   const phone = String(formData.get("phone") || "").trim() || undefined;
   const subject = String(formData.get("subject") || "").trim();
   const body = String(formData.get("body") || "").trim();
-  const orderNumber = String(formData.get("orderNumber") || "").trim() || undefined;
+  const orderNumber =
+    String(formData.get("orderNumber") || "").trim() || undefined;
 
   if (!name || !email || !subject || !body) {
-    return { success: false, error: "Please provide your name, email, subject, and message." };
+    return {
+      success: false,
+      error: "Please provide your name, email, subject, and message.",
+    };
   }
 
   try {
@@ -48,8 +62,12 @@ export async function submitSupportInquiryAction(formData: FormData) {
 
     revalidatePath("/admin/support");
     return { success: true, ticketNumber: result.ticketNumber };
-  } catch (error: any) {
-    return { success: false, error: error.message || "Failed to submit inquiry" };
+  } catch (error) {
+    return {
+      success: false,
+      error:
+        error instanceof Error ? error.message : "Failed to submit inquiry",
+    };
   }
 }
 
@@ -58,7 +76,10 @@ export async function addSupportMessageAction(formData: FormData) {
 
   const requestId = String(formData.get("requestId") || "").trim();
   const body = String(formData.get("body") || "").trim();
-  const visibility = (String(formData.get("visibility") || "customer") as any) || "customer";
+  const rawVisibility = String(formData.get("visibility") || "customer");
+  const visibility = isSupportMessageVisibility(rawVisibility)
+    ? rawVisibility
+    : "customer";
 
   if (!requestId || !body) {
     return { success: false, error: "Ticket ID and message body are required" };
@@ -76,8 +97,11 @@ export async function addSupportMessageAction(formData: FormData) {
 
     revalidatePath("/admin/support");
     return { success: true };
-  } catch (error: any) {
-    return { success: false, error: error.message || "Failed to add message" };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to add message",
+    };
   }
 }
 
@@ -85,10 +109,14 @@ export async function updateTicketStatusAction(formData: FormData) {
   const session = await requireAdmin();
 
   const requestId = String(formData.get("requestId") || "").trim();
-  const status = String(formData.get("status") || "open") as any;
+  const status = String(formData.get("status") || "open");
 
   if (!requestId) {
     return { success: false, error: "Ticket ID is required" };
+  }
+
+  if (!isSupportTicketStatus(status)) {
+    return { success: false, error: "Unknown ticket status" };
   }
 
   try {
@@ -101,7 +129,10 @@ export async function updateTicketStatusAction(formData: FormData) {
 
     revalidatePath("/admin/support");
     return { success: true };
-  } catch (error: any) {
-    return { success: false, error: error.message || "Failed to update status" };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to update status",
+    };
   }
 }

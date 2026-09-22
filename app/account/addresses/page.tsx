@@ -15,7 +15,10 @@ export default async function AddressesPage() {
   const addresses = await getCustomerAddresses(current.user.id);
 
   return (
-    <AppShell email={current.user.email} isAdmin={current.user.role === ADMIN_ROLE}>
+    <AppShell
+      email={current.user.email}
+      isAdmin={current.user.role === ADMIN_ROLE}
+    >
       <PageHeader
         description="Save multiple shipping destinations for fast one-click checkout across all devices."
         eyebrow="Account"

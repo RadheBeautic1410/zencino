@@ -4,7 +4,6 @@ import { getCartDetails } from "@/lib/commerce/cart";
 import { calculateCheckoutQuote } from "@/lib/commerce/quotes";
 
 export interface QuoteActionResult {
-  success?: boolean;
   error?: string;
   quote?: {
     attemptId: string;
@@ -15,9 +14,12 @@ export interface QuoteActionResult {
     isFreeShipping: boolean;
     quoteExpiresAt: Date;
   };
+  success?: boolean;
 }
 
-export async function createCheckoutQuoteAction(formData: FormData): Promise<QuoteActionResult> {
+export async function createCheckoutQuoteAction(
+  formData: FormData
+): Promise<QuoteActionResult> {
   const recipient = String(formData.get("recipient") || "").trim();
   const phone = String(formData.get("phone") || "").trim();
   const line1 = String(formData.get("line1") || "").trim();
@@ -63,7 +65,8 @@ export async function createCheckoutQuoteAction(formData: FormData): Promise<Quo
       },
     };
   } catch (error: unknown) {
-    const msg = error instanceof Error ? error.message : "Failed to calculate quote";
+    const msg =
+      error instanceof Error ? error.message : "Failed to calculate quote";
     return { error: msg };
   }
 }

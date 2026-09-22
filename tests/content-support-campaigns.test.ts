@@ -24,7 +24,11 @@ test("generateSupportTicketNumber produces valid SUP-YYYYMMDD-XXXX identifiers",
   const set = new Set<string>();
   for (let i = 0; i < 50; i++) {
     const t = generateSupportTicketNumber();
-    assert.equal(set.has(t), false, `Collision detected on ticket number: ${t}`);
+    assert.equal(
+      set.has(t),
+      false,
+      `Collision detected on ticket number: ${t}`
+    );
     set.add(t);
   }
 });
@@ -79,20 +83,20 @@ test("Reporting Invariant: Amazon outbound clicks are strictly segregated from d
     addToCarts: 80,
     checkoutStarts: 30,
     directOrdersCount: 15,
-    directRevenueMinor: 2248500, // ₹22,485.00 from direct website sales
+    directRevenueMinor: 2_248_500, // ₹22,485.00 from direct website sales
     amazonOutboundClicks: 120, // 120 customers clicked 'Buy on Amazon'
   };
 
   // Assert direct revenue is purely from website orders
   assert.equal(summary.directOrdersCount, 15);
-  assert.equal(summary.directRevenueMinor, 2248500);
+  assert.equal(summary.directRevenueMinor, 2_248_500);
 
   // Assert Amazon clicks are strictly referral intent, and zero revenue is fabricated
   assert.equal(summary.amazonOutboundClicks, 120);
 
   // Invariant check: Amazon clicks must not mutate or inflate direct revenue
   const revenueWithoutAmazon = summary.directRevenueMinor;
-  assert.equal(revenueWithoutAmazon, 2248500);
+  assert.equal(revenueWithoutAmazon, 2_248_500);
 });
 
 test("Content Fallback Invariant: Default CMS content provides complete structure during initialization", () => {
@@ -122,7 +126,10 @@ test("Store Settings Invariant: Profile contains statutory Indian business discl
   assert.equal(SELLER_INFO.tradeName, "Zencino");
   assert.ok(SELLER_INFO.legalName.includes("Pvt. Ltd."));
   // GSTIN format: 2 digits state code + 10 chars PAN + 1 entity num + 'Z' + 1 checksum
-  assert.match(SELLER_INFO.gstin, /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/);
+  assert.match(
+    SELLER_INFO.gstin,
+    /^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/
+  );
   // PAN format: 5 letters + 4 numbers + 1 letter
   assert.match(SELLER_INFO.pan, /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/);
   assert.ok(SELLER_INFO.supportEmail.includes("@"));

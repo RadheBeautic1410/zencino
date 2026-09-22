@@ -2,17 +2,21 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ProductCard } from "@/components/store/product-card";
 import { StoreShell } from "@/components/store/store-shell";
-import { getStorefrontCategories, getStorefrontProducts } from "@/lib/catalog/storefront";
+import {
+  getStorefrontCategories,
+  getStorefrontProducts,
+} from "@/lib/catalog/storefront";
 
 export const metadata: Metadata = {
   title: "All Products - Zencino",
-  description: "Browse Zencino's full catalog of acrylic organizers, home and kitchen essentials.",
+  description:
+    "Browse Zencino's full catalog of acrylic organizers, home and kitchen essentials.",
 };
 
 interface SearchParams {
   category?: string;
-  sort?: "newest" | "price-asc" | "price-desc";
   page?: string;
+  sort?: "newest" | "price-asc" | "price-desc";
 }
 
 export default async function ProductsPage({
@@ -25,7 +29,7 @@ export default async function ProductsPage({
   const sort = resolved.sort || "newest";
   const page = Number(resolved.page) || 1;
 
-  const [{ products, totalCount }, categories] = await Promise.all([
+  const [{ products }, categories] = await Promise.all([
     getStorefrontProducts({
       categorySlug,
       sort,
@@ -47,7 +51,8 @@ export default async function ProductsPage({
             All Products
           </h1>
           <p className="mt-3 text-sm text-muted-foreground max-w-xl leading-relaxed">
-            Thoughtfully engineered crystal-clear organization solutions for your everyday spaces. Available directly or on Amazon Prime.
+            Thoughtfully engineered crystal-clear organization solutions for
+            your everyday spaces. Available directly or on Amazon Prime.
           </p>
         </div>
 
@@ -55,24 +60,24 @@ export default async function ProductsPage({
         <div className="mt-6 flex flex-wrap items-center justify-between gap-4 border-b border-border/80 pb-4">
           <div className="flex flex-wrap items-center gap-2">
             <Link
-              href="/products"
               className={`rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-ui transition-all ${
-                !categorySlug
-                  ? "bg-primary text-primary-foreground shadow-2xs"
-                  : "bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted/70"
+                categorySlug
+                  ? "bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted/70"
+                  : "bg-primary text-primary-foreground shadow-2xs"
               }`}
+              href="/products"
             >
               All Categories
             </Link>
             {categories.map((c) => (
               <Link
-                key={c.id}
-                href={`/products?category=${c.slug}${sort !== "newest" ? `&sort=${sort}` : ""}`}
                 className={`rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-ui transition-all ${
                   categorySlug === c.slug
                     ? "bg-primary text-primary-foreground shadow-2xs"
                     : "bg-muted/40 text-muted-foreground hover:text-foreground hover:bg-muted/70"
                 }`}
+                href={`/products?category=${c.slug}${sort === "newest" ? "" : `&sort=${sort}`}`}
+                key={c.id}
               >
                 {c.name}
               </Link>
@@ -81,25 +86,27 @@ export default async function ProductsPage({
 
           {/* Sort Selector */}
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold uppercase tracking-ui text-muted-foreground">Sort:</span>
+            <span className="text-xs font-bold uppercase tracking-ui text-muted-foreground">
+              Sort:
+            </span>
             <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-ui">
               <Link
-                href={`/products?${categorySlug ? `category=${categorySlug}&` : ""}sort=newest`}
                 className={`px-2 py-1 ${sort === "newest" ? "text-primary font-bold underline" : "text-muted-foreground hover:text-foreground"}`}
+                href={`/products?${categorySlug ? `category=${categorySlug}&` : ""}sort=newest`}
               >
                 Newest
               </Link>
               <span className="text-muted-foreground/40">·</span>
               <Link
-                href={`/products?${categorySlug ? `category=${categorySlug}&` : ""}sort=price-asc`}
                 className={`px-2 py-1 ${sort === "price-asc" ? "text-primary font-bold underline" : "text-muted-foreground hover:text-foreground"}`}
+                href={`/products?${categorySlug ? `category=${categorySlug}&` : ""}sort=price-asc`}
               >
                 Price: Low to High
               </Link>
               <span className="text-muted-foreground/40">·</span>
               <Link
-                href={`/products?${categorySlug ? `category=${categorySlug}&` : ""}sort=price-desc`}
                 className={`px-2 py-1 ${sort === "price-desc" ? "text-primary font-bold underline" : "text-muted-foreground hover:text-foreground"}`}
+                href={`/products?${categorySlug ? `category=${categorySlug}&` : ""}sort=price-desc`}
               >
                 Price: High to Low
               </Link>
@@ -111,13 +118,15 @@ export default async function ProductsPage({
         <div className="mt-8">
           {products.length === 0 ? (
             <div className="rounded-3xl border border-dashed border-border/80 bg-card p-16 text-center shadow-2xs">
-              <p className="font-heading text-lg font-bold text-foreground">No products found in this selection</p>
+              <p className="font-heading text-lg font-bold text-foreground">
+                No products found in this selection
+              </p>
               <p className="mt-1 text-xs text-muted-foreground">
                 Try switching categories or view all products.
               </p>
               <Link
-                href="/products"
                 className="mt-6 inline-block rounded-full bg-primary px-6 py-2.5 text-xs font-bold uppercase tracking-ui text-primary-foreground hover:bg-primary/90 transition-all shadow-xs"
+                href="/products"
               >
                 Reset Catalog Filter
               </Link>

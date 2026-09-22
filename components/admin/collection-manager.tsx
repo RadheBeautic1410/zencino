@@ -1,24 +1,26 @@
 "use client";
 
+import { PencilSimple, Plus, SquaresFour } from "@phosphor-icons/react";
 import { useState, useTransition } from "react";
-import { PencilSimple, Plus, SquaresFour, Trash } from "@phosphor-icons/react";
-import {
-  addProductToCollectionAction,
-  removeProductFromCollectionAction,
-  upsertCollectionAction,
-} from "@/app/actions/catalog-collections";
+import { upsertCollectionAction } from "@/app/actions/catalog-collections";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 
 interface Collection {
+  description: string;
   id: string;
   name: string;
-  slug: string;
-  description: string;
-  status: "draft" | "published" | "archived";
   productCount: number;
+  slug: string;
+  status: "draft" | "published" | "archived";
 }
 
 interface ProductSummary {
@@ -29,12 +31,13 @@ interface ProductSummary {
 
 export function CollectionManager({
   collections,
-  availableProducts,
 }: {
   collections: Collection[];
   availableProducts: ProductSummary[];
 }) {
-  const [editingCollection, setEditingCollection] = useState<Collection | null>(null);
+  const [editingCollection, setEditingCollection] = useState<Collection | null>(
+    null
+  );
   const [isCreating, setIsCreating] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
@@ -51,7 +54,9 @@ export function CollectionManager({
       if (res.error) {
         setError(res.error);
       } else {
-        setSuccess(editingCollection ? "Collection updated!" : "Collection created!");
+        setSuccess(
+          editingCollection ? "Collection updated!" : "Collection created!"
+        );
         setEditingCollection(null);
         setIsCreating(false);
       }
@@ -67,17 +72,18 @@ export function CollectionManager({
             <div>
               <CardTitle>Collections ({collections.length})</CardTitle>
               <CardDescription>
-                Curated product groups (e.g. &quot;Acrylic Essentials&quot;, &quot;Desk Organizers&quot;).
+                Curated product groups (e.g. &quot;Acrylic Essentials&quot;,
+                &quot;Desk Organizers&quot;).
               </CardDescription>
             </div>
             <Button
-              size="sm"
               disabled={isCreating}
               onClick={() => {
                 setEditingCollection(null);
                 setIsCreating(true);
                 setError(null);
               }}
+              size="sm"
             >
               <Plus className="mr-1.5" size={14} /> New Collection
             </Button>
@@ -90,23 +96,41 @@ export function CollectionManager({
             ) : (
               <div className="divide-y divide-border">
                 {collections.map((col) => (
-                  <div key={col.id} className="flex items-center justify-between p-4">
+                  <div
+                    className="flex items-center justify-between p-4"
+                    key={col.id}
+                  >
                     <div className="flex items-center gap-3">
-                      <SquaresFour className="text-primary" size={24} weight="fill" />
+                      <SquaresFour
+                        className="text-primary"
+                        size={24}
+                        weight="fill"
+                      />
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="font-semibold text-sm">{col.name}</span>
+                          <span className="font-semibold text-sm">
+                            {col.name}
+                          </span>
                           <Badge
-                            variant={col.status === "published" ? "default" : "secondary"}
-                            className={col.status === "published" ? "text-success" : ""}
+                            className={
+                              col.status === "published" ? "text-success" : ""
+                            }
+                            variant={
+                              col.status === "published"
+                                ? "default"
+                                : "secondary"
+                            }
                           >
                             {col.status}
                           </Badge>
                           <span className="text-xs text-muted-foreground">
-                            {col.productCount} {col.productCount === 1 ? "product" : "products"}
+                            {col.productCount}{" "}
+                            {col.productCount === 1 ? "product" : "products"}
                           </span>
                         </div>
-                        <p className="font-mono text-2xs text-muted-foreground">/collections/{col.slug}</p>
+                        <p className="font-mono text-2xs text-muted-foreground">
+                          /collections/{col.slug}
+                        </p>
                         {col.description && (
                           <p className="mt-1 text-xs text-muted-foreground line-clamp-1">
                             {col.description}
@@ -116,13 +140,13 @@ export function CollectionManager({
                     </div>
                     <div className="flex items-center gap-1">
                       <Button
-                        size="sm"
-                        variant="ghost"
                         onClick={() => {
                           setIsCreating(false);
                           setEditingCollection(col);
                           setError(null);
                         }}
+                        size="sm"
+                        variant="ghost"
                       >
                         <PencilSimple size={14} />
                       </Button>
@@ -137,17 +161,23 @@ export function CollectionManager({
 
       {/* Editor Form */}
       <div>
-        {(isCreating || editingCollection) ? (
+        {isCreating || editingCollection ? (
           <Card>
             <CardHeader>
-              <CardTitle>{editingCollection ? "Edit Collection" : "New Collection"}</CardTitle>
+              <CardTitle>
+                {editingCollection ? "Edit Collection" : "New Collection"}
+              </CardTitle>
               <CardDescription>
-                {editingCollection ? `Editing "${editingCollection.name}"` : "Create a curated group"}
+                {editingCollection
+                  ? `Editing "${editingCollection.name}"`
+                  : "Create a curated group"}
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                {editingCollection && <input type="hidden" name="id" value={editingCollection.id} />}
+              <form className="space-y-4" onSubmit={handleSubmit}>
+                {editingCollection && (
+                  <input name="id" type="hidden" value={editingCollection.id} />
+                )}
 
                 {error && (
                   <div className="rounded border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive">
@@ -161,17 +191,21 @@ export function CollectionManager({
                 )}
 
                 <div>
-                  <label className="block text-xs font-semibold uppercase tracking-ui text-muted-foreground mb-1">
+                  <label
+                    className="block text-xs font-semibold uppercase tracking-ui text-muted-foreground mb-1"
+                    htmlFor="collection-manager-collection-name"
+                  >
                     Collection Name *
                   </label>
                   <Input
-                    name="name"
-                    required
                     defaultValue={editingCollection?.name ?? ""}
-                    placeholder="e.g. Acrylic Essentials"
+                    id="collection-manager-collection-name"
+                    name="name"
                     onChange={(e) => {
                       if (!editingCollection?.id) {
-                        const slugInput = document.querySelector('input[name="slug"]') as HTMLInputElement;
+                        const slugInput = document.querySelector(
+                          'input[name="slug"]'
+                        ) as HTMLInputElement;
                         if (slugInput && !slugInput.dataset.touched) {
                           slugInput.value = e.target.value
                             .toLowerCase()
@@ -180,45 +214,59 @@ export function CollectionManager({
                         }
                       }
                     }}
+                    placeholder="e.g. Acrylic Essentials"
+                    required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold uppercase tracking-ui text-muted-foreground mb-1">
+                  <label
+                    className="block text-xs font-semibold uppercase tracking-ui text-muted-foreground mb-1"
+                    htmlFor="collection-manager-slug"
+                  >
                     Slug *
                   </label>
                   <Input
-                    name="slug"
-                    required
                     defaultValue={editingCollection?.slug ?? ""}
-                    placeholder="e.g. acrylic-essentials"
+                    id="collection-manager-slug"
+                    name="slug"
                     onChange={(e) => {
                       e.currentTarget.dataset.touched = "true";
                     }}
+                    placeholder="e.g. acrylic-essentials"
+                    required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold uppercase tracking-ui text-muted-foreground mb-1">
+                  <label
+                    className="block text-xs font-semibold uppercase tracking-ui text-muted-foreground mb-1"
+                    htmlFor="collection-manager-description"
+                  >
                     Description
                   </label>
                   <textarea
-                    name="description"
-                    rows={3}
-                    defaultValue={editingCollection?.description ?? ""}
-                    placeholder="Collection intro copy..."
                     className="w-full border border-border bg-background p-2.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                    defaultValue={editingCollection?.description ?? ""}
+                    id="collection-manager-description"
+                    name="description"
+                    placeholder="Collection intro copy..."
+                    rows={3}
                   />
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold uppercase tracking-ui text-muted-foreground mb-1">
+                  <label
+                    className="block text-xs font-semibold uppercase tracking-ui text-muted-foreground mb-1"
+                    htmlFor="collection-manager-status"
+                  >
                     Status
                   </label>
                   <select
-                    name="status"
-                    defaultValue={editingCollection?.status ?? "draft"}
                     className="w-full border border-border bg-background px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring"
+                    defaultValue={editingCollection?.status ?? "draft"}
+                    id="collection-manager-status"
+                    name="status"
                   >
                     <option value="draft">Draft</option>
                     <option value="published">Published</option>
@@ -227,17 +275,21 @@ export function CollectionManager({
                 </div>
 
                 <div className="flex gap-2 pt-2">
-                  <Button type="submit" disabled={isPending} className="flex-1">
-                    {isPending ? "Saving..." : editingCollection ? "Update Collection" : "Create Collection"}
+                  <Button className="flex-1" disabled={isPending} type="submit">
+                    {isPending
+                      ? "Saving..."
+                      : editingCollection
+                        ? "Update Collection"
+                        : "Create Collection"}
                   </Button>
                   <Button
-                    type="button"
-                    variant="secondary"
                     onClick={() => {
                       setEditingCollection(null);
                       setIsCreating(false);
                       setError(null);
                     }}
+                    type="button"
+                    variant="secondary"
                   >
                     Cancel
                   </Button>
@@ -247,7 +299,8 @@ export function CollectionManager({
           </Card>
         ) : (
           <div className="border border-dashed border-border p-8 text-center text-muted-foreground text-xs">
-            Select a collection to edit or click &quot;New Collection&quot; above.
+            Select a collection to edit or click &quot;New Collection&quot;
+            above.
           </div>
         )}
       </div>

@@ -28,9 +28,9 @@ export default async function OrderSuccessPage({
   return (
     <StoreShell>
       <OrderSuccessView
-        order={details.order}
-        items={details.items}
         address={details.address}
+        items={details.items}
+        order={details.order}
         proof={details.proof}
       />
     </StoreShell>

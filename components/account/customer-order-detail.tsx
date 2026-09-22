@@ -1,14 +1,8 @@
 ﻿"use client";
 
-import { useRef, useState, useTransition } from "react";
-import Image from "next/image";
-import Link from "next/link";
 import {
   ArrowLeft,
-  ArrowSquareOut,
   Check,
-  CheckCircle,
-  Clock,
   FileText,
   Package,
   Printer,
@@ -16,11 +10,16 @@ import {
   SpinnerGap,
   Truck,
   UploadSimple,
-  Warning,
   WarningCircle,
   X,
 } from "@phosphor-icons/react";
-import { requestCancellationAction, requestReturnAction } from "@/app/actions/returns";
+import Image from "next/image";
+import Link from "next/link";
+import { useRef, useState, useTransition } from "react";
+import {
+  requestCancellationAction,
+  requestReturnAction,
+} from "@/app/actions/returns";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,64 +28,67 @@ import { formatDateTime } from "@/lib/utils";
 
 interface OrderDetailItem {
   id: string;
-  productName: string;
-  variantTitle: string;
-  sku: string;
-  quantity: number;
-  unitPriceMinor: number;
   lineTotalMinor: number;
+  productName: string;
+  quantity: number;
+  sku: string;
+  unitPriceMinor: number;
+  variantTitle: string;
 }
 
 interface OrderDetailAddress {
-  recipient: string;
-  phone: string;
+  city: string;
+  countryCode?: string;
   line1: string;
   line2?: string | null;
-  city: string;
-  state: string;
+  phone: string;
   postcode: string;
-  countryCode?: string;
+  recipient: string;
+  state: string;
 }
 
 interface ReturnRecord {
-  id: string;
-  returnNumber: string;
-  orderItemId: string;
-  quantity: number;
-  reason: string;
-  customerNote?: string | null;
-  photos?: any;
-  status: string;
-  restockAction: string;
-  refundAmountMinor: number;
   adminNote?: string | null;
   createdAt: Date;
+  customerNote?: string | null;
+  id: string;
+  orderItemId: string;
+  photos?: string[] | null;
   productName?: string | null;
-  variantTitle?: string | null;
+  quantity: number;
+  reason: string;
+  refundAmountMinor: number;
+  restockAction: string;
+  returnNumber: string;
   sku?: string | null;
+  status: string;
+  variantTitle?: string | null;
 }
 
 interface RefundRecord {
-  id: string;
-  refundNumber: string;
   amountMinor: number;
-  reason: string;
   creditNoteNumber: string;
-  transactionReference?: string | null;
-  status: string;
+  id: string;
   processedAt: Date;
+  reason: string;
+  refundNumber: string;
+  status: string;
+  transactionReference?: string | null;
 }
 
 interface CancellationRecord {
-  id: string;
-  reason: string;
-  status: string;
-  requestedBy: string;
   adminNote?: string | null;
   createdAt: Date;
+  id: string;
+  reason: string;
+  requestedBy: string;
+  status: string;
 }
 
 interface CustomerOrderDetailProps {
+  address: OrderDetailAddress | null;
+  cancellations?: CancellationRecord[];
+  items: OrderDetailItem[];
   order: {
     id: string;
     orderNumber: string;
@@ -104,15 +106,12 @@ interface CustomerOrderDetailProps {
     customerEmail: string;
     customerPhone: string;
   };
-  items: OrderDetailItem[];
-  address: OrderDetailAddress | null;
   proof: {
     upiReference?: string | null;
     status?: string;
   } | null;
-  returns?: ReturnRecord[];
   refunds?: RefundRecord[];
-  cancellations?: CancellationRecord[];
+  returns?: ReturnRecord[];
 }
 
 export function CustomerOrderDetail({
@@ -122,7 +121,6 @@ export function CustomerOrderDetail({
   proof,
   returns = [],
   refunds = [],
-  cancellations = [],
 }: CustomerOrderDetailProps) {
   const [isPending, startTransition] = useTransition();
   const [actionError, setActionError] = useState<string | null>(null);
@@ -135,7 +133,8 @@ export function CustomerOrderDetail({
   const [returnModalOpen, setReturnModalOpen] = useState(false);
   const [selectedItemId, setSelectedItemId] = useState(items[0]?.id || "");
   const [returnQuantity, setReturnQuantity] = useState(1);
-  const [returnReason, setReturnReason] = useState<string>("damaged_in_transit");
+  const [returnReason, setReturnReason] =
+    useState<string>("damaged_in_transit");
   const [customerNote, setCustomerNote] = useState("");
   const [returnPhotos, setReturnPhotos] = useState<string[]>([]);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
@@ -153,7 +152,9 @@ export function CustomerOrderDetail({
 
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file) {
+      return;
+    }
 
     setIsUploadingPhoto(true);
     setPhotoError(null);
@@ -209,10 +210,13 @@ export function CustomerOrderDetail({
     setActionError(null);
 
     if (
-      (returnReason === "damaged_in_transit" || returnReason === "defective_quality") &&
+      (returnReason === "damaged_in_transit" ||
+        returnReason === "defective_quality") &&
       returnPhotos.length === 0
     ) {
-      setActionError("Please upload at least 1 photo showing the damage or defect.");
+      setActionError(
+        "Please upload at least 1 photo showing the damage or defect."
+      );
       return;
     }
 
@@ -250,10 +254,12 @@ export function CustomerOrderDetail({
         order.paymentStatus === "verified"
           ? "Bank transfer confirmed"
           : order.paymentStatus === "under_review"
-          ? "Verification in progress"
-          : "Payment pending",
+            ? "Verification in progress"
+            : "Payment pending",
       completed: order.paymentStatus === "verified",
-      current: order.status === "payment_review" || order.paymentStatus === "under_review",
+      current:
+        order.status === "payment_review" ||
+        order.paymentStatus === "under_review",
     },
     {
       label: "Processing & Packaging",
@@ -284,7 +290,12 @@ export function CustomerOrderDetail({
     <div className="space-y-8 max-w-4xl">
       {/* Top back button and action bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <Button asChild variant="ghost" size="sm" className="self-start gap-1.5 text-xs text-muted-foreground hover:text-foreground">
+        <Button
+          asChild
+          className="self-start gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+          size="sm"
+          variant="ghost"
+        >
           <Link href="/account">
             <ArrowLeft size={16} /> Back to My Account
           </Link>
@@ -292,11 +303,16 @@ export function CustomerOrderDetail({
 
         <div className="flex flex-wrap items-center gap-2">
           {/* Print Invoice */}
-          <Button asChild variant="outline" size="sm" className="h-8 gap-1.5 text-xs">
+          <Button
+            asChild
+            className="h-8 gap-1.5 text-xs"
+            size="sm"
+            variant="outline"
+          >
             <Link
               href={`/orders/${order.orderNumber}/invoice`}
-              target="_blank"
               rel="noopener noreferrer"
+              target="_blank"
             >
               <Printer size={15} /> Print Tax Invoice
             </Link>
@@ -304,11 +320,16 @@ export function CustomerOrderDetail({
 
           {/* Credit Note Link if refund exists */}
           {refunds.length > 0 && (
-            <Button asChild variant="outline" size="sm" className="h-8 gap-1.5 text-xs text-rose-700 border-rose-200 hover:bg-rose-50">
+            <Button
+              asChild
+              className="h-8 gap-1.5 text-xs text-rose-700 border-rose-200 hover:bg-rose-50"
+              size="sm"
+              variant="outline"
+            >
               <Link
                 href={`/orders/${order.orderNumber}/credit-note`}
-                target="_blank"
                 rel="noopener noreferrer"
+                target="_blank"
               >
                 <FileText size={15} /> Print GST Credit Note
               </Link>
@@ -318,10 +339,10 @@ export function CustomerOrderDetail({
           {/* Cancel Order Trigger */}
           {canCancel && (
             <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setCancelModalOpen(true)}
               className="h-8 text-xs text-destructive border-destructive/30 hover:bg-destructive/10"
+              onClick={() => setCancelModalOpen(true)}
+              size="sm"
+              variant="outline"
             >
               Cancel Order
             </Button>
@@ -330,10 +351,10 @@ export function CustomerOrderDetail({
           {/* Return Request Trigger */}
           {order.status === "delivered" && eligibility.eligible && (
             <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => setReturnModalOpen(true)}
               className="h-8 text-xs font-bold uppercase tracking-ui"
+              onClick={() => setReturnModalOpen(true)}
+              size="sm"
+              variant="secondary"
             >
               Request Return / Replacement
             </Button>
@@ -343,7 +364,7 @@ export function CustomerOrderDetail({
 
       {actionError && (
         <div className="flex items-center gap-2 rounded-xl bg-destructive/10 border border-destructive/30 p-4 text-xs text-destructive">
-          <WarningCircle size={18} className="shrink-0" />
+          <WarningCircle className="shrink-0" size={18} />
           <span>{actionError}</span>
         </div>
       )}
@@ -353,7 +374,10 @@ export function CustomerOrderDetail({
         <div className="rounded-2xl border border-primary/20 bg-primary/5 p-5 space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Badge variant="secondary" className="uppercase text-3xs font-bold">
+              <Badge
+                className="uppercase text-3xs font-bold"
+                variant="secondary"
+              >
                 Return Claim Active
               </Badge>
               <span className="font-mono text-xs font-bold text-foreground">
@@ -366,8 +390,11 @@ export function CustomerOrderDetail({
           </div>
 
           <p className="text-xs text-muted-foreground">
-            Claim for <strong>{returns[0].quantity}x {returns[0].productName}</strong> (Reason:{" "}
-            {returns[0].reason.replace(/_/g, " ")}).
+            Claim for{" "}
+            <strong>
+              {returns[0].quantity}x {returns[0].productName}
+            </strong>{" "}
+            (Reason: {returns[0].reason.replace(/_/g, " ")}).
             {returns[0].status === "requested" &&
               " Our customer care team is reviewing your claim and photo verification."}
             {returns[0].status === "approved" &&
@@ -403,27 +430,27 @@ export function CustomerOrderDetail({
 
           <div className="flex flex-wrap items-center gap-2">
             <Badge
+              className="text-2xs uppercase tracking-ui font-bold"
               variant={
                 order.status === "confirmed" || order.status === "delivered"
                   ? "secondary"
                   : order.status === "cancelled"
-                  ? "destructive"
-                  : "outline"
+                    ? "destructive"
+                    : "outline"
               }
-              className="text-2xs uppercase tracking-ui font-bold"
             >
               Status: {order.status.replace("_", " ")}
             </Badge>
 
             <Badge
+              className="text-2xs uppercase tracking-ui font-bold"
               variant={
                 order.paymentStatus === "verified"
                   ? "secondary"
                   : order.paymentStatus === "refunded"
-                  ? "destructive"
-                  : "outline"
+                    ? "destructive"
+                    : "outline"
               }
-              className="text-2xs uppercase tracking-ui font-bold"
             >
               Payment: {order.paymentStatus.replace("_", " ")}
             </Badge>
@@ -431,7 +458,14 @@ export function CustomerOrderDetail({
         </div>
 
         {/* Visual Delivery Milestones Timeline */}
-        {order.status !== "cancelled" ? (
+        {order.status === "cancelled" ? (
+          <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-4 text-xs text-destructive space-y-1">
+            <span className="font-bold block">Order Cancelled</span>
+            <p className="text-2xs text-muted-foreground">
+              {order.cancelReason || "This order was cancelled."}
+            </p>
+          </div>
+        ) : (
           <div className="pt-2">
             <h2 className="text-xs font-bold uppercase tracking-ui text-muted-foreground mb-6">
               Delivery Milestones
@@ -443,14 +477,17 @@ export function CustomerOrderDetail({
                 const isCurrent = step.current;
 
                 return (
-                  <div key={idx} className="relative flex items-start gap-4">
+                  <div
+                    className="relative flex items-start gap-4"
+                    key={step.label}
+                  >
                     <span
                       className={`absolute -left-6 grid size-5 place-items-center rounded-full text-2xs font-bold ${
                         isDone
                           ? "bg-emerald-600 text-white"
                           : isCurrent
-                          ? "border-2 border-primary bg-background text-primary"
-                          : "border border-border bg-muted text-muted-foreground"
+                            ? "border-2 border-primary bg-background text-primary"
+                            : "border border-border bg-muted text-muted-foreground"
                       }`}
                     >
                       {isDone ? <Check size={12} weight="bold" /> : idx + 1}
@@ -459,24 +496,21 @@ export function CustomerOrderDetail({
                     <div>
                       <p
                         className={`text-xs font-bold ${
-                          isDone || isCurrent ? "text-foreground" : "text-muted-foreground"
+                          isDone || isCurrent
+                            ? "text-foreground"
+                            : "text-muted-foreground"
                         }`}
                       >
                         {step.label}
                       </p>
-                      <p className="text-2xs text-muted-foreground mt-0.5">{step.description}</p>
+                      <p className="text-2xs text-muted-foreground mt-0.5">
+                        {step.description}
+                      </p>
                     </div>
                   </div>
                 );
               })}
             </div>
-          </div>
-        ) : (
-          <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-4 text-xs text-destructive space-y-1">
-            <span className="font-bold block">Order Cancelled</span>
-            <p className="text-2xs text-muted-foreground">
-              {order.cancelReason || "This order was cancelled."}
-            </p>
           </div>
         )}
 
@@ -488,11 +522,21 @@ export function CustomerOrderDetail({
                 Dispatched via {order.trackingCourier || "Courier Partner"}
               </span>
               <span className="text-2xs text-muted-foreground">
-                AWB / Consignment: <strong className="font-mono text-foreground">{order.trackingNumber}</strong>
+                AWB / Consignment:{" "}
+                <strong className="font-mono text-foreground">
+                  {order.trackingNumber}
+                </strong>
               </span>
             </div>
-            <Button asChild variant="secondary" size="sm" className="h-8 text-xs">
-              <Link href={`/track-order?orderNumber=${order.orderNumber}&contact=${encodeURIComponent(order.customerEmail)}`}>
+            <Button
+              asChild
+              className="h-8 text-xs"
+              size="sm"
+              variant="secondary"
+            >
+              <Link
+                href={`/track-order?orderNumber=${order.orderNumber}&contact=${encodeURIComponent(order.customerEmail)}`}
+              >
                 Open Public Tracking
               </Link>
             </Button>
@@ -510,14 +554,21 @@ export function CustomerOrderDetail({
 
           <div className="divide-y divide-border">
             {items.map((it) => (
-              <div key={it.id} className="py-3.5 flex justify-between items-center text-xs">
+              <div
+                className="py-3.5 flex justify-between items-center text-xs"
+                key={it.id}
+              >
                 <div>
-                  <p className="font-semibold text-foreground">{it.productName}</p>
-                  <p className="text-2xs text-muted-foreground">
-                    Variant: {it.variantTitle} · SKU: <span className="font-mono">{it.sku}</span>
+                  <p className="font-semibold text-foreground">
+                    {it.productName}
                   </p>
                   <p className="text-2xs text-muted-foreground">
-                    Qty: {it.quantity} × ₹{(it.unitPriceMinor / 100).toLocaleString("en-IN")}
+                    Variant: {it.variantTitle} · SKU:{" "}
+                    <span className="font-mono">{it.sku}</span>
+                  </p>
+                  <p className="text-2xs text-muted-foreground">
+                    Qty: {it.quantity} × ₹
+                    {(it.unitPriceMinor / 100).toLocaleString("en-IN")}
                   </p>
                 </div>
                 <div className="text-right font-mono font-bold text-foreground">
@@ -531,20 +582,26 @@ export function CustomerOrderDetail({
             <div className="flex justify-between text-muted-foreground">
               <span>Item Subtotal:</span>
               <span className="font-mono">
-                ₹{(items.reduce((s, i) => s + i.lineTotalMinor, 0) / 100).toLocaleString("en-IN")}
+                ₹
+                {(
+                  items.reduce((s, i) => s + i.lineTotalMinor, 0) / 100
+                ).toLocaleString("en-IN")}
               </span>
             </div>
             <div className="flex justify-between text-muted-foreground">
               <span>Standard Delivery:</span>
               <span>
-                {order.totalMinor >= items.reduce((s, i) => s + i.lineTotalMinor, 0) + 100
+                {order.totalMinor >=
+                items.reduce((s, i) => s + i.lineTotalMinor, 0) + 100
                   ? `₹${((order.totalMinor - items.reduce((s, i) => s + i.lineTotalMinor, 0)) / 100).toFixed(2)}`
                   : "FREE"}
               </span>
             </div>
             <div className="flex justify-between font-bold text-sm text-foreground border-t border-border pt-2">
               <span>Total Paid:</span>
-              <span className="font-mono">₹{(order.totalMinor / 100).toLocaleString("en-IN")}</span>
+              <span className="font-mono">
+                ₹{(order.totalMinor / 100).toLocaleString("en-IN")}
+              </span>
             </div>
           </div>
         </div>
@@ -558,19 +615,30 @@ export function CustomerOrderDetail({
 
             {address ? (
               <div className="space-y-1 text-muted-foreground">
-                <p className="font-semibold text-foreground text-sm">{address.recipient}</p>
+                <p className="font-semibold text-foreground text-sm">
+                  {address.recipient}
+                </p>
                 <p>{address.line1}</p>
                 {address.line2 && <p>{address.line2}</p>}
                 <p>
-                  {address.city}, {address.state} — <strong className="font-mono text-foreground">{address.postcode}</strong>
+                  {address.city}, {address.state} —{" "}
+                  <strong className="font-mono text-foreground">
+                    {address.postcode}
+                  </strong>
                 </p>
                 <p className="pt-2">
-                  <span className="text-2xs uppercase tracking-ui font-semibold text-muted-foreground">Phone:</span>{" "}
-                  <span className="font-mono text-foreground">{address.phone}</span>
+                  <span className="text-2xs uppercase tracking-ui font-semibold text-muted-foreground">
+                    Phone:
+                  </span>{" "}
+                  <span className="font-mono text-foreground">
+                    {address.phone}
+                  </span>
                 </p>
               </div>
             ) : (
-              <p className="text-muted-foreground">No address recorded for this order.</p>
+              <p className="text-muted-foreground">
+                No address recorded for this order.
+              </p>
             )}
           </div>
 
@@ -583,17 +651,23 @@ export function CustomerOrderDetail({
               <div className="flex justify-between">
                 <span>Payment Method:</span>
                 <strong className="text-foreground uppercase">
-                  {order.paymentMethod === "upi_qr" ? "Direct UPI (NPCI QR)" : order.paymentMethod}
+                  {order.paymentMethod === "upi_qr"
+                    ? "Direct UPI (NPCI QR)"
+                    : order.paymentMethod}
                 </strong>
               </div>
               <div className="flex justify-between">
                 <span>Verification:</span>
-                <span className="font-bold text-foreground uppercase">{order.paymentStatus}</span>
+                <span className="font-bold text-foreground uppercase">
+                  {order.paymentStatus}
+                </span>
               </div>
               {proof?.upiReference && (
                 <div className="flex justify-between">
                   <span>Bank UTR:</span>
-                  <span className="font-mono font-bold text-foreground">{proof.upiReference}</span>
+                  <span className="font-mono font-bold text-foreground">
+                    {proof.upiReference}
+                  </span>
                 </div>
               )}
             </div>
@@ -610,50 +684,59 @@ export function CustomerOrderDetail({
                 Cancel Order {order.orderNumber}
               </h3>
               <button
-                type="button"
-                onClick={() => setCancelModalOpen(false)}
                 className="text-muted-foreground hover:text-foreground"
+                onClick={() => setCancelModalOpen(false)}
+                type="button"
               >
                 <X size={18} />
               </button>
             </div>
 
             <p className="text-xs text-muted-foreground">
-              Please specify the reason for cancelling this order. If your payment was already verified,
-              a direct UPI reversal refund will be initiated by our team.
+              Please specify the reason for cancelling this order. If your
+              payment was already verified, a direct UPI reversal refund will be
+              initiated by our team.
             </p>
 
-            <form onSubmit={handleRequestCancellation} className="space-y-4">
+            <form className="space-y-4" onSubmit={handleRequestCancellation}>
               <div>
-                <label className="block text-2xs font-semibold uppercase tracking-ui text-muted-foreground mb-1">
-                  Reason for Cancellation <span className="text-destructive">*</span>
+                <label
+                  className="block text-2xs font-semibold uppercase tracking-ui text-muted-foreground mb-1"
+                  htmlFor="customer-order-detail-reason-for-cancellation"
+                >
+                  Reason for Cancellation{" "}
+                  <span className="text-destructive">*</span>
                 </label>
                 <Input
-                  required
-                  placeholder="e.g. Ordered incorrect size, change of mind"
-                  value={cancelReason}
-                  onChange={(e) => setCancelReason(e.target.value)}
                   className="text-xs"
+                  id="customer-order-detail-reason-for-cancellation"
+                  onChange={(e) => setCancelReason(e.target.value)}
+                  placeholder="e.g. Ordered incorrect size, change of mind"
+                  required
+                  value={cancelReason}
                 />
               </div>
 
               <div className="flex justify-end gap-3 pt-2">
                 <Button
+                  className="text-xs"
+                  onClick={() => setCancelModalOpen(false)}
+                  size="sm"
                   type="button"
                   variant="outline"
-                  size="sm"
-                  onClick={() => setCancelModalOpen(false)}
-                  className="text-xs"
                 >
                   Keep Order
                 </Button>
                 <Button
-                  type="submit"
+                  className="gap-2 text-xs font-bold uppercase tracking-ui bg-destructive text-destructive-foreground hover:bg-destructive/90"
                   disabled={isPending}
                   size="sm"
-                  className="gap-2 text-xs font-bold uppercase tracking-ui bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  type="submit"
                 >
-                  {isPending && <SpinnerGap className="animate-spin" size={14} />} Confirm Cancellation
+                  {isPending && (
+                    <SpinnerGap className="animate-spin" size={14} />
+                  )}{" "}
+                  Confirm Cancellation
                 </Button>
               </div>
             </form>
@@ -670,28 +753,33 @@ export function CustomerOrderDetail({
                 Request Return / Replacement
               </h3>
               <button
-                type="button"
-                onClick={() => setReturnModalOpen(false)}
                 className="text-muted-foreground hover:text-foreground"
+                onClick={() => setReturnModalOpen(false)}
+                type="button"
               >
                 <X size={18} />
               </button>
             </div>
 
-            <form onSubmit={handleRequestReturn} className="space-y-4 text-xs">
+            <form className="space-y-4 text-xs" onSubmit={handleRequestReturn}>
               {/* Select Item */}
               {items.length > 1 && (
                 <div>
-                  <label className="block text-2xs font-semibold uppercase tracking-ui text-muted-foreground mb-1">
-                    Select Item to Return <span className="text-destructive">*</span>
+                  <label
+                    className="block text-2xs font-semibold uppercase tracking-ui text-muted-foreground mb-1"
+                    htmlFor="customer-order-detail-select-item-to-return"
+                  >
+                    Select Item to Return{" "}
+                    <span className="text-destructive">*</span>
                   </label>
                   <select
-                    value={selectedItemId}
+                    className="w-full rounded-md border border-border bg-background px-3 py-2 text-xs"
+                    id="customer-order-detail-select-item-to-return"
                     onChange={(e) => {
                       setSelectedItemId(e.target.value);
                       setReturnQuantity(1);
                     }}
-                    className="w-full rounded-md border border-border bg-background px-3 py-2 text-xs"
+                    value={selectedItemId}
                   >
                     {items.map((it) => (
                       <option key={it.id} value={it.id}>
@@ -704,68 +792,102 @@ export function CustomerOrderDetail({
 
               {/* Quantity */}
               <div>
-                <label className="block text-2xs font-semibold uppercase tracking-ui text-muted-foreground mb-1">
-                  Quantity to Return (Max {selectedItem.quantity}) <span className="text-destructive">*</span>
+                <label
+                  className="block text-2xs font-semibold uppercase tracking-ui text-muted-foreground mb-1"
+                  htmlFor="customer-order-detail-quantity-to-return-max"
+                >
+                  Quantity to Return (Max {selectedItem.quantity}){" "}
+                  <span className="text-destructive">*</span>
                 </label>
                 <Input
-                  type="number"
-                  min={1}
-                  max={selectedItem.quantity}
-                  value={returnQuantity}
-                  onChange={(e) => setReturnQuantity(parseInt(e.target.value, 10) || 1)}
                   className="text-xs"
+                  id="customer-order-detail-quantity-to-return-max"
+                  max={selectedItem.quantity}
+                  min={1}
+                  onChange={(e) =>
+                    setReturnQuantity(Number.parseInt(e.target.value, 10) || 1)
+                  }
+                  type="number"
+                  value={returnQuantity}
                 />
               </div>
 
               {/* Reason */}
               <div>
-                <label className="block text-2xs font-semibold uppercase tracking-ui text-muted-foreground mb-1">
+                <label
+                  className="block text-2xs font-semibold uppercase tracking-ui text-muted-foreground mb-1"
+                  htmlFor="customer-order-detail-reason-for-return"
+                >
                   Reason for Return <span className="text-destructive">*</span>
                 </label>
                 <select
-                  value={returnReason}
-                  onChange={(e) => setReturnReason(e.target.value)}
                   className="w-full rounded-md border border-border bg-background px-3 py-2 text-xs"
+                  id="customer-order-detail-reason-for-return"
+                  onChange={(e) => setReturnReason(e.target.value)}
+                  value={returnReason}
                 >
-                  <option value="damaged_in_transit">Damaged in transit / Broken acrylic</option>
-                  <option value="defective_quality">Defective quality / Surface scratch</option>
+                  <option value="damaged_in_transit">
+                    Damaged in transit / Broken acrylic
+                  </option>
+                  <option value="defective_quality">
+                    Defective quality / Surface scratch
+                  </option>
                   <option value="wrong_item">Wrong item delivered</option>
-                  <option value="not_as_described">Not as described on website</option>
+                  <option value="not_as_described">
+                    Not as described on website
+                  </option>
                   <option value="other">Other reason</option>
                 </select>
               </div>
 
               {/* Note */}
               <div>
-                <label className="block text-2xs font-semibold uppercase tracking-ui text-muted-foreground mb-1">
+                <label
+                  className="block text-2xs font-semibold uppercase tracking-ui text-muted-foreground mb-1"
+                  htmlFor="customer-order-detail-description-note"
+                >
                   Description / Note
                 </label>
                 <textarea
-                  rows={2}
-                  placeholder="Please describe the issue in detail..."
-                  value={customerNote}
-                  onChange={(e) => setCustomerNote(e.target.value)}
                   className="w-full rounded-md border border-border bg-background p-2 text-xs placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
+                  id="customer-order-detail-description-note"
+                  onChange={(e) => setCustomerNote(e.target.value)}
+                  placeholder="Please describe the issue in detail..."
+                  rows={2}
+                  value={customerNote}
                 />
               </div>
 
               {/* Photo Proof Upload */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <label className="text-2xs font-semibold uppercase tracking-ui text-muted-foreground">
+                  <label
+                    className="text-2xs font-semibold uppercase tracking-ui text-muted-foreground"
+                    htmlFor="customer-order-detail-photo-proof"
+                  >
                     Photo Proof (Required for damage & defects)
                   </label>
-                  <span className="text-3xs text-muted-foreground">JPG, PNG up to 8MB</span>
+                  <span className="text-3xs text-muted-foreground">
+                    JPG, PNG up to 8MB
+                  </span>
                 </div>
 
                 <div className="flex flex-wrap gap-2 items-center">
                   {returnPhotos.map((url, i) => (
-                    <div key={i} className="relative size-16 rounded-lg border border-border overflow-hidden group">
-                      <Image src={url} alt="Proof" fill className="object-cover" />
+                    <div
+                      className="relative size-16 rounded-lg border border-border overflow-hidden group"
+                      key={url}
+                    >
+                      <Image
+                        alt="Proof"
+                        className="object-cover"
+                        fill
+                        src={url}
+                      />
                       <button
-                        type="button"
-                        onClick={() => handleRemovePhoto(i)}
                         className="absolute top-0.5 right-0.5 bg-black/70 text-white rounded-full p-0.5 hover:bg-black"
+                        onClick={() => handleRemovePhoto(i)}
+                        type="button"
                       >
                         <X size={12} />
                       </button>
@@ -773,10 +895,10 @@ export function CustomerOrderDetail({
                   ))}
 
                   <button
-                    type="button"
+                    className="size-16 rounded-lg border border-dashed border-border hover:border-foreground/50 flex flex-col items-center justify-center text-muted-foreground gap-1 text-3xs"
                     disabled={isUploadingPhoto}
                     onClick={() => photoInputRef.current?.click()}
-                    className="size-16 rounded-lg border border-dashed border-border hover:border-foreground/50 flex flex-col items-center justify-center text-muted-foreground gap-1 text-3xs"
+                    type="button"
                   >
                     {isUploadingPhoto ? (
                       <SpinnerGap className="animate-spin" size={16} />
@@ -788,34 +910,40 @@ export function CustomerOrderDetail({
                     )}
                   </button>
                   <input
-                    ref={photoInputRef}
-                    type="file"
                     accept="image/png,image/jpeg,image/webp"
                     className="hidden"
+                    id="customer-order-detail-photo-proof"
                     onChange={handlePhotoUpload}
+                    ref={photoInputRef}
+                    type="file"
                   />
                 </div>
 
-                {photoError && <p className="text-2xs text-destructive">{photoError}</p>}
+                {photoError && (
+                  <p className="text-2xs text-destructive">{photoError}</p>
+                )}
               </div>
 
               <div className="flex justify-end gap-3 pt-3 border-t border-border">
                 <Button
+                  className="text-xs"
+                  onClick={() => setReturnModalOpen(false)}
+                  size="sm"
                   type="button"
                   variant="outline"
-                  size="sm"
-                  onClick={() => setReturnModalOpen(false)}
-                  className="text-xs"
                 >
                   Cancel
                 </Button>
                 <Button
-                  type="submit"
+                  className="gap-2 text-xs font-bold uppercase tracking-ui"
                   disabled={isPending}
                   size="sm"
-                  className="gap-2 text-xs font-bold uppercase tracking-ui"
+                  type="submit"
                 >
-                  {isPending && <SpinnerGap className="animate-spin" size={14} />} Submit Return Request
+                  {isPending && (
+                    <SpinnerGap className="animate-spin" size={14} />
+                  )}{" "}
+                  Submit Return Request
                 </Button>
               </div>
             </form>

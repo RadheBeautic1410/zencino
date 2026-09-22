@@ -1,6 +1,6 @@
-﻿import { notFound } from "next/navigation";
+﻿import { ArrowLeft, LockKey } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
-import { ArrowLeft, LockKey } from "@phosphor-icons/react/dist/ssr";
+import { notFound } from "next/navigation";
 import { CreditNoteView } from "@/components/store/credit-note-view";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -29,7 +29,9 @@ export default async function OrderCreditNotePage({
     notFound();
   }
 
-  const { refunds, returns } = await getOrderReturnAndRefundDetails(details.order.id);
+  const { refunds, returns } = await getOrderReturnAndRefundDetails(
+    details.order.id
+  );
   if (refunds.length === 0) {
     notFound();
   }
@@ -45,7 +47,9 @@ export default async function OrderCreditNotePage({
 
   const session = await getCurrentSession();
   const isAdmin = session?.user?.role === ADMIN_ROLE;
-  const isOwner = Boolean(session?.user?.id && details.order.userId === session.user.id);
+  const isOwner = Boolean(
+    session?.user?.id && details.order.userId === session.user.id
+  );
 
   const cleanContact = (contact || "").trim().toLowerCase();
   const cleanPhone = cleanContact.replace(/\D/g, "");
@@ -67,39 +71,51 @@ export default async function OrderCreditNotePage({
           </div>
 
           <div className="space-y-1">
-            <h1 className="text-xl font-black tracking-tight">Credit Note Verification</h1>
+            <h1 className="text-xl font-black tracking-tight">
+              Credit Note Verification
+            </h1>
             <p className="text-xs text-muted-foreground">
               To view the statutory GST Credit Note for{" "}
-              <strong className="font-mono text-foreground">{orderNumber}</strong>, please confirm
-              the email or phone number associated with this order.
+              <strong className="font-mono text-foreground">
+                {orderNumber}
+              </strong>
+              , please confirm the email or phone number associated with this
+              order.
             </p>
           </div>
 
-          <form action="" method="GET" className="space-y-3 pt-2 text-left">
-            <label className="block text-2xs font-semibold uppercase tracking-ui text-muted-foreground">
+          <form action="" className="space-y-3 pt-2 text-left" method="GET">
+            <label
+              className="block text-2xs font-semibold uppercase tracking-ui text-muted-foreground"
+              htmlFor="credit-note-contact"
+            >
               Contact Email or Phone Number
             </label>
             <Input
-              name="contact"
-              type="text"
-              required
-              placeholder="e.g. name@example.com or 9876543210"
-              defaultValue={contact || ""}
               className="text-xs"
+              defaultValue={contact || ""}
+              id="credit-note-contact"
+              name="contact"
+              placeholder="e.g. name@example.com or 9876543210"
+              required
+              type="text"
             />
-            <Button type="submit" className="w-full text-xs font-bold uppercase tracking-ui">
+            <Button
+              className="w-full text-xs font-bold uppercase tracking-ui"
+              type="submit"
+            >
               Verify & View Credit Note
             </Button>
           </form>
 
           <div className="pt-2 border-t border-border flex items-center justify-between text-xs">
-            <Button asChild variant="ghost" size="sm" className="h-8 text-xs">
+            <Button asChild className="h-8 text-xs" size="sm" variant="ghost">
               <Link href={`/track-order?orderNumber=${orderNumber}`}>
-                <ArrowLeft size={14} className="mr-1" /> Order Tracker
+                <ArrowLeft className="mr-1" size={14} /> Order Tracker
               </Link>
             </Button>
 
-            <Button asChild variant="ghost" size="sm" className="h-8 text-xs">
+            <Button asChild className="h-8 text-xs" size="sm" variant="ghost">
               <Link href="/account">My Account</Link>
             </Button>
           </div>
@@ -111,8 +127,8 @@ export default async function OrderCreditNotePage({
   const backHref = isAdmin
     ? `/admin/orders/${details.order.id}`
     : session?.user
-    ? `/account/orders/${details.order.orderNumber}`
-    : `/track-order?orderNumber=${details.order.orderNumber}&contact=${encodeURIComponent(contact || "")}`;
+      ? `/account/orders/${details.order.orderNumber}`
+      : `/track-order?orderNumber=${details.order.orderNumber}&contact=${encodeURIComponent(contact || "")}`;
 
   const returnedItemInfo = matchingReturn
     ? {
@@ -125,11 +141,11 @@ export default async function OrderCreditNotePage({
 
   return (
     <CreditNoteView
+      address={details.address}
+      backHref={backHref}
       order={details.order}
       refund={selectedRefund}
       returnedItem={returnedItemInfo}
-      address={details.address}
-      backHref={backHref}
     />
   );
 }

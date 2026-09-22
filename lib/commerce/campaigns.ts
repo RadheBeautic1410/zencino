@@ -1,11 +1,9 @@
 import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import {
-  type AnalyticsEvent,
-  type Campaign,
   analyticsEvents,
+  type Campaign,
   campaigns,
 } from "@/db/schema/campaigns";
-import { productVariants } from "@/db/schema/catalog";
 import { inventoryBalances } from "@/db/schema/inventory";
 import { orders } from "@/db/schema/orders";
 import { supportRequests } from "@/db/schema/support";
@@ -29,7 +27,10 @@ export async function createOrUpdateCampaign(input: {
   actorId?: string;
   actorEmail?: string;
 }): Promise<Campaign> {
-  const code = input.code.trim().toLowerCase().replace(/[^a-z0-9_-]/g, "-");
+  const code = input.code
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]/g, "-");
   const name = input.name.trim();
 
   if (!code || !name) {
@@ -151,18 +152,23 @@ export async function recordAnalyticsEvent(input: {
 
 // Performance Funnel Report per Campaign
 export interface CampaignPerformanceSummary {
-  campaign: Campaign;
-  pageViews: number;
-  productViews: number;
   addToCarts: number;
+  amazonOutboundClicks: number; // Strictly clicks, zero fabricated sales
+  campaign: Campaign;
   checkoutStarts: number;
   directOrdersCount: number;
   directRevenueMinor: number;
-  amazonOutboundClicks: number; // Strictly clicks, zero fabricated sales
+  pageViews: number;
+  productViews: number;
 }
 
-export async function getCampaignPerformanceReport(): Promise<CampaignPerformanceSummary[]> {
-  const allCampaigns = await db.select().from(campaigns).orderBy(desc(campaigns.createdAt));
+export async function getCampaignPerformanceReport(): Promise<
+  CampaignPerformanceSummary[]
+> {
+  const allCampaigns = await db
+    .select()
+    .from(campaigns)
+    .orderBy(desc(campaigns.createdAt));
   const results: CampaignPerformanceSummary[] = [];
 
   for (const c of allCampaigns) {
@@ -180,11 +186,17 @@ export async function getCampaignPerformanceReport(): Promise<CampaignPerformanc
     let amazonOutboundClicks = 0;
 
     for (const ev of events) {
-      if (ev.eventName === "page_view") pageViews++;
-      else if (ev.eventName === "product_view") productViews++;
-      else if (ev.eventName === "add_to_cart") addToCarts++;
-      else if (ev.eventName === "checkout_started") checkoutStarts++;
-      else if (ev.eventName === "amazon_outbound") amazonOutboundClicks++;
+      if (ev.eventName === "page_view") {
+        pageViews++;
+      } else if (ev.eventName === "product_view") {
+        productViews++;
+      } else if (ev.eventName === "add_to_cart") {
+        addToCarts++;
+      } else if (ev.eventName === "checkout_started") {
+        checkoutStarts++;
+      } else if (ev.eventName === "amazon_outbound") {
+        amazonOutboundClicks++;
+      }
     }
 
     // Direct Website Orders attributed to this campaign
@@ -224,13 +236,18 @@ export async function getCampaignPerformanceReport(): Promise<CampaignPerformanc
 
 // Executive Dashboard Analytics (Unified Overview)
 export interface ExecutiveDashboardMetrics {
-  paidDirectRevenueMinor: number;
-  paidDirectOrdersCount: number;
+  activeCampaignsCount: number;
   amazonOutboundClicks: number;
-  unfulfilledOrdersCount: number;
   lowStockCount: number;
   openSupportTicketsCount: number;
-  activeCampaignsCount: number;
+  paidDirectOrdersCount: number;
+  paidDirectRevenueMinor: number;
+  recentAmazonClicks: Array<{
+    id: string;
+    occurredAt: Date;
+    sku: string;
+    campaignCode: string | null;
+  }>;
   recentOrders: Array<{
     id: string;
     orderNumber: string;
@@ -241,12 +258,12 @@ export interface ExecutiveDashboardMetrics {
     paymentStatus: string;
     createdAt: Date;
   }>;
-  recentAmazonClicks: Array<{
-    id: string;
-    occurredAt: Date;
-    sku: string;
-    campaignCode: string | null;
-  }>;
+  unfulfilledOrdersCount: number;
+}
+
+function readEventSku(properties: Record<string, unknown> | null): string {
+  const value = properties?.sku;
+  return typeof value === "string" && value ? value : "AMAZON-VARIANT";
 }
 
 export async function getExecutiveDashboardMetrics(): Promise<ExecutiveDashboardMetrics> {
@@ -335,7 +352,7 @@ export async function getExecutiveDashboardMetrics(): Promise<ExecutiveDashboard
   const recentAmazonClicks = recentClicks.map((c) => ({
     id: c.id,
     occurredAt: c.occurredAt,
-    sku: String((c.properties as any)?.sku || "AMAZON-VARIANT"),
+    sku: readEventSku(c.properties),
     campaignCode: c.campaignCode,
   }));
 

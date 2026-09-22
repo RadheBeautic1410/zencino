@@ -1,15 +1,23 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { addItemToCart, getCartDetails, removeCartItem, updateCartItemQuantity } from "@/lib/commerce/cart";
+import {
+  addItemToCart,
+  getCartDetails,
+  removeCartItem,
+  updateCartItemQuantity,
+} from "@/lib/commerce/cart";
 
 export interface CartActionResult {
-  success?: boolean;
   error?: string;
+  success?: boolean;
   totalItems?: number;
 }
 
-export async function addToCartAction(variantId: string, quantity = 1): Promise<CartActionResult> {
+export async function addToCartAction(
+  variantId: string,
+  quantity = 1
+): Promise<CartActionResult> {
   try {
     await addItemToCart(variantId, quantity);
     const cart = await getCartDetails();
@@ -18,12 +26,16 @@ export async function addToCartAction(variantId: string, quantity = 1): Promise<
     revalidatePath("/products");
     return { success: true, totalItems: cart.totalItems };
   } catch (error: unknown) {
-    const msg = error instanceof Error ? error.message : "Failed to add item to bag";
+    const msg =
+      error instanceof Error ? error.message : "Failed to add item to bag";
     return { error: msg };
   }
 }
 
-export async function updateQuantityAction(itemId: string, quantity: number): Promise<CartActionResult> {
+export async function updateQuantityAction(
+  itemId: string,
+  quantity: number
+): Promise<CartActionResult> {
   try {
     await updateCartItemQuantity(itemId, quantity);
     const cart = await getCartDetails();
@@ -31,12 +43,15 @@ export async function updateQuantityAction(itemId: string, quantity: number): Pr
     revalidatePath("/cart");
     return { success: true, totalItems: cart.totalItems };
   } catch (error: unknown) {
-    const msg = error instanceof Error ? error.message : "Failed to update quantity";
+    const msg =
+      error instanceof Error ? error.message : "Failed to update quantity";
     return { error: msg };
   }
 }
 
-export async function removeItemAction(itemId: string): Promise<CartActionResult> {
+export async function removeItemAction(
+  itemId: string
+): Promise<CartActionResult> {
   try {
     await removeCartItem(itemId);
     const cart = await getCartDetails();
@@ -44,7 +59,8 @@ export async function removeItemAction(itemId: string): Promise<CartActionResult
     revalidatePath("/cart");
     return { success: true, totalItems: cart.totalItems };
   } catch (error: unknown) {
-    const msg = error instanceof Error ? error.message : "Failed to remove item";
+    const msg =
+      error instanceof Error ? error.message : "Failed to remove item";
     return { error: msg };
   }
 }

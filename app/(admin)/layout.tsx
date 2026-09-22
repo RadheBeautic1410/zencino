@@ -2,6 +2,9 @@ import type { ReactNode } from "react";
 import { AdminSidebar } from "@/components/admin/admin-sidebar";
 import { requireAdmin } from "@/lib/authz";
 
+// The admin tree is per-user and auth-gated; never prerender it at build time.
+export const dynamic = "force-dynamic";
+
 export default async function AdminLayout({
   children,
 }: {

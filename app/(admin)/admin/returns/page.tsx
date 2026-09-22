@@ -1,12 +1,5 @@
+import { ArrowLeft, Package } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
-import {
-  ArrowLeft,
-  CheckCircle,
-  Clock,
-  Package,
-  ShieldCheck,
-  WarningCircle,
-} from "@phosphor-icons/react/dist/ssr";
 import { OrbitPageHeader } from "@/components/admin/orbit-page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -25,7 +18,8 @@ import { formatDateTime } from "@/lib/utils";
 
 export const metadata = {
   title: "Return Claims - Zencino Admin",
-  description: "Inspect customer returns, verify transit damage photo proof, and process restock/refunds.",
+  description:
+    "Inspect customer returns, verify transit damage photo proof, and process restock/refunds.",
 };
 
 interface SearchParams {
@@ -57,14 +51,14 @@ export default async function AdminReturnsPage({
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <OrbitPageHeader
+          description="Review 7-day transit damage & replacement claims, inspect returned articles, and issue GST Credit Notes."
           eyebrow="Operations & Care"
           title="Customer Return Claims"
-          description="Review 7-day transit damage & replacement claims, inspect returned articles, and issue GST Credit Notes."
         />
 
-        <Button asChild variant="outline" size="sm" className="h-8 text-xs">
+        <Button asChild className="h-8 text-xs" size="sm" variant="outline">
           <Link href="/admin/orders">
-            <ArrowLeft size={14} className="mr-1.5" /> All Orders
+            <ArrowLeft className="mr-1.5" size={14} /> All Orders
           </Link>
         </Button>
       </div>
@@ -75,11 +69,11 @@ export default async function AdminReturnsPage({
           const isActive = statusFilter === tab.value;
           return (
             <Button
-              key={tab.value}
               asChild
-              variant={isActive ? "default" : "outline"}
-              size="sm"
               className="text-xs h-8"
+              key={tab.value}
+              size="sm"
+              variant={isActive ? "default" : "outline"}
             >
               <Link
                 href={
@@ -119,7 +113,10 @@ export default async function AdminReturnsPage({
             <TableBody>
               {returnsList.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="py-12 text-center text-xs text-muted-foreground">
+                  <TableCell
+                    className="py-12 text-center text-xs text-muted-foreground"
+                    colSpan={8}
+                  >
                     No return claims found for this filter.
                   </TableCell>
                 </TableRow>
@@ -135,16 +132,20 @@ export default async function AdminReturnsPage({
 
                     <TableCell className="font-mono text-xs">
                       <Link
-                        href={`/admin/orders/${ret.orderId}`}
                         className="text-primary hover:underline font-bold"
+                        href={`/admin/orders/${ret.orderId}`}
                       >
                         {ret.orderNumber}
                       </Link>
                     </TableCell>
 
                     <TableCell className="max-w-xs text-xs">
-                      <div className="font-semibold text-foreground truncate">{ret.customerName}</div>
-                      <div className="text-2xs text-muted-foreground truncate">{ret.customerEmail}</div>
+                      <div className="font-semibold text-foreground truncate">
+                        {ret.customerName}
+                      </div>
+                      <div className="text-2xs text-muted-foreground truncate">
+                        {ret.customerEmail}
+                      </div>
                     </TableCell>
 
                     <TableCell className="text-xs">
@@ -152,24 +153,27 @@ export default async function AdminReturnsPage({
                         {ret.quantity}x {ret.productName}
                       </p>
                       <p className="text-2xs text-muted-foreground">
-                        {ret.variantTitle} · <span className="font-mono">{ret.sku}</span>
+                        {ret.variantTitle} ·{" "}
+                        <span className="font-mono">{ret.sku}</span>
                       </p>
                     </TableCell>
 
                     <TableCell className="text-xs text-muted-foreground">
-                      <span className="capitalize">{ret.reason.replace(/_/g, " ")}</span>
+                      <span className="capitalize">
+                        {ret.reason.replace(/_/g, " ")}
+                      </span>
                     </TableCell>
 
                     <TableCell className="text-center">
                       <Badge
+                        className="text-2xs uppercase"
                         variant={
                           ret.status === "completed"
                             ? "secondary"
                             : ret.status === "rejected"
-                            ? "destructive"
-                            : "outline"
+                              ? "destructive"
+                              : "outline"
                         }
-                        className="text-2xs uppercase"
                       >
                         {ret.status}
                       </Badge>
@@ -177,16 +181,25 @@ export default async function AdminReturnsPage({
 
                     <TableCell className="text-center text-2xs">
                       {ret.restockAction === "restocked" ? (
-                        <span className="text-emerald-600 font-bold uppercase">Restocked</span>
+                        <span className="text-emerald-600 font-bold uppercase">
+                          Restocked
+                        </span>
                       ) : ret.restockAction === "scrapped" ? (
-                        <span className="text-destructive font-bold uppercase">Scrapped</span>
+                        <span className="text-destructive font-bold uppercase">
+                          Scrapped
+                        </span>
                       ) : (
                         <span className="text-muted-foreground">—</span>
                       )}
                     </TableCell>
 
                     <TableCell className="text-right">
-                      <Button asChild size="sm" variant="outline" className="h-7 text-xs font-semibold">
+                      <Button
+                        asChild
+                        className="h-7 text-xs font-semibold"
+                        size="sm"
+                        variant="outline"
+                      >
                         <Link href={`/admin/orders/${ret.orderId}`}>
                           Inspect / Action
                         </Link>

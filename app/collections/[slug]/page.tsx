@@ -3,7 +3,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ProductCard } from "@/components/store/product-card";
 import { StoreShell } from "@/components/store/store-shell";
-import { getStorefrontFeaturedCollections, getStorefrontProducts } from "@/lib/catalog/storefront";
+import {
+  getStorefrontFeaturedCollections,
+  getStorefrontProducts,
+} from "@/lib/catalog/storefront";
 
 interface Props {
   params: Promise<{ slug: string }>;
@@ -14,11 +17,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const collections = await getStorefrontFeaturedCollections();
   const collection = collections.find((c) => c.slug === slug);
 
-  if (!collection) return { title: "Collection Not Found - Zencino" };
+  if (!collection) {
+    return { title: "Collection Not Found - Zencino" };
+  }
 
   return {
     title: `${collection.name} Collection - Zencino`,
-    description: collection.description || `Discover the ${collection.name} curated collection from Zencino.`,
+    description:
+      collection.description ||
+      `Discover the ${collection.name} curated collection from Zencino.`,
   };
 }
 
@@ -40,10 +47,17 @@ export default async function CollectionPage({ params }: Props) {
     <StoreShell>
       <div className="mx-auto max-w-7xl px-6 py-10 md:py-16">
         {/* Breadcrumb */}
-        <nav aria-label="Breadcrumb" className="mb-4 flex items-center gap-2 text-xs text-muted-foreground">
-          <Link href="/" className="hover:text-foreground">Home</Link>
+        <nav
+          aria-label="Breadcrumb"
+          className="mb-4 flex items-center gap-2 text-xs text-muted-foreground"
+        >
+          <Link className="hover:text-foreground" href="/">
+            Home
+          </Link>
           <span>/</span>
-          <Link href="/products" className="hover:text-foreground">Collections</Link>
+          <Link className="hover:text-foreground" href="/products">
+            Collections
+          </Link>
           <span>/</span>
           <span className="text-foreground">{collection.name}</span>
         </nav>
@@ -67,13 +81,15 @@ export default async function CollectionPage({ params }: Props) {
         <div className="mt-10">
           {products.length === 0 ? (
             <div className="rounded-2xl border border-dashed border-border p-16 text-center">
-              <p className="text-base font-semibold">No items currently in this collection</p>
+              <p className="text-base font-semibold">
+                No items currently in this collection
+              </p>
               <p className="mt-1 text-xs text-muted-foreground">
                 We are curating new pieces for this collection.
               </p>
               <Link
-                href="/products"
                 className="mt-5 inline-block bg-primary px-5 py-2 text-xs font-semibold uppercase tracking-ui text-primary-foreground"
+                href="/products"
               >
                 Browse Catalog
               </Link>

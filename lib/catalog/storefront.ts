@@ -1,4 +1,3 @@
-import { getMediaAssetUrl } from "@/lib/media/url";
 import { and, asc, desc, eq, ilike, inArray, or, sql } from "drizzle-orm";
 import {
   categories,
@@ -13,6 +12,7 @@ import {
   variantChannels,
 } from "@/db/schema/catalog";
 import { db } from "@/lib/db";
+import { getMediaAssetUrl } from "@/lib/media/url";
 
 export async function getStorefrontCategories() {
   return db
@@ -41,7 +41,9 @@ export async function getStorefrontFeaturedCollections() {
     .where(eq(collections.status, "published"))
     .orderBy(desc(collections.updatedAt));
 
-  if (publishedCollections.length === 0) return [];
+  if (publishedCollections.length === 0) {
+    return [];
+  }
 
   const counts = await db
     .select({
@@ -64,13 +66,15 @@ export async function getStorefrontFeaturedCollections() {
 export interface StorefrontProductFilters {
   categorySlug?: string;
   collectionSlug?: string;
-  query?: string;
-  sort?: "newest" | "price-asc" | "price-desc";
   page?: number;
   pageSize?: number;
+  query?: string;
+  sort?: "newest" | "price-asc" | "price-desc";
 }
 
-export async function getStorefrontProducts(filters: StorefrontProductFilters = {}) {
+export async function getStorefrontProducts(
+  filters: StorefrontProductFilters = {}
+) {
   const {
     categorySlug,
     collectionSlug,
@@ -89,10 +93,17 @@ export async function getStorefrontProducts(filters: StorefrontProductFilters = 
     const [cat] = await db
       .select({ id: categories.id })
       .from(categories)
-      .where(and(eq(categories.slug, categorySlug), eq(categories.status, "published")))
+      .where(
+        and(
+          eq(categories.slug, categorySlug),
+          eq(categories.status, "published")
+        )
+      )
       .limit(1);
 
-    if (!cat) return { products: [], totalCount: 0, page, pageSize };
+    if (!cat) {
+      return { products: [], totalCount: 0, page, pageSize };
+    }
 
     // Find all subcategories as well
     const subcats = await db
@@ -118,10 +129,17 @@ export async function getStorefrontProducts(filters: StorefrontProductFilters = 
     const [col] = await db
       .select({ id: collections.id })
       .from(collections)
-      .where(and(eq(collections.slug, collectionSlug), eq(collections.status, "published")))
+      .where(
+        and(
+          eq(collections.slug, collectionSlug),
+          eq(collections.status, "published")
+        )
+      )
       .limit(1);
 
-    if (!col) return { products: [], totalCount: 0, page, pageSize };
+    if (!col) {
+      return { products: [], totalCount: 0, page, pageSize };
+    }
 
     const colProds = await db
       .select({ productId: collectionProducts.productId })
@@ -130,11 +148,11 @@ export async function getStorefrontProducts(filters: StorefrontProductFilters = 
       .orderBy(asc(collectionProducts.sortOrder));
 
     const colIds = colProds.map((cp) => cp.productId);
-    if (productIdsToInclude !== null) {
+    if (productIdsToInclude === null) {
+      productIdsToInclude = colIds;
+    } else {
       const set = new Set(colIds);
       productIdsToInclude = productIdsToInclude.filter((id) => set.has(id));
-    } else {
-      productIdsToInclude = colIds;
     }
 
     if (productIdsToInclude.length === 0) {
@@ -159,7 +177,9 @@ export async function getStorefrontProducts(filters: StorefrontProductFilters = 
     .where(
       and(
         eq(products.status, "published"),
-        productIdsToInclude ? inArray(products.id, productIdsToInclude) : undefined,
+        productIdsToInclude
+          ? inArray(products.id, productIdsToInclude)
+          : undefined,
         query
           ? or(
               ilike(products.name, `%${query}%`),
@@ -172,7 +192,10 @@ export async function getStorefrontProducts(filters: StorefrontProductFilters = 
 
   // Order
   if (sort === "newest") {
-    queryBuilder = queryBuilder.orderBy(desc(products.publishedAt), desc(products.createdAt));
+    queryBuilder = queryBuilder.orderBy(
+      desc(products.publishedAt),
+      desc(products.createdAt)
+    );
   } else {
     queryBuilder = queryBuilder.orderBy(desc(products.createdAt));
   }
@@ -196,20 +219,26 @@ export async function getStorefrontProducts(filters: StorefrontProductFilters = 
       active: productVariants.active,
     })
     .from(productVariants)
-    .where(and(inArray(productVariants.productId, pIds), eq(productVariants.active, true)));
+    .where(
+      and(
+        inArray(productVariants.productId, pIds),
+        eq(productVariants.active, true)
+      )
+    );
 
   const vIds = variants.map((v) => v.id);
 
-  const channels = vIds.length > 0
-    ? await db
-        .select({
-          variantId: variantChannels.variantId,
-          channel: variantChannels.channel,
-          enabled: variantChannels.enabled,
-        })
-        .from(variantChannels)
-        .where(inArray(variantChannels.variantId, vIds))
-    : [];
+  const channels =
+    vIds.length > 0
+      ? await db
+          .select({
+            variantId: variantChannels.variantId,
+            channel: variantChannels.channel,
+            enabled: variantChannels.enabled,
+          })
+          .from(variantChannels)
+          .where(inArray(variantChannels.variantId, vIds))
+      : [];
 
   // Fetch primary media
   const mediaRows = await db
@@ -232,14 +261,19 @@ export async function getStorefrontProducts(filters: StorefrontProductFilters = 
     const prodChannels = channels.filter((c) => prodVarIds.has(c.variantId));
     const prodMedia = mediaRows.filter((m) => m.productId === prod.id);
 
-    const hasWebsite = prodChannels.some((c) => c.channel === "website" && c.enabled);
-    const hasAmazon = prodChannels.some((c) => c.channel === "amazon" && c.enabled);
+    const hasWebsite = prodChannels.some(
+      (c) => c.channel === "website" && c.enabled
+    );
+    const hasAmazon = prodChannels.some(
+      (c) => c.channel === "amazon" && c.enabled
+    );
 
     const validPrices = prodVariants
       .map((v) => v.priceMinor)
       .filter((p): p is number => p !== null && p > 0);
 
-    const minPriceMinor = validPrices.length > 0 ? Math.min(...validPrices) : null;
+    const minPriceMinor =
+      validPrices.length > 0 ? Math.min(...validPrices) : null;
     const maxMrpMinor = prodVariants
       .map((v) => v.mrpMinor)
       .filter((m): m is number => m !== null && m > 0)
@@ -257,16 +291,24 @@ export async function getStorefrontProducts(filters: StorefrontProductFilters = 
       minPriceMinor,
       maxMrpMinor: maxMrpMinor > 0 ? maxMrpMinor : null,
       variantCount: prodVariants.length,
-      primaryImage: prodMedia[0] ? getMediaAssetUrl(prodMedia[0].storageKey) : null,
+      primaryImage: prodMedia[0]
+        ? getMediaAssetUrl(prodMedia[0].storageKey)
+        : null,
       primaryImageAlt: prodMedia[0]?.altText || prod.name,
     };
   });
 
   // If sorting by price
   if (sort === "price-asc") {
-    enrichedProducts.sort((a, b) => (a.minPriceMinor ?? Infinity) - (b.minPriceMinor ?? Infinity));
+    enrichedProducts.sort(
+      (a, b) =>
+        (a.minPriceMinor ?? Number.POSITIVE_INFINITY) -
+        (b.minPriceMinor ?? Number.POSITIVE_INFINITY)
+    );
   } else if (sort === "price-desc") {
-    enrichedProducts.sort((a, b) => (b.minPriceMinor ?? 0) - (a.minPriceMinor ?? 0));
+    enrichedProducts.sort(
+      (a, b) => (b.minPriceMinor ?? 0) - (a.minPriceMinor ?? 0)
+    );
   }
 
   return {
@@ -279,7 +321,7 @@ export async function getStorefrontProducts(filters: StorefrontProductFilters = 
 
 export async function getStorefrontProductBySlug(slug: string) {
   // Check direct slug match
-  let [product] = await db
+  const [product] = await db
     .select()
     .from(products)
     .where(and(eq(products.slug, slug), eq(products.status, "published")))
@@ -318,17 +360,23 @@ export async function getStorefrontProductBySlug(slug: string) {
   const variants = await db
     .select()
     .from(productVariants)
-    .where(and(eq(productVariants.productId, product.id), eq(productVariants.active, true)))
+    .where(
+      and(
+        eq(productVariants.productId, product.id),
+        eq(productVariants.active, true)
+      )
+    )
     .orderBy(asc(productVariants.createdAt));
 
   const variantIds = variants.map((v) => v.id);
 
-  const channels = variantIds.length > 0
-    ? await db
-        .select()
-        .from(variantChannels)
-        .where(inArray(variantChannels.variantId, variantIds))
-    : [];
+  const channels =
+    variantIds.length > 0
+      ? await db
+          .select()
+          .from(variantChannels)
+          .where(inArray(variantChannels.variantId, variantIds))
+      : [];
 
   const media = await db
     .select({

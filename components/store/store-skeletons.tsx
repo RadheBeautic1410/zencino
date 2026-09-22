@@ -35,9 +35,11 @@ export function ProductCardSkeleton() {
 export function ProductGridSkeleton({ count = 8 }: { count?: number }) {
   return (
     <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-      {Array.from({ length: count }).map((_, i) => (
-        <ProductCardSkeleton key={i} />
-      ))}
+      {Array.from({ length: count }, (_, i) => `product-skeleton-${i}`).map(
+        (key) => (
+          <ProductCardSkeleton key={key} />
+        )
+      )}
     </div>
   );
 }
@@ -199,7 +201,7 @@ export function CartSkeleton() {
         {/* Cart Item rows */}
         <div className="lg:col-span-8 divide-y divide-border/70 border-y border-border/80">
           {[1, 2].map((i) => (
-            <div key={i} className="py-6 flex gap-5 items-start">
+            <div className="py-6 flex gap-5 items-start" key={i}>
               <Skeleton className="size-24 rounded-2xl shrink-0" />
               <div className="flex-1 space-y-2">
                 <Skeleton className="h-5 w-3/4 rounded-full" />

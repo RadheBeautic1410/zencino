@@ -22,22 +22,41 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { logoutAction } from "@/app/actions/auth";
 import { Button } from "@/components/ui/button";
-import { PRODUCT_NAME } from "@/config/platform";
 
 const commerceNavItems = [
   { href: "/admin", label: "Overview", icon: ChartBar, exact: true },
   { href: "/admin/orders", label: "Orders", icon: Receipt, exact: false },
-  { href: "/admin/returns", label: "Returns", icon: ArrowUUpLeft, exact: false },
+  {
+    href: "/admin/returns",
+    label: "Returns",
+    icon: ArrowUUpLeft,
+    exact: false,
+  },
   { href: "/admin/products", label: "Products", icon: Package, exact: false },
   { href: "/admin/inventory", label: "Inventory", icon: Tray, exact: false },
-  { href: "/admin/categories", label: "Categories", icon: FolderSimple, exact: false },
-  { href: "/admin/collections", label: "Collections", icon: SquaresFour, exact: false },
+  {
+    href: "/admin/categories",
+    label: "Categories",
+    icon: FolderSimple,
+    exact: false,
+  },
+  {
+    href: "/admin/collections",
+    label: "Collections",
+    icon: SquaresFour,
+    exact: false,
+  },
 ];
 
 const operationsNavItems = [
   { href: "/admin/content", label: "Content", icon: Article, exact: false },
   { href: "/admin/support", label: "Support", icon: Headset, exact: false },
-  { href: "/admin/campaigns", label: "Campaigns", icon: Megaphone, exact: false },
+  {
+    href: "/admin/campaigns",
+    label: "Campaigns",
+    icon: Megaphone,
+    exact: false,
+  },
 ];
 
 const systemNavItems = [
@@ -56,13 +75,13 @@ export function AdminSidebar({ email }: { email: string }) {
         const isActive = exact ? pathname === href : pathname.startsWith(href);
         return (
           <Link
-            key={href}
-            href={href}
             className={`flex items-center gap-3 rounded-xl px-3 py-2 text-xs font-bold uppercase tracking-ui transition-all duration-150 ${
               isActive
                 ? "bg-primary text-primary-foreground shadow-xs"
                 : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-foreground"
             }`}
+            href={href}
+            key={href}
           >
             <Icon size={16} weight={isActive ? "fill" : "bold"} />
             <span>{label}</span>

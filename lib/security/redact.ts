@@ -32,7 +32,10 @@ export function redactSensitiveData<T>(input: T): T {
       "$1[REDACTED]$3"
     );
     // Redact 16-digit card-like numbers
-    redacted = redacted.replace(/\b\d{4}[ -]?\d{4}[ -]?\d{4}[ -]?\d{4}\b/g, "[REDACTED_CARD]");
+    redacted = redacted.replace(
+      /\b\d{4}[ -]?\d{4}[ -]?\d{4}[ -]?\d{4}\b/g,
+      "[REDACTED_CARD]"
+    );
     return redacted as unknown as T;
   }
 
@@ -42,8 +45,12 @@ export function redactSensitiveData<T>(input: T): T {
 
   if (typeof input === "object") {
     const output: Record<string, unknown> = {};
-    for (const [key, value] of Object.entries(input as Record<string, unknown>)) {
-      const isSensitiveKey = SENSITIVE_KEY_PATTERNS.some((pattern) => pattern.test(key));
+    for (const [key, value] of Object.entries(
+      input as Record<string, unknown>
+    )) {
+      const isSensitiveKey = SENSITIVE_KEY_PATTERNS.some((pattern) =>
+        pattern.test(key)
+      );
       if (isSensitiveKey && typeof value === "string") {
         output[key] = "[REDACTED]";
       } else if (isSensitiveKey && typeof value === "number") {

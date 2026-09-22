@@ -1,4 +1,4 @@
-import { and, desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import {
   customerAddresses,
   orderAddresses,
@@ -10,15 +10,15 @@ import { isPincodeServiceable } from "@/lib/commerce/rules";
 import { db } from "@/lib/db";
 
 export interface AddressInput {
-  recipient: string;
-  phone: string;
-  line1: string;
-  line2?: string;
   city: string;
-  state: string;
-  postcode: string;
   countryCode?: string;
   isDefault?: boolean;
+  line1: string;
+  line2?: string;
+  phone: string;
+  postcode: string;
+  recipient: string;
+  state: string;
 }
 
 /**
@@ -30,7 +30,10 @@ export async function getCustomerAddresses(userId: string) {
     .select()
     .from(customerAddresses)
     .where(eq(customerAddresses.userId, userId))
-    .orderBy(desc(customerAddresses.isDefault), desc(customerAddresses.createdAt));
+    .orderBy(
+      desc(customerAddresses.isDefault),
+      desc(customerAddresses.createdAt)
+    );
 }
 
 /**
@@ -45,7 +48,9 @@ export async function saveCustomerAddress(params: {
   const { id, userId, address } = params;
 
   if (!isPincodeServiceable(address.postcode)) {
-    throw new Error("Invalid or unserviceable Indian PIN code. Please enter a valid 6-digit PIN code.");
+    throw new Error(
+      "Invalid or unserviceable Indian PIN code. Please enter a valid 6-digit PIN code."
+    );
   }
 
   const cleanPhone = address.phone.trim().replace(/\D/g, "");
@@ -166,7 +171,10 @@ export async function deleteCustomerAddress(addressId: string, userId: string) {
 /**
  * Sets a specific address as the default address for the user.
  */
-export async function setDefaultCustomerAddress(addressId: string, userId: string) {
+export async function setDefaultCustomerAddress(
+  addressId: string,
+  userId: string
+) {
   return await db.transaction(async (tx) => {
     await tx
       .update(customerAddresses)
@@ -191,19 +199,21 @@ export async function setDefaultCustomerAddress(addressId: string, userId: strin
 /**
  * Loads order details with strict authorization check: customer can ONLY access their own orders.
  */
-export async function getSecureCustomerOrder(userId: string, orderNumber: string) {
+export async function getSecureCustomerOrder(
+  userId: string,
+  orderNumber: string
+) {
   const [order] = await db
     .select()
     .from(orders)
     .where(
-      and(
-        eq(orders.orderNumber, orderNumber.trim()),
-        eq(orders.userId, userId)
-      )
+      and(eq(orders.orderNumber, orderNumber.trim()), eq(orders.userId, userId))
     )
     .limit(1);
 
-  if (!order) return null;
+  if (!order) {
+    return null;
+  }
 
   const [items, [address], [proof]] = await Promise.all([
     db.select().from(orderItems).where(eq(orderItems.orderId, order.id)),
@@ -232,13 +242,18 @@ export async function getSecureCustomerOrder(userId: string, orderNumber: string
  * Public guest order tracking lookup: Requires exact match on (orderNumber + email/phone).
  * Guards against order ID guessing attacks.
  */
-export async function lookupGuestOrder(orderNumber: string, contactInput: string) {
+export async function lookupGuestOrder(
+  orderNumber: string,
+  contactInput: string
+) {
   const cleanOrderNumber = orderNumber.trim();
   const cleanContact = contactInput.trim().toLowerCase();
   const cleanPhoneDigits = cleanContact.replace(/\D/g, "");
 
   if (!cleanOrderNumber || !cleanContact) {
-    throw new Error("Both Order Reference and Contact Email/Phone are required.");
+    throw new Error(
+      "Both Order Reference and Contact Email/Phone are required."
+    );
   }
 
   const [order] = await db
@@ -248,7 +263,9 @@ export async function lookupGuestOrder(orderNumber: string, contactInput: string
     .limit(1);
 
   if (!order) {
-    throw new Error("No order found matching the provided Order Number and contact details.");
+    throw new Error(
+      "No order found matching the provided Order Number and contact details."
+    );
   }
 
   const matchesEmail = order.customerEmail.toLowerCase() === cleanContact;
@@ -257,7 +274,9 @@ export async function lookupGuestOrder(orderNumber: string, contactInput: string
     order.customerPhone.replace(/\D/g, "").endsWith(cleanPhoneDigits);
 
   if (!matchesEmail && !matchesPhone) {
-    throw new Error("No order found matching the provided Order Number and contact details.");
+    throw new Error(
+      "No order found matching the provided Order Number and contact details."
+    );
   }
 
   const [items, [address], [proof]] = await Promise.all([

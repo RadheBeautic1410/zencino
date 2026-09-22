@@ -31,7 +31,10 @@ test("isReturnEligible enforces 7-day policy from delivery date", () => {
   // Ineligible: delivered more than 7 days ago
   const expired = isReturnEligible("delivered", tenDaysAgo);
   assert.equal(expired.eligible, false);
-  assert.match(expired.reason || "", /7-day replacement and return window has expired/);
+  assert.match(
+    expired.reason || "",
+    /7-day replacement and return window has expired/
+  );
 
   // Ineligible: not yet delivered
   assert.equal(isReturnEligible("shipped", twoDaysAgo).eligible, false);
@@ -84,41 +87,43 @@ test("canTransitionOrderStatus enforces strict fulfilment and payment guards", (
 });
 
 test("Cumulative refund limits prevent over-refunding order totals", () => {
-  const orderTotalMinor = 149900; // ₹1,499.00
+  const orderTotalMinor = 149_900; // ₹1,499.00
   const existingRefunds = [
-    { amountMinor: 49900 }, // ₹499.00
+    { amountMinor: 49_900 }, // ₹499.00
   ];
 
-  const alreadyRefunded = existingRefunds.reduce((s, r) => s + r.amountMinor, 0);
+  const alreadyRefunded = existingRefunds.reduce(
+    (s, r) => s + r.amountMinor,
+    0
+  );
 
-  const canRefund = (amountMinor: number) => {
-    return alreadyRefunded + amountMinor <= orderTotalMinor;
-  };
+  const canRefund = (amountMinor: number) =>
+    alreadyRefunded + amountMinor <= orderTotalMinor;
 
-  assert.equal(canRefund(50000), true); // ₹500.00 -> total ₹999.00 <= ₹1,499.00
-  assert.equal(canRefund(100000), true); // ₹1,000.00 -> total ₹1,499.00 == ₹1,499.00
-  assert.equal(canRefund(100001), false); // ₹1,000.01 -> exceeds total paid!
+  assert.equal(canRefund(50_000), true); // ₹500.00 -> total ₹999.00 <= ₹1,499.00
+  assert.equal(canRefund(100_000), true); // ₹1,000.00 -> total ₹1,499.00 == ₹1,499.00
+  assert.equal(canRefund(100_001), false); // ₹1,000.01 -> exceeds total paid!
 });
 
 test("Credit Note GST adjustment satisfies Section 34 reverse calculation", () => {
   // Original refund amount ₹1,180.00 (118,000 paise)
-  const cnGst = calculateGstBreakdown(118000, "Maharashtra", "Maharashtra");
+  const cnGst = calculateGstBreakdown(118_000, "Maharashtra", "Maharashtra");
 
   // Intra-state credit note reverses CGST 9% and SGST 9%
   assert.equal(cnGst.isInterState, false);
-  assert.equal(cnGst.taxableValueMinor, 100000);
+  assert.equal(cnGst.taxableValueMinor, 100_000);
   assert.equal(cnGst.cgstMinor, 9000);
   assert.equal(cnGst.sgstMinor, 9000);
   assert.equal(cnGst.igstMinor, 0);
   assert.equal(
     cnGst.taxableValueMinor + cnGst.cgstMinor + cnGst.sgstMinor,
-    118000
+    118_000
   );
 
   // Inter-state credit note reverses IGST 18%
-  const cnIgst = calculateGstBreakdown(118000, "Karnataka", "Maharashtra");
+  const cnIgst = calculateGstBreakdown(118_000, "Karnataka", "Maharashtra");
   assert.equal(cnIgst.isInterState, true);
-  assert.equal(cnIgst.taxableValueMinor, 100000);
-  assert.equal(cnIgst.igstMinor, 18000);
-  assert.equal(cnIgst.taxableValueMinor + cnIgst.igstMinor, 118000);
+  assert.equal(cnIgst.taxableValueMinor, 100_000);
+  assert.equal(cnIgst.igstMinor, 18_000);
+  assert.equal(cnIgst.taxableValueMinor + cnIgst.igstMinor, 118_000);
 });

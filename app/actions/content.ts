@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/authz";
 import {
+  isContentPageType,
   publishContentVersion,
   saveContentVersionDraft,
 } from "@/lib/commerce/content";
@@ -12,9 +13,13 @@ export async function saveContentDraftAction(formData: FormData) {
 
   const slug = String(formData.get("slug") || "").trim();
   const title = String(formData.get("title") || "").trim();
-  const type = String(formData.get("type") || "") as any;
+  const type = String(formData.get("type") || "");
   const summary = String(formData.get("summary") || "").trim();
   const rawData = String(formData.get("data") || "{}");
+
+  if (!isContentPageType(type)) {
+    return { success: false, error: "Unknown content page type" };
+  }
 
   let data: Record<string, unknown> = {};
   try {
@@ -35,8 +40,11 @@ export async function saveContentDraftAction(formData: FormData) {
 
     revalidatePath("/admin/content");
     return { success: true, versionId: version.id, version: version.version };
-  } catch (error: any) {
-    return { success: false, error: error.message || "Failed to save draft" };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to save draft",
+    };
   }
 }
 
@@ -65,8 +73,16 @@ export async function publishContentAction(formData: FormData) {
     revalidatePath("/policies/terms");
     revalidatePath("/admin/content");
 
-    return { success: true, pageSlug: result.page.slug, version: result.version.version };
-  } catch (error: any) {
-    return { success: false, error: error.message || "Failed to publish content" };
+    return {
+      success: true,
+      pageSlug: result.page.slug,
+      version: result.version.version,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error:
+        error instanceof Error ? error.message : "Failed to publish content",
+    };
   }
 }

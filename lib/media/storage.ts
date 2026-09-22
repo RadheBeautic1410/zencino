@@ -6,6 +6,7 @@ import { eq } from "drizzle-orm";
 import { mediaAssets } from "@/db/schema/catalog";
 import { db } from "@/lib/db";
 import { env } from "@/lib/env";
+
 export { getMediaAssetUrl } from "./url";
 
 const ALLOWED_MIME_TYPES: Record<string, string> = {
@@ -21,13 +22,21 @@ export function isAllowedMimeType(mime: string): boolean {
   return mime in ALLOWED_MIME_TYPES;
 }
 
-export function parseImageDimensions(buffer: Buffer, mimeType: string): { width: number; height: number } {
+export function parseImageDimensions(
+  buffer: Buffer,
+  mimeType: string
+): { width: number; height: number } {
   try {
-    if (mimeType === "image/png" && buffer.length >= 24) {
-      if (buffer.readUInt32BE(0) === 0x89504e47 && buffer.readUInt32BE(4) === 0x0d0a1a0a) {
-        const width = buffer.readUInt32BE(16);
-        const height = buffer.readUInt32BE(20);
-        if (width > 0 && height > 0) return { width, height };
+    if (
+      mimeType === "image/png" &&
+      buffer.length >= 24 &&
+      buffer.readUInt32BE(0) === 0x89_50_4e_47 &&
+      buffer.readUInt32BE(4) === 0x0d_0a_1a_0a
+    ) {
+      const width = buffer.readUInt32BE(16);
+      const height = buffer.readUInt32BE(20);
+      if (width > 0 && height > 0) {
+        return { width, height };
       }
     }
 
@@ -42,7 +51,9 @@ export function parseImageDimensions(buffer: Buffer, mimeType: string): { width:
         if (marker >= 0xc0 && marker <= 0xc3) {
           const height = buffer.readUInt16BE(offset + 5);
           const width = buffer.readUInt16BE(offset + 7);
-          if (width > 0 && height > 0) return { width, height };
+          if (width > 0 && height > 0) {
+            return { width, height };
+          }
         }
         const length = buffer.readUInt16BE(offset + 2);
         offset += 2 + length;
@@ -55,21 +66,28 @@ export function parseImageDimensions(buffer: Buffer, mimeType: string): { width:
       if (riff === "RIFF" && webp === "WEBP") {
         const format = buffer.toString("ascii", 12, 16);
         if (format === "VP8 " && buffer.length >= 30) {
-          const width = buffer.readUInt16LE(26) & 0x3fff;
-          const height = buffer.readUInt16LE(28) & 0x3fff;
-          if (width > 0 && height > 0) return { width, height };
+          const width = buffer.readUInt16LE(26) & 0x3f_ff;
+          const height = buffer.readUInt16LE(28) & 0x3f_ff;
+          if (width > 0 && height > 0) {
+            return { width, height };
+          }
         } else if (format === "VP8L" && buffer.length >= 25) {
           const b1 = buffer[21];
           const b2 = buffer[22];
           const b3 = buffer[23];
           const b4 = buffer[24];
           const width = 1 + (((b2 & 0x3f) << 8) | b1);
-          const height = 1 + (((b4 & 0xf) << 10) | (b3 << 2) | ((b2 & 0xc0) >> 6));
-          if (width > 0 && height > 0) return { width, height };
+          const height =
+            1 + (((b4 & 0xf) << 10) | (b3 << 2) | ((b2 & 0xc0) >> 6));
+          if (width > 0 && height > 0) {
+            return { width, height };
+          }
         } else if (format === "VP8X" && buffer.length >= 30) {
           const width = 1 + buffer.readUIntLE(24, 3);
           const height = 1 + buffer.readUIntLE(27, 3);
-          if (width > 0 && height > 0) return { width, height };
+          if (width > 0 && height > 0) {
+            return { width, height };
+          }
         }
       }
     }
@@ -82,14 +100,14 @@ export function parseImageDimensions(buffer: Buffer, mimeType: string): { width:
 }
 
 export interface SaveMediaOptions {
-  filename: string;
-  buffer: Buffer;
-  mimeType: string;
   altText?: string;
-  source?: string;
-  rightsNote?: string;
-  customWidth?: number;
+  buffer: Buffer;
   customHeight?: number;
+  customWidth?: number;
+  filename: string;
+  mimeType: string;
+  rightsNote?: string;
+  source?: string;
 }
 
 export async function saveMediaAsset(options: SaveMediaOptions) {
@@ -149,7 +167,8 @@ export async function saveMediaAsset(options: SaveMediaOptions) {
       width,
       height,
       checksum,
-      altText: altText || filename.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " "),
+      altText:
+        altText || filename.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " "),
       source,
       rightsNote,
     })

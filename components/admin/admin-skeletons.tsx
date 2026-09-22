@@ -12,7 +12,10 @@ export function AdminOverviewSkeleton() {
       {/* Metric Cards */}
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {[1, 2, 3, 4].map((i) => (
-          <div key={i} className="rounded-2xl border border-border/80 bg-card p-6 space-y-3 shadow-xs">
+          <div
+            className="rounded-2xl border border-border/80 bg-card p-6 space-y-3 shadow-xs"
+            key={i}
+          >
             <div className="flex items-center justify-between">
               <Skeleton className="h-4 w-24 rounded-full" />
               <Skeleton className="size-8 rounded-lg" />
@@ -31,7 +34,10 @@ export function AdminOverviewSkeleton() {
         </div>
         <div className="space-y-3 pt-2">
           {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="flex items-center justify-between py-3 border-b border-border/60">
+            <div
+              className="flex items-center justify-between py-3 border-b border-border/60"
+              key={i}
+            >
               <div className="flex items-center gap-3">
                 <Skeleton className="h-4 w-28 rounded-full" />
                 <Skeleton className="h-4 w-36 rounded-full" />
@@ -67,7 +73,10 @@ export function AdminTableSkeleton() {
       {/* Table Rows */}
       <div className="rounded-2xl border border-border/80 bg-card p-6 space-y-3 shadow-xs">
         {[1, 2, 3, 4, 5, 6].map((i) => (
-          <div key={i} className="flex items-center justify-between py-3 border-b border-border/60">
+          <div
+            className="flex items-center justify-between py-3 border-b border-border/60"
+            key={i}
+          >
             <Skeleton className="h-4 w-1/4 rounded-full" />
             <Skeleton className="h-4 w-1/4 rounded-full" />
             <Skeleton className="h-4 w-1/6 rounded-full" />

@@ -2,12 +2,16 @@
 
 import { headers } from "next/headers";
 import { lookupGuestOrder } from "@/lib/commerce/customer-account";
-import { checkRateLimit, getClientIdentifier, RATE_LIMIT_POLICIES } from "@/lib/security/rate-limit";
+import {
+  checkRateLimit,
+  getClientIdentifier,
+  RATE_LIMIT_POLICIES,
+} from "@/lib/security/rate-limit";
 
 export interface TrackOrderResult {
-  success?: boolean;
-  error?: string;
   data?: Awaited<ReturnType<typeof lookupGuestOrder>>;
+  error?: string;
+  success?: boolean;
 }
 
 export async function trackOrderAction(
@@ -16,7 +20,11 @@ export async function trackOrderAction(
 ): Promise<TrackOrderResult> {
   const h = await headers();
   const clientId = getClientIdentifier(h);
-  const limitCheck = checkRateLimit(clientId, "guest_tracking", RATE_LIMIT_POLICIES.GUEST_TRACKING);
+  const limitCheck = checkRateLimit(
+    clientId,
+    "guest_tracking",
+    RATE_LIMIT_POLICIES.GUEST_TRACKING
+  );
   if (!limitCheck.success) {
     return {
       error: `Too many tracking attempts. Please wait ${Math.ceil(limitCheck.resetMs / 1000)} seconds before trying again.`,

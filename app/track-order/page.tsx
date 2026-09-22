@@ -17,8 +17,8 @@ export default async function TrackOrderPage({
   return (
     <StoreShell>
       <OrderTrackingView
-        initialOrderNumber={params.orderNumber || ""}
         initialContact={params.contact || ""}
+        initialOrderNumber={params.orderNumber || ""}
       />
     </StoreShell>
   );

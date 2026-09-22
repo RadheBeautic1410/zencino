@@ -5,11 +5,13 @@ import { requireAdmin } from "@/lib/authz";
 import { adjustStock } from "@/lib/commerce/inventory";
 
 export interface InventoryActionResult {
-  success?: boolean;
   error?: string;
+  success?: boolean;
 }
 
-export async function adjustStockAction(formData: FormData): Promise<InventoryActionResult> {
+export async function adjustStockAction(
+  formData: FormData
+): Promise<InventoryActionResult> {
   const admin = await requireAdmin();
 
   const variantId = String(formData.get("variantId") || "").trim();
@@ -26,7 +28,10 @@ export async function adjustStockAction(formData: FormData): Promise<InventoryAc
   }
 
   if (!reason || reason.length < 3) {
-    return { error: "A clear reason is required for every stock adjustment (e.g. 'Received shipment', 'Damaged writeoff')" };
+    return {
+      error:
+        "A clear reason is required for every stock adjustment (e.g. 'Received shipment', 'Damaged writeoff')",
+    };
   }
 
   try {
@@ -41,7 +46,8 @@ export async function adjustStockAction(formData: FormData): Promise<InventoryAc
     revalidatePath("/admin/inventory");
     return { success: true };
   } catch (error: unknown) {
-    const msg = error instanceof Error ? error.message : "Failed to adjust stock";
+    const msg =
+      error instanceof Error ? error.message : "Failed to adjust stock";
     return { error: msg };
   }
 }

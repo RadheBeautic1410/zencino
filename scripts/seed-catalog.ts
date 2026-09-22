@@ -1,6 +1,6 @@
-import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import {
   categories,
   collectionProducts,
@@ -35,7 +35,8 @@ async function main() {
       .values({
         name: "Home & Kitchen",
         slug: "home-kitchen",
-        description: "Everyday essentials and beautiful functional pieces for your home.",
+        description:
+          "Everyday essentials and beautiful functional pieces for your home.",
         status: "published",
         sortOrder: 1,
       })
@@ -76,7 +77,8 @@ async function main() {
       .values({
         name: "Acrylic Essentials",
         slug: "acrylic-essentials",
-        description: "Crystal clear acrylic organizers designed for modern spaces.",
+        description:
+          "Crystal clear acrylic organizers designed for modern spaces.",
         status: "published",
       })
       .returning();
@@ -84,11 +86,19 @@ async function main() {
 
   // 3. Media Assets from amazon/pencil-holder-2
   console.log("- Importing pencil holder media assets...");
-  const sourceDir = path.resolve(process.cwd(), "..", "..", "amazon", "pencil-holder-2");
+  const sourceDir = path.resolve(
+    process.cwd(),
+    "..",
+    "..",
+    "amazon",
+    "pencil-holder-2"
+  );
   const mediaAssetIds: string[] = [];
 
   if (existsSync(sourceDir)) {
-    const files = readdirSync(sourceDir).filter((f) => f.endsWith(".png") || f.endsWith(".jpg"));
+    const files = readdirSync(sourceDir).filter(
+      (f) => f.endsWith(".png") || f.endsWith(".jpg")
+    );
     for (const file of files) {
       const filePath = path.join(sourceDir, file);
       const buffer = readFileSync(filePath);
@@ -132,8 +142,10 @@ async function main() {
           Origin: "India",
         },
         care: "Clean with a soft microfiber cloth and lukewarm water. Avoid alcohol and abrasive sponges.",
-        packageContents: "1x Two-compartment acrylic organizer with anti-slip silicone feet.",
-        seoTitle: "Zencino Acrylic Desk Organizer | 2-Compartment Pen & Brush Holder",
+        packageContents:
+          "1x Two-compartment acrylic organizer with anti-slip silicone feet.",
+        seoTitle:
+          "Zencino Acrylic Desk Organizer | 2-Compartment Pen & Brush Holder",
         seoDescription:
           "Organize your workspace in style with Zencino's crystal-clear acrylic pencil holder. 2 spacious compartments for stationery, brushes, and accessories.",
       })
@@ -156,9 +168,12 @@ async function main() {
         sku: "ZNC-ORG-2C-1P",
         title: "Clear / 1-Pack",
         options: { Pack: "1-Pack", Color: "Clear" },
-        optionSignature: JSON.stringify([["Color", "Clear"], ["Pack", "1-Pack"]]),
-        priceMinor: 49900, // ₹499
-        mrpMinor: 79900,   // ₹799
+        optionSignature: JSON.stringify([
+          ["Color", "Clear"],
+          ["Pack", "1-Pack"],
+        ]),
+        priceMinor: 49_900, // ₹499
+        mrpMinor: 79_900, // ₹799
         currency: "INR",
         weightG: 280,
         lengthMm: 130,
@@ -175,9 +190,12 @@ async function main() {
         sku: "ZNC-ORG-2C-2P",
         title: "Clear / 2-Pack Value",
         options: { Pack: "2-Pack", Color: "Clear" },
-        optionSignature: JSON.stringify([["Color", "Clear"], ["Pack", "2-Pack"]]),
-        priceMinor: 89900, // ₹899
-        mrpMinor: 149900,  // ₹1,499
+        optionSignature: JSON.stringify([
+          ["Color", "Clear"],
+          ["Pack", "2-Pack"],
+        ]),
+        priceMinor: 89_900, // ₹899
+        mrpMinor: 149_900, // ₹1,499
         currency: "INR",
         weightG: 550,
         lengthMm: 130,

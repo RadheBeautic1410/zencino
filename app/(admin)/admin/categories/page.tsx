@@ -12,9 +12,9 @@ export default async function AdminCategoriesPage() {
   return (
     <div>
       <OrbitPageHeader
+        description="Organize Zencino's product catalog into browsable hierarchies."
         eyebrow="Catalog"
         title="Categories"
-        description="Organize Zencino's product catalog into browsable hierarchies."
       />
       <CategoryManager categories={categories} />
     </div>

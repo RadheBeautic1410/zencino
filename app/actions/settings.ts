@@ -12,7 +12,9 @@ export async function updateSettingsAction(formData: FormData) {
   const gstin = String(formData.get("gstin") || "").trim();
   const pan = String(formData.get("pan") || "").trim();
   const cin = String(formData.get("cin") || "").trim();
-  const registeredAddress = String(formData.get("registeredAddress") || "").trim();
+  const registeredAddress = String(
+    formData.get("registeredAddress") || ""
+  ).trim();
   const supportEmail = String(formData.get("supportEmail") || "").trim();
   const supportPhone = String(formData.get("supportPhone") || "").trim();
   const supportHours = String(formData.get("supportHours") || "").trim();
@@ -41,7 +43,13 @@ export async function updateSettingsAction(formData: FormData) {
     revalidatePath("/admin/settings");
     revalidatePath("/checkout");
     return { success: true };
-  } catch (error: any) {
-    return { success: false, error: error.message || "Failed to update store settings" };
+  } catch (error) {
+    return {
+      success: false,
+      error:
+        error instanceof Error
+          ? error.message
+          : "Failed to update store settings",
+    };
   }
 }

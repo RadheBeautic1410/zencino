@@ -1,4 +1,4 @@
-import { and, eq, inArray, sql } from "drizzle-orm";
+import { and, eq, sql } from "drizzle-orm";
 import {
   inventoryBalances,
   inventoryLocations,
@@ -33,7 +33,9 @@ export async function getOrCreateDefaultLocation() {
 }
 
 export async function getVariantStock(variantId: string, locationId?: string) {
-  const loc = locationId ? { id: locationId } : await getOrCreateDefaultLocation();
+  const loc = locationId
+    ? { id: locationId }
+    : await getOrCreateDefaultLocation();
 
   const [balance] = await db
     .select()
@@ -81,7 +83,9 @@ export async function getAllVariantsStock() {
     .from(productVariants)
     .innerJoin(products, eq(productVariants.productId, products.id));
 
-  if (variants.length === 0) return [];
+  if (variants.length === 0) {
+    return [];
+  }
 
   const balances = await db
     .select()
@@ -117,13 +121,13 @@ export async function getAllVariantsStock() {
 }
 
 export interface StockAdjustmentParams {
-  variantId: string;
+  actorId?: string;
+  locationId?: string;
   onHandDelta: number;
   reason: string;
-  actorId?: string;
-  referenceType?: string;
   referenceId?: string;
-  locationId?: string;
+  referenceType?: string;
+  variantId: string;
 }
 
 export async function adjustStock(params: StockAdjustmentParams) {
@@ -137,7 +141,9 @@ export async function adjustStock(params: StockAdjustmentParams) {
     locationId,
   } = params;
 
-  const loc = locationId ? { id: locationId } : await getOrCreateDefaultLocation();
+  const loc = locationId
+    ? { id: locationId }
+    : await getOrCreateDefaultLocation();
 
   // Execute in transaction
   return await db.transaction(async (tx) => {
@@ -236,7 +242,10 @@ export async function getRecentStockMovements(limit = 25) {
       variantTitle: productVariants.title,
     })
     .from(inventoryMovements)
-    .innerJoin(productVariants, eq(inventoryMovements.variantId, productVariants.id))
+    .innerJoin(
+      productVariants,
+      eq(inventoryMovements.variantId, productVariants.id)
+    )
     .orderBy(sql`${inventoryMovements.createdAt} DESC`)
     .limit(limit);
 }

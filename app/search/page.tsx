@@ -1,18 +1,25 @@
+import { MagnifyingGlass } from "@phosphor-icons/react/dist/ssr";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { MagnifyingGlass } from "@phosphor-icons/react/dist/ssr";
 import { ProductCard } from "@/components/store/product-card";
 import { StoreShell } from "@/components/store/store-shell";
-import { getStorefrontCategories, getStorefrontProducts } from "@/lib/catalog/storefront";
+import {
+  getStorefrontCategories,
+  getStorefrontProducts,
+} from "@/lib/catalog/storefront";
 
 interface Props {
   searchParams: Promise<{ q?: string }>;
 }
 
-export async function generateMetadata({ searchParams }: Props): Promise<Metadata> {
+export async function generateMetadata({
+  searchParams,
+}: Props): Promise<Metadata> {
   const { q } = await searchParams;
   return {
-    title: q ? `Search results for "${q}" - Zencino` : "Search Catalog - Zencino",
+    title: q
+      ? `Search results for "${q}" - Zencino`
+      : "Search Catalog - Zencino",
   };
 }
 
@@ -21,7 +28,9 @@ export default async function SearchPage({ searchParams }: Props) {
   const trimmed = q?.trim() || "";
 
   const [{ products }, categories] = await Promise.all([
-    trimmed ? getStorefrontProducts({ query: trimmed, pageSize: 36 }) : Promise.resolve({ products: [] }),
+    trimmed
+      ? getStorefrontProducts({ query: trimmed, pageSize: 36 })
+      : Promise.resolve({ products: [] }),
     getStorefrontCategories(),
   ]);
 
@@ -37,15 +46,18 @@ export default async function SearchPage({ searchParams }: Props) {
             Find organizers, storage solutions, and home essentials.
           </p>
 
-          <form action="/search" method="GET" className="relative mt-6">
+          <form action="/search" className="relative mt-6" method="GET">
             <input
-              type="text"
-              name="q"
-              defaultValue={trimmed}
-              placeholder="Search by keyword, material, product name..."
               className="w-full rounded-full border border-border bg-background px-6 py-3.5 pl-12 text-sm shadow-xs focus:outline-none focus:ring-2 focus:ring-primary"
+              defaultValue={trimmed}
+              name="q"
+              placeholder="Search by keyword, material, product name..."
+              type="text"
             />
-            <MagnifyingGlass className="absolute left-4 top-4 text-muted-foreground" size={20} />
+            <MagnifyingGlass
+              className="absolute left-4 top-4 text-muted-foreground"
+              size={20}
+            />
           </form>
         </div>
 
@@ -54,22 +66,27 @@ export default async function SearchPage({ searchParams }: Props) {
           {trimmed ? (
             <div>
               <p className="text-xs font-bold uppercase tracking-ui text-muted-foreground mb-6">
-                Showing {products.length} {products.length === 1 ? "result" : "results"} for &quot;{trimmed}&quot;
+                Showing {products.length}{" "}
+                {products.length === 1 ? "result" : "results"} for &quot;
+                {trimmed}&quot;
               </p>
 
               {products.length === 0 ? (
                 <div className="rounded-2xl border border-dashed border-border p-12 text-center">
-                  <p className="text-base font-semibold">No matching products found</p>
+                  <p className="text-base font-semibold">
+                    No matching products found
+                  </p>
                   <p className="mt-1 text-xs text-muted-foreground max-w-md mx-auto">
-                    Try checking your spelling, using more general terms, or browse popular categories below.
+                    Try checking your spelling, using more general terms, or
+                    browse popular categories below.
                   </p>
 
                   <div className="mt-6 flex flex-wrap justify-center gap-2">
                     {categories.map((c) => (
                       <Link
-                        key={c.id}
-                        href={`/categories/${c.slug}`}
                         className="rounded-full border border-border bg-background px-4 py-1.5 text-xs font-semibold uppercase tracking-ui hover:bg-muted"
+                        href={`/categories/${c.slug}`}
+                        key={c.id}
                       >
                         {c.name}
                       </Link>
@@ -92,9 +109,9 @@ export default async function SearchPage({ searchParams }: Props) {
               <div className="flex flex-wrap justify-center gap-2">
                 {categories.map((c) => (
                   <Link
-                    key={c.id}
-                    href={`/categories/${c.slug}`}
                     className="rounded-full border border-border bg-background px-4 py-2 text-xs font-semibold uppercase tracking-ui hover:bg-muted"
+                    href={`/categories/${c.slug}`}
+                    key={c.id}
                   >
                     {c.name}
                   </Link>

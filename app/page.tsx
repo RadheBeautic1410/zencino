@@ -1,6 +1,4 @@
-import type { Metadata } from "next";
-import Image from "next/image";
-import Link from "next/link";
+import type { Icon } from "@phosphor-icons/react";
 import {
   ArrowRight,
   ArrowSquareOut,
@@ -10,8 +8,10 @@ import {
   Sparkle,
   Truck,
 } from "@phosphor-icons/react/dist/ssr";
+import type { Metadata } from "next";
+import Image from "next/image";
+import Link from "next/link";
 import type { CSSProperties } from "react";
-import type { Icon } from "@phosphor-icons/react";
 import { ProductCard } from "@/components/store/product-card";
 import { StoreShell } from "@/components/store/store-shell";
 import {
@@ -20,8 +20,8 @@ import {
   getStorefrontProducts,
 } from "@/lib/catalog/storefront";
 import {
-  type HomepageContentData,
   getPublishedContent,
+  type HomepageContentData,
 } from "@/lib/commerce/content";
 
 export const metadata: Metadata = {
@@ -47,13 +47,17 @@ const HIGHLIGHT_ICONS: Record<string, Icon> = {
 };
 
 export default async function HomePage() {
-  const [categories, collections, { products: featuredProducts }, { data: heroContent }] =
-    await Promise.all([
-      getStorefrontCategories(),
-      getStorefrontFeaturedCollections(),
-      getStorefrontProducts({ pageSize: 8 }),
-      getPublishedContent<HomepageContentData>("home", "homepage"),
-    ]);
+  const [
+    categories,
+    collections,
+    { products: featuredProducts },
+    { data: heroContent },
+  ] = await Promise.all([
+    getStorefrontCategories(),
+    getStorefrontFeaturedCollections(),
+    getStorefrontProducts({ pageSize: 8 }),
+    getPublishedContent<HomepageContentData>("home", "homepage"),
+  ]);
 
   // Sub-categories belong on their parent's page, not in the homepage grid.
   const topLevelCategories = categories.filter((cat) => !cat.parentId);
@@ -65,10 +69,14 @@ export default async function HomePage() {
 
   const secondaryCtaLink =
     heroContent.ctaSecondaryLink ||
-    (primaryCollection ? `/collections/${primaryCollection.slug}` : "/products");
+    (primaryCollection
+      ? `/collections/${primaryCollection.slug}`
+      : "/products");
   const secondaryCtaText =
     heroContent.ctaSecondaryText ||
-    (primaryCollection ? `Explore ${primaryCollection.name}` : "Browse the catalog");
+    (primaryCollection
+      ? `Explore ${primaryCollection.name}`
+      : "Browse the catalog");
 
   return (
     <StoreShell>
@@ -80,14 +88,17 @@ export default async function HomePage() {
         />
         <div
           aria-hidden
-          style={{ animationDuration: "27s", animationDirection: "alternate-reverse" }}
           className="drift pointer-events-none absolute -right-24 top-1/3 size-[28rem] rounded-full bg-gold/10 blur-3xl"
+          style={{
+            animationDuration: "27s",
+            animationDirection: "alternate-reverse",
+          }}
         />
 
         <div className="relative mx-auto grid max-w-7xl items-center gap-14 px-6 py-20 md:grid-cols-12 md:gap-12 md:py-28 lg:py-32">
           <div className="md:col-span-6">
             <span className="intro inline-flex items-center gap-2 rounded-full border border-gold/45 bg-gold-subtle px-4 py-1.5 text-2xs font-bold uppercase tracking-eyebrow text-gold-foreground">
-              <Sparkle size={12} weight="fill" className="text-gold" />
+              <Sparkle className="text-gold" size={12} weight="fill" />
               {heroContent.eyebrowBadge}
             </span>
 
@@ -101,7 +112,11 @@ export default async function HomePage() {
               </span>
             </h1>
 
-            <div className="intro-rule rule-gold mt-8 w-28" style={delay(420)} aria-hidden />
+            <div
+              aria-hidden
+              className="intro-rule rule-gold mt-8 w-28"
+              style={delay(420)}
+            />
 
             <p
               className="intro mt-7 max-w-lg text-base leading-relaxed text-muted-foreground md:text-lg"
@@ -110,21 +125,24 @@ export default async function HomePage() {
               {heroContent.description}
             </p>
 
-            <div className="intro mt-9 flex flex-wrap items-center gap-x-8 gap-y-4" style={delay(270)}>
+            <div
+              className="intro mt-9 flex flex-wrap items-center gap-x-8 gap-y-4"
+              style={delay(270)}
+            >
               <Link
-                href={heroContent.ctaPrimaryLink || "/products"}
                 className="group inline-flex items-center gap-2.5 rounded-full bg-primary px-8 py-4 text-xs font-bold uppercase tracking-ui text-primary-foreground shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-lg"
+                href={heroContent.ctaPrimaryLink || "/products"}
               >
                 {heroContent.ctaPrimaryText || "Shop All Products"}
                 <ArrowRight
+                  className="transition-transform group-hover:translate-x-1"
                   size={14}
                   weight="bold"
-                  className="transition-transform group-hover:translate-x-1"
                 />
               </Link>
               <Link
-                href={secondaryCtaLink}
                 className="link-underline text-xs font-bold uppercase tracking-ui text-foreground/80 transition-colors hover:text-primary"
+                href={secondaryCtaLink}
               >
                 {secondaryCtaText}
               </Link>
@@ -134,23 +152,26 @@ export default async function HomePage() {
           {/* Layered product composition */}
           <div className="md:col-span-6 lg:col-span-5 lg:col-start-8">
             {spotlight ? (
-              <div className="intro-media relative mx-auto max-w-md md:mx-0" style={delay(220)}>
+              <div
+                className="intro-media relative mx-auto max-w-md md:mx-0"
+                style={delay(220)}
+              >
                 <div
                   aria-hidden
                   className="absolute -inset-2 translate-x-4 translate-y-4 rounded-[2rem] border border-gold/40"
                 />
                 <Link
-                  href={`/products/${spotlight.slug}`}
                   className="group relative block aspect-4/5 overflow-hidden rounded-[1.75rem] border border-border/70 bg-primary-wash shadow-2xl"
+                  href={`/products/${spotlight.slug}`}
                 >
                   {spotlight.primaryImage ? (
                     <Image
-                      src={spotlight.primaryImage}
                       alt={spotlight.primaryImageAlt}
+                      className="object-cover transition-transform duration-700 group-hover:scale-105"
                       fill
                       priority
                       sizes="(max-width: 768px) 90vw, 40vw"
-                      className="object-cover transition-transform duration-700 group-hover:scale-105"
+                      src={spotlight.primaryImage}
                     />
                   ) : (
                     <span className="grid size-full place-items-center text-primary/20">
@@ -163,14 +184,21 @@ export default async function HomePage() {
                   </span>
 
                   <div className="absolute inset-x-0 bottom-0 bg-linear-to-t from-black/75 via-black/35 to-transparent p-6 pt-14">
-                    <p className="display text-lg text-white">{spotlight.name}</p>
+                    <p className="display text-lg text-white">
+                      {spotlight.name}
+                    </p>
                     <div className="mt-2 flex items-baseline justify-between gap-3">
                       {spotlight.minPriceMinor ? (
                         <span className="display text-xl text-gold">
-                          ₹{(spotlight.minPriceMinor / 100).toLocaleString("en-IN")}
+                          ₹
+                          {(spotlight.minPriceMinor / 100).toLocaleString(
+                            "en-IN"
+                          )}
                         </span>
                       ) : (
-                        <span className="text-xs text-white/70">Pricing on request</span>
+                        <span className="text-xs text-white/70">
+                          Pricing on request
+                        </span>
                       )}
                       <span className="inline-flex items-center gap-1.5 text-2xs font-bold uppercase tracking-ui text-white/85">
                         View details
@@ -182,18 +210,18 @@ export default async function HomePage() {
 
                 {companion && (
                   <Link
+                    className="group card-hover intro-media absolute -bottom-8 -left-6 hidden w-40 overflow-hidden rounded-2xl border border-border/70 bg-card shadow-xl sm:block"
                     href={`/products/${companion.slug}`}
                     style={delay(560)}
-                    className="group card-hover intro-media absolute -bottom-8 -left-6 hidden w-40 overflow-hidden rounded-2xl border border-border/70 bg-card shadow-xl sm:block"
                   >
                     <span className="relative block aspect-square bg-primary-wash">
                       {companion.primaryImage ? (
                         <Image
-                          src={companion.primaryImage}
                           alt={companion.primaryImageAlt}
+                          className="object-cover transition-transform duration-500 group-hover:scale-105"
                           fill
                           sizes="160px"
-                          className="object-cover transition-transform duration-500 group-hover:scale-105"
+                          src={companion.primaryImage}
                         />
                       ) : (
                         <span className="grid size-full place-items-center text-primary/20">
@@ -207,7 +235,10 @@ export default async function HomePage() {
                       </span>
                       {companion.minPriceMinor && (
                         <span className="block text-2xs text-muted-foreground">
-                          ₹{(companion.minPriceMinor / 100).toLocaleString("en-IN")}
+                          ₹
+                          {(companion.minPriceMinor / 100).toLocaleString(
+                            "en-IN"
+                          )}
                         </span>
                       )}
                     </span>
@@ -219,8 +250,10 @@ export default async function HomePage() {
                 className="intro-media rounded-[1.75rem] border border-border/70 bg-card p-12 text-center shadow-sm"
                 style={delay(220)}
               >
-                <Package size={40} className="mx-auto text-primary/25" />
-                <p className="display mt-4 text-xl text-foreground">Welcome to Zencino</p>
+                <Package className="mx-auto text-primary/25" size={40} />
+                <p className="display mt-4 text-xl text-foreground">
+                  Welcome to Zencino
+                </p>
                 <p className="mt-2 text-sm text-muted-foreground">
                   Our catalog is being prepared. Check back shortly.
                 </p>
@@ -237,14 +270,14 @@ export default async function HomePage() {
                 const HighlightIcon = HIGHLIGHT_ICONS[item.icon] ?? Sparkle;
                 return (
                   <li
+                    className="intro flex items-center gap-3 sm:justify-center sm:px-4"
                     key={item.title}
                     style={delay(620 + idx * 90)}
-                    className="intro flex items-center gap-3 sm:justify-center sm:px-4"
                   >
                     <HighlightIcon
+                      className="shrink-0 text-primary-soft"
                       size={20}
                       weight="light"
-                      className="shrink-0 text-primary-soft"
                     />
                     <span>
                       <span className="block text-xs font-bold uppercase tracking-ui text-foreground">
@@ -273,8 +306,8 @@ export default async function HomePage() {
               </h2>
             </div>
             <Link
-              href="/products"
               className="link-underline shrink-0 text-xs font-bold uppercase tracking-ui text-primary"
+              href="/products"
             >
               View all products
             </Link>
@@ -283,10 +316,10 @@ export default async function HomePage() {
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {topLevelCategories.map((cat, idx) => (
               <Link
-                key={cat.id}
-                href={`/categories/${cat.slug}`}
-                style={order(idx)}
                 className="group card-hover reveal-item relative flex flex-col justify-between overflow-hidden rounded-2xl border border-border/70 bg-card p-8 hover:border-gold/50"
+                href={`/categories/${cat.slug}`}
+                key={cat.id}
+                style={order(idx)}
               >
                 <span
                   aria-hidden
@@ -307,9 +340,9 @@ export default async function HomePage() {
                 <span className="mt-10 inline-flex items-center gap-2 text-2xs font-bold uppercase tracking-ui text-primary">
                   Explore category
                   <ArrowRight
+                    className="transition-transform duration-300 group-hover:translate-x-1.5"
                     size={13}
                     weight="bold"
-                    className="transition-transform duration-300 group-hover:translate-x-1.5"
                   />
                 </span>
               </Link>
@@ -339,20 +372,21 @@ export default async function HomePage() {
               </p>
               <div className="mt-9 flex flex-wrap items-center gap-6">
                 <Link
-                  href={`/collections/${primaryCollection.slug}`}
                   className="group inline-flex items-center gap-2.5 rounded-full bg-gold px-8 py-4 text-xs font-bold uppercase tracking-ui text-gold-foreground transition-all duration-200 hover:-translate-y-0.5 hover:brightness-105"
+                  href={`/collections/${primaryCollection.slug}`}
                 >
                   Explore the collection
                   <ArrowRight
+                    className="transition-transform group-hover:translate-x-1"
                     size={14}
                     weight="bold"
-                    className="transition-transform group-hover:translate-x-1"
                   />
                 </Link>
                 {primaryCollection.productCount > 0 && (
                   <span className="text-2xs font-semibold uppercase tracking-ui text-primary-foreground/60">
                     {primaryCollection.productCount}{" "}
-                    {primaryCollection.productCount === 1 ? "piece" : "pieces"} in this line
+                    {primaryCollection.productCount === 1 ? "piece" : "pieces"}{" "}
+                    in this line
                   </span>
                 )}
               </div>
@@ -372,13 +406,15 @@ export default async function HomePage() {
                 },
               ].map((stat, idx) => (
                 <div
+                  className="reveal-item rounded-2xl border border-primary-foreground/15 bg-primary-foreground/[0.06] p-6 backdrop-blur-xs"
                   key={stat.label}
                   style={order(idx)}
-                  className="reveal-item rounded-2xl border border-primary-foreground/15 bg-primary-foreground/[0.06] p-6 backdrop-blur-xs"
                 >
                   <dt className="sr-only">{stat.label}</dt>
                   <dd>
-                    <span className="display block text-3xl text-gold">{stat.value}</span>
+                    <span className="display block text-3xl text-gold">
+                      {stat.value}
+                    </span>
                     <span className="mt-2 block text-2xs font-bold uppercase tracking-ui text-primary-foreground/90">
                       {stat.label}
                     </span>
@@ -404,8 +440,8 @@ export default async function HomePage() {
               </h2>
             </div>
             <Link
-              href="/products"
               className="link-underline shrink-0 text-xs font-bold uppercase tracking-ui text-primary"
+              href="/products"
             >
               View full catalog
             </Link>
@@ -413,7 +449,11 @@ export default async function HomePage() {
 
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {featuredProducts.map((prod, idx) => (
-              <div key={prod.id} className="reveal-item h-full" style={order(idx % 4)}>
+              <div
+                className="reveal-item h-full"
+                key={prod.id}
+                style={order(idx % 4)}
+              >
                 <ProductCard product={prod} />
               </div>
             ))}
@@ -449,12 +489,20 @@ export default async function HomePage() {
                 body: "Questions about sizing, fit or care? Our team is based in India and happy to help you choose the right organizer before you order.",
               },
             ].map((item, idx) => (
-              <div key={item.title} style={order(idx)} className="reveal-item bg-card p-8 md:p-10">
+              <div
+                className="reveal-item bg-card p-8 md:p-10"
+                key={item.title}
+                style={order(idx)}
+              >
                 <span className="inline-flex size-11 items-center justify-center rounded-xl bg-primary-wash text-primary-soft">
                   <item.icon size={20} weight="light" />
                 </span>
-                <h3 className="display mt-6 text-xl text-foreground">{item.title}</h3>
-                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{item.body}</p>
+                <h3 className="display mt-6 text-xl text-foreground">
+                  {item.title}
+                </h3>
+                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
+                  {item.body}
+                </p>
               </div>
             ))}
           </div>

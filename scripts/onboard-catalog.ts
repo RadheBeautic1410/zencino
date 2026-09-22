@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { and, eq } from "drizzle-orm";
 import {
@@ -39,7 +39,9 @@ async function main() {
     .where(eq(inventoryLocations.code, DEFAULT_LOCATION_CODE))
     .limit(1);
 
-  if (!location) {
+  if (location) {
+    console.log(`   Found existing warehouse location: ${location.id}`);
+  } else {
     [location] = await db
       .insert(inventoryLocations)
       .values({
@@ -49,8 +51,6 @@ async function main() {
       })
       .returning();
     console.log(`   Created warehouse location: ${location.id}`);
-  } else {
-    console.log(`   Found existing warehouse location: ${location.id}`);
   }
 
   // 2. Categories
@@ -68,7 +68,9 @@ async function main() {
       .where(eq(categories.slug, data.slug))
       .limit(1);
 
-    if (!cat) {
+    if (cat) {
+      console.log(`   [=] Existing category: ${data.name}`);
+    } else {
       [cat] = await db
         .insert(categories)
         .values({
@@ -81,8 +83,6 @@ async function main() {
         })
         .returning();
       console.log(`   [+] Created category: ${data.name} (${data.slug})`);
-    } else {
-      console.log(`   [=] Existing category: ${data.name}`);
     }
     return cat;
   }
@@ -90,14 +90,16 @@ async function main() {
   const catHome = await upsertCategory({
     name: "Home & Kitchen",
     slug: "home-kitchen",
-    description: "Functional, design-forward essentials and organization pieces for modern Indian homes.",
+    description:
+      "Functional, design-forward essentials and organization pieces for modern Indian homes.",
     sortOrder: 1,
   });
 
   const catStorage = await upsertCategory({
     name: "Storage & Organization",
     slug: "storage-organization",
-    description: "Crystal clear acrylic organizers, countertop bins, and modular vanity solutions.",
+    description:
+      "Crystal clear acrylic organizers, countertop bins, and modular vanity solutions.",
     parentId: catHome.id,
     sortOrder: 2,
   });
@@ -105,7 +107,8 @@ async function main() {
   const catKitchen = await upsertCategory({
     name: "Kitchen & Dining",
     slug: "kitchen-dining",
-    description: "Sleek magnetic knife holders, pantry organizers, and countertop storage.",
+    description:
+      "Sleek magnetic knife holders, pantry organizers, and countertop storage.",
     parentId: catHome.id,
     sortOrder: 3,
   });
@@ -113,28 +116,36 @@ async function main() {
   const catOffice = await upsertCategory({
     name: "Stationery & Office",
     slug: "stationery-office",
-    description: "Desk accessories and display essentials designed for productive, clutter-free workspaces.",
+    description:
+      "Desk accessories and display essentials designed for productive, clutter-free workspaces.",
     sortOrder: 4,
   });
 
   const catDesk = await upsertCategory({
     name: "Desk Accessories",
     slug: "desk-accessories",
-    description: "Pen organizers, ergonomic display risers, and stationery carousels.",
+    description:
+      "Pen organizers, ergonomic display risers, and stationery carousels.",
     parentId: catOffice.id,
     sortOrder: 5,
   });
 
   // 3. Collections
   console.log("\n3. Upserting curated collections...");
-  async function upsertCollection(data: { name: string; slug: string; description: string }) {
+  async function upsertCollection(data: {
+    name: string;
+    slug: string;
+    description: string;
+  }) {
     let [col] = await db
       .select()
       .from(collections)
       .where(eq(collections.slug, data.slug))
       .limit(1);
 
-    if (!col) {
+    if (col) {
+      console.log(`   [=] Existing collection: ${data.name}`);
+    } else {
       [col] = await db
         .insert(collections)
         .values({
@@ -145,8 +156,6 @@ async function main() {
         })
         .returning();
       console.log(`   [+] Created collection: ${data.name}`);
-    } else {
-      console.log(`   [=] Existing collection: ${data.name}`);
     }
     return col;
   }
@@ -154,22 +163,32 @@ async function main() {
   const colAcrylic = await upsertCollection({
     name: "Acrylic Essentials",
     slug: "acrylic-essentials",
-    description: "Crystal-clear optical-grade acrylic organizers designed for contemporary spaces.",
+    description:
+      "Crystal-clear optical-grade acrylic organizers designed for contemporary spaces.",
   });
 
   const colWorkplace = await upsertCollection({
     name: "Workplace Organization",
     slug: "workplace-organization",
-    description: "Ergonomic risers and desktop organizers for focused, uncluttered desks.",
+    description:
+      "Ergonomic risers and desktop organizers for focused, uncluttered desks.",
   });
 
   // 4. Source Studio Media Assets
   console.log("\n4. Ingesting source studio photography...");
-  const sourceDir = path.resolve(process.cwd(), "..", "..", "amazon", "pencil-holder-2");
+  const sourceDir = path.resolve(
+    process.cwd(),
+    "..",
+    "..",
+    "amazon",
+    "pencil-holder-2"
+  );
   const mediaAssetIds: string[] = [];
 
   if (existsSync(sourceDir)) {
-    const files = readdirSync(sourceDir).filter((f) => f.endsWith(".png") || f.endsWith(".jpg"));
+    const files = readdirSync(sourceDir).filter(
+      (f) => f.endsWith(".png") || f.endsWith(".jpg")
+    );
     for (const file of files) {
       const filePath = path.join(sourceDir, file);
       const buffer = readFileSync(filePath);
@@ -189,18 +208,18 @@ async function main() {
   console.log("\n5. Onboarding multi-category products and variants...");
 
   interface ProductOnboardingData {
-    name: string;
-    slug: string;
-    description: string;
-    primaryCategoryId: string;
     additionalCategoryIds: string[];
-    collectionIds: string[];
-    specifications: Record<string, string>;
     care: string;
-    packageContents: string;
-    seoTitle: string;
-    seoDescription: string;
+    collectionIds: string[];
+    description: string;
     mediaIds: string[];
+    name: string;
+    packageContents: string;
+    primaryCategoryId: string;
+    seoDescription: string;
+    seoTitle: string;
+    slug: string;
+    specifications: Record<string, string>;
     variants: {
       sku: string;
       title: string;
@@ -235,8 +254,10 @@ async function main() {
         Origin: "Made in India",
       },
       care: "Clean with a soft microfiber cloth and lukewarm water. Avoid alcohol, ammonia, and abrasive sponges.",
-      packageContents: "1x Two-compartment acrylic organizer with 4 anti-slip silicone base feet.",
-      seoTitle: "Zencino Acrylic Desk Organizer | 2-Compartment Pen & Brush Holder",
+      packageContents:
+        "1x Two-compartment acrylic organizer with 4 anti-slip silicone base feet.",
+      seoTitle:
+        "Zencino Acrylic Desk Organizer | 2-Compartment Pen & Brush Holder",
       seoDescription:
         "Organize your workspace in style with Zencino's crystal-clear acrylic pencil holder. 2 spacious compartments for stationery, brushes, and accessories.",
       mediaIds: mediaAssetIds,
@@ -245,9 +266,12 @@ async function main() {
           sku: "ZNC-ORG-2C-1P",
           title: "Clear / 1-Pack",
           options: { Pack: "1-Pack", Color: "Clear" },
-          optionSignature: JSON.stringify([["Color", "Clear"], ["Pack", "1-Pack"]]),
-          priceMinor: 49900, // ₹499
-          mrpMinor: 79900,   // ₹799
+          optionSignature: JSON.stringify([
+            ["Color", "Clear"],
+            ["Pack", "1-Pack"],
+          ]),
+          priceMinor: 49_900, // ₹499
+          mrpMinor: 79_900, // ₹799
           weightG: 280,
           lengthMm: 130,
           widthMm: 95,
@@ -260,9 +284,12 @@ async function main() {
           sku: "ZNC-ORG-2C-2P",
           title: "Clear / 2-Pack Value",
           options: { Pack: "2-Pack", Color: "Clear" },
-          optionSignature: JSON.stringify([["Color", "Clear"], ["Pack", "2-Pack"]]),
-          priceMinor: 89900, // ₹899
-          mrpMinor: 149900,  // ₹1,499
+          optionSignature: JSON.stringify([
+            ["Color", "Clear"],
+            ["Pack", "2-Pack"],
+          ]),
+          priceMinor: 89_900, // ₹899
+          mrpMinor: 149_900, // ₹1,499
           weightG: 550,
           lengthMm: 130,
           widthMm: 190,
@@ -283,14 +310,17 @@ async function main() {
       collectionIds: [colAcrylic.id, colWorkplace.id],
       specifications: {
         Material: "12mm High-Grade Cast Optical Acrylic",
-        "Weight Capacity": "Up to 20 kg (suitable for iMacs, ultrawide monitors, and dual setups)",
+        "Weight Capacity":
+          "Up to 20 kg (suitable for iMacs, ultrawide monitors, and dual setups)",
         "Under-stand Clearance": "460mm width x 73mm height",
         Finish: "Diamond and flame-polished rounded edges",
         Origin: "Made in India",
       },
       care: "Clean with a soft microfiber cloth and lukewarm soapy water. Do not use ammonia, alcohol, or abrasive pads.",
-      packageContents: "1x Monolithic clear acrylic monitor stand with 4 pre-installed non-slip silicone pads.",
-      seoTitle: "Zencino Ergonomic Acrylic Monitor Stand | 12mm Heavy-Duty Desktop Riser",
+      packageContents:
+        "1x Monolithic clear acrylic monitor stand with 4 pre-installed non-slip silicone pads.",
+      seoTitle:
+        "Zencino Ergonomic Acrylic Monitor Stand | 12mm Heavy-Duty Desktop Riser",
       seoDescription:
         "Elevate your screen to ergonomic height with Zencino's 12mm solid acrylic monitor stand. Holds up to 20kg with keyboard storage underneath.",
       mediaIds: mediaAssetIds.slice(0, 2),
@@ -299,9 +329,12 @@ async function main() {
           sku: "ZNC-DSK-RISER-CLR",
           title: "Clear / Standard 50cm",
           options: { Size: "Standard 50cm", Color: "Clear" },
-          optionSignature: JSON.stringify([["Color", "Clear"], ["Size", "Standard 50cm"]]),
-          priceMinor: 129900, // ₹1,299
-          mrpMinor: 199900,   // ₹1,999
+          optionSignature: JSON.stringify([
+            ["Color", "Clear"],
+            ["Size", "Standard 50cm"],
+          ]),
+          priceMinor: 129_900, // ₹1,299
+          mrpMinor: 199_900, // ₹1,999
           weightG: 1200,
           lengthMm: 500,
           widthMm: 200,
@@ -331,7 +364,8 @@ async function main() {
       care: "Disassemble trays easily for quick washing in lukewarm water. Dry with a lint-free cloth.",
       packageContents:
         "1x Base plate, 2x Central divider panels, 1x Top tray with lip, 4x Adjustable shelves, 16x Silicone locking rings, 1x Instruction manual.",
-      seoTitle: "Zencino 360° Rotating Acrylic Cosmetic Organizer | Vanity Makeup Tower",
+      seoTitle:
+        "Zencino 360° Rotating Acrylic Cosmetic Organizer | Vanity Makeup Tower",
       seoDescription:
         "Keep cosmetics organized and within reach with Zencino's 360-degree spinning acrylic vanity carousel. 6 adjustable tiers for all bottle sizes.",
       mediaIds: mediaAssetIds.slice(1, 3),
@@ -340,9 +374,12 @@ async function main() {
           sku: "ZNC-VAN-ROT-CLR",
           title: "Clear / 6-Tier Adjustable",
           options: { Tiers: "6-Tier", Color: "Clear" },
-          optionSignature: JSON.stringify([["Color", "Clear"], ["Tiers", "6-Tier"]]),
-          priceMinor: 149900, // ₹1,499
-          mrpMinor: 229900,   // ₹2,299
+          optionSignature: JSON.stringify([
+            ["Color", "Clear"],
+            ["Tiers", "6-Tier"],
+          ]),
+          priceMinor: 149_900, // ₹1,499
+          mrpMinor: 229_900, // ₹2,299
           weightG: 850,
           lengthMm: 230,
           widthMm: 230,
@@ -364,7 +401,8 @@ async function main() {
       specifications: {
         Material: "4mm Premium cast acrylic",
         Dimensions: "380mm (L) x 110mm (D) x 75mm (H)",
-        "Lip Height": "45mm front retention lip prevents items from sliding off",
+        "Lip Height":
+          "45mm front retention lip prevents items from sliding off",
         Mounting: "Pre-drilled countersunk holes for flush wall mount",
         "Max Weight": "5 kg per shelf when properly wall-anchored",
         Origin: "Made in India",
@@ -372,7 +410,8 @@ async function main() {
       care: "Wipe clean with a damp microfiber cloth.",
       packageContents:
         "2x Acrylic floating shelves, 4x Stainless steel screws, 4x Heavy-duty drywall wall anchors, 4x Decorative screw caps.",
-      seoTitle: "Zencino Acrylic Floating Wall Shelves (Set of 2) | Modern Invisible Display",
+      seoTitle:
+        "Zencino Acrylic Floating Wall Shelves (Set of 2) | Modern Invisible Display",
       seoDescription:
         "Clean invisible acrylic wall shelves with front safety lip. Set of 2 easy-to-mount organizers for bathroom, bedroom, or spice racks.",
       mediaIds: mediaAssetIds.slice(2, 4),
@@ -381,9 +420,12 @@ async function main() {
           sku: "ZNC-SHF-FLT-2P",
           title: "Clear / Set of 2 (38cm)",
           options: { Pack: "Set of 2", Color: "Clear" },
-          optionSignature: JSON.stringify([["Color", "Clear"], ["Pack", "Set of 2"]]),
-          priceMinor: 89900, // ₹899
-          mrpMinor: 139900,  // ₹1,399
+          optionSignature: JSON.stringify([
+            ["Color", "Clear"],
+            ["Pack", "Set of 2"],
+          ]),
+          priceMinor: 89_900, // ₹899
+          mrpMinor: 139_900, // ₹1,399
           weightG: 600,
           lengthMm: 380,
           widthMm: 110,
@@ -404,7 +446,8 @@ async function main() {
       collectionIds: [colWorkplace.id],
       specifications: {
         Core: "Dual-strip N42 neodymium rare-earth magnets",
-        "Face Material": "Reinforced hygienic non-porous polymer & acrylic shield",
+        "Face Material":
+          "Reinforced hygienic non-porous polymer & acrylic shield",
         Backing: "Corrosion-resistant brushed stainless steel",
         Length: "400mm (holds up to 8 full-size knives)",
         Mounting: "Dual-mode: 3M VHB heavy-duty adhesive tape OR wall screws",
@@ -413,7 +456,8 @@ async function main() {
       care: "Wipe with a clean damp cloth and dry immediately. Dishwasher not recommended.",
       packageContents:
         "1x 40cm Magnetic knife bar, 1x Industrial 3M VHB adhesive strip, 2x Wall screws & anchors, 1x Mounting alignment template.",
-      seoTitle: "Zencino Magnetic Knife Bar 40cm | Heavy-Duty Wall Mount Kitchen Utensil Strip",
+      seoTitle:
+        "Zencino Magnetic Knife Bar 40cm | Heavy-Duty Wall Mount Kitchen Utensil Strip",
       seoDescription:
         "High-strength neodymium magnetic knife strip with hygienic acrylic face. Dual mounting options with 3M adhesive or screws.",
       mediaIds: mediaAssetIds.slice(0, 2),
@@ -422,9 +466,12 @@ async function main() {
           sku: "ZNC-KIT-MAG-40CM",
           title: "Brushed Accent / 40cm",
           options: { Size: "40cm", Color: "Brushed Black" },
-          optionSignature: JSON.stringify([["Color", "Brushed Black"], ["Size", "40cm"]]),
-          priceMinor: 119900, // ₹1,199
-          mrpMinor: 179900,   // ₹1,799
+          optionSignature: JSON.stringify([
+            ["Color", "Brushed Black"],
+            ["Size", "40cm"],
+          ]),
+          priceMinor: 119_900, // ₹1,199
+          mrpMinor: 179_900, // ₹1,799
           weightG: 720,
           lengthMm: 400,
           widthMm: 45,
@@ -445,25 +492,7 @@ async function main() {
       .where(eq(products.slug, item.slug))
       .limit(1);
 
-    if (!prod) {
-      [prod] = await db
-        .insert(products)
-        .values({
-          name: item.name,
-          slug: item.slug,
-          description: item.description,
-          primaryCategoryId: item.primaryCategoryId,
-          status: "published",
-          publishedAt: new Date(),
-          specifications: item.specifications,
-          care: item.care,
-          packageContents: item.packageContents,
-          seoTitle: item.seoTitle,
-          seoDescription: item.seoDescription,
-        })
-        .returning();
-      console.log(`     [+] Created product record (ID: ${prod.id})`);
-    } else {
+    if (prod) {
       [prod] = await db
         .update(products)
         .set({
@@ -481,10 +510,30 @@ async function main() {
         .where(eq(products.id, prod.id))
         .returning();
       console.log(`     [=] Updated product record (ID: ${prod.id})`);
+    } else {
+      [prod] = await db
+        .insert(products)
+        .values({
+          name: item.name,
+          slug: item.slug,
+          description: item.description,
+          primaryCategoryId: item.primaryCategoryId,
+          status: "published",
+          publishedAt: new Date(),
+          specifications: item.specifications,
+          care: item.care,
+          packageContents: item.packageContents,
+          seoTitle: item.seoTitle,
+          seoDescription: item.seoDescription,
+        })
+        .returning();
+      console.log(`     [+] Created product record (ID: ${prod.id})`);
     }
 
     // Category relationships
-    const allCatIds = Array.from(new Set([item.primaryCategoryId, ...item.additionalCategoryIds]));
+    const allCatIds = Array.from(
+      new Set([item.primaryCategoryId, ...item.additionalCategoryIds])
+    );
     for (const catId of allCatIds) {
       await db
         .insert(productCategories)
@@ -513,7 +562,12 @@ async function main() {
       const [existingMedia] = await db
         .select()
         .from(productMedia)
-        .where(and(eq(productMedia.productId, prod.id), eq(productMedia.assetId, assetId)))
+        .where(
+          and(
+            eq(productMedia.productId, prod.id),
+            eq(productMedia.assetId, assetId)
+          )
+        )
         .limit(1);
 
       if (!existingMedia) {
@@ -533,7 +587,24 @@ async function main() {
         .where(eq(productVariants.sku, vData.sku))
         .limit(1);
 
-      if (!variant) {
+      if (variant) {
+        [variant] = await db
+          .update(productVariants)
+          .set({
+            title: vData.title,
+            priceMinor: vData.priceMinor,
+            mrpMinor: vData.mrpMinor,
+            weightG: vData.weightG,
+            lengthMm: vData.lengthMm,
+            widthMm: vData.widthMm,
+            heightMm: vData.heightMm,
+            active: true,
+            updatedAt: new Date(),
+          })
+          .where(eq(productVariants.id, variant.id))
+          .returning();
+        console.log(`     [=] Variant updated: ${vData.sku}`);
+      } else {
         [variant] = await db
           .insert(productVariants)
           .values({
@@ -552,31 +623,21 @@ async function main() {
             active: true,
           })
           .returning();
-        console.log(`     [+] Variant created: ${vData.sku} (ID: ${variant.id})`);
-      } else {
-        [variant] = await db
-          .update(productVariants)
-          .set({
-            title: vData.title,
-            priceMinor: vData.priceMinor,
-            mrpMinor: vData.mrpMinor,
-            weightG: vData.weightG,
-            lengthMm: vData.lengthMm,
-            widthMm: vData.widthMm,
-            heightMm: vData.heightMm,
-            active: true,
-            updatedAt: new Date(),
-          })
-          .where(eq(productVariants.id, variant.id))
-          .returning();
-        console.log(`     [=] Variant updated: ${vData.sku}`);
+        console.log(
+          `     [+] Variant created: ${vData.sku} (ID: ${variant.id})`
+        );
       }
 
       // Channels
       const [websiteChan] = await db
         .select()
         .from(variantChannels)
-        .where(and(eq(variantChannels.variantId, variant.id), eq(variantChannels.channel, "website")))
+        .where(
+          and(
+            eq(variantChannels.variantId, variant.id),
+            eq(variantChannels.channel, "website")
+          )
+        )
         .limit(1);
 
       if (!websiteChan) {
@@ -590,19 +651,15 @@ async function main() {
       const [amazonChan] = await db
         .select()
         .from(variantChannels)
-        .where(and(eq(variantChannels.variantId, variant.id), eq(variantChannels.channel, "amazon")))
+        .where(
+          and(
+            eq(variantChannels.variantId, variant.id),
+            eq(variantChannels.channel, "amazon")
+          )
+        )
         .limit(1);
 
-      if (!amazonChan) {
-        await db.insert(variantChannels).values({
-          variantId: variant.id,
-          channel: "amazon",
-          enabled: true,
-          externalUrl: vData.amazonUrl,
-          asin: vData.asin,
-          verifiedAt: new Date(),
-        });
-      } else {
+      if (amazonChan) {
         await db
           .update(variantChannels)
           .set({
@@ -611,6 +668,15 @@ async function main() {
             verifiedAt: new Date(),
           })
           .where(eq(variantChannels.id, amazonChan.id));
+      } else {
+        await db.insert(variantChannels).values({
+          variantId: variant.id,
+          channel: "amazon",
+          enabled: true,
+          externalUrl: vData.amazonUrl,
+          asin: vData.asin,
+          verifiedAt: new Date(),
+        });
       }
 
       // Stock Balances at Central Warehouse
@@ -647,7 +713,9 @@ async function main() {
           referenceId: vData.sku,
         });
 
-        console.log(`     [+] Initialized stock: ${vData.stockOnHand} units on hand`);
+        console.log(
+          `     [+] Initialized stock: ${vData.stockOnHand} units on hand`
+        );
       } else if (balance.onHand === 0) {
         await db
           .update(inventoryBalances)
@@ -672,15 +740,21 @@ async function main() {
           referenceId: vData.sku,
         });
 
-        console.log(`     [^] Replenished stock: set to ${vData.stockOnHand} units`);
+        console.log(
+          `     [^] Replenished stock: set to ${vData.stockOnHand} units`
+        );
       } else {
-        console.log(`     [=] Current stock: ${balance.onHand} on hand (${balance.reserved} reserved)`);
+        console.log(
+          `     [=] Current stock: ${balance.onHand} on hand (${balance.reserved} reserved)`
+        );
       }
     }
   }
 
   // 6. Statutory Store Profile Settings
-  console.log("\n6. Initializing verified Indian statutory business disclosures...");
+  console.log(
+    "\n6. Initializing verified Indian statutory business disclosures..."
+  );
   const [existingSettings] = await db
     .select()
     .from(storeSettings)
@@ -693,23 +767,18 @@ async function main() {
     gstin: "27AAACZ1234A1Z5",
     pan: "AAACZ1234A",
     cin: "U52100MH2026PTC123456",
-    registeredOffice: "Unit 402, Signature Tower, Bandra Kurla Complex, Mumbai, MH 400051, India",
+    registeredOffice:
+      "Unit 402, Signature Tower, Bandra Kurla Complex, Mumbai, MH 400051, India",
     supportEmail: "support@zencino.in",
     supportPhone: "+91 98765 43210",
     supportHours: "Mon - Sat, 10:00 AM - 7:00 PM IST",
     dispatchSla: "Orders dispatched within 24–48 working hours",
-    freeShippingThresholdMinor: 99900,
+    freeShippingThresholdMinor: 99_900,
     standardShippingFeeMinor: 7900,
     returnWindowDays: 7,
   };
 
-  if (!existingSettings) {
-    await db.insert(storeSettings).values({
-      key: "store_profile",
-      value: launchProfile,
-    });
-    console.log("   [+] Seeded statutory store profile.");
-  } else {
+  if (existingSettings) {
     await db
       .update(storeSettings)
       .set({
@@ -717,7 +786,15 @@ async function main() {
         updatedAt: new Date(),
       })
       .where(eq(storeSettings.key, "store_profile"));
-    console.log("   [=] Updated statutory store profile with latest disclosures.");
+    console.log(
+      "   [=] Updated statutory store profile with latest disclosures."
+    );
+  } else {
+    await db.insert(storeSettings).values({
+      key: "store_profile",
+      value: launchProfile,
+    });
+    console.log("   [+] Seeded statutory store profile.");
   }
 
   console.log("\n=================================================");

@@ -1,4 +1,4 @@
-import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import path from "node:path";
 
 if (existsSync(".env")) {
@@ -31,7 +31,9 @@ async function main() {
   console.log("\nBackup Metadata:");
   console.log(`  - Timestamp: ${data.metadata?.timestamp || "unknown"}`);
   console.log(`  - Generator: ${data.metadata?.generator || "unknown"}`);
-  console.log(`  - File Size: ${(Buffer.byteLength(raw) / 1024).toFixed(2)} KB`);
+  console.log(
+    `  - File Size: ${(Buffer.byteLength(raw) / 1024).toFixed(2)} KB`
+  );
 
   console.log("\nIncluded Table Datasets:");
   let totalRows = 0;
@@ -41,7 +43,9 @@ async function main() {
     console.log(`  - ${table.padEnd(24)}: ${count} rows`);
   }
 
-  console.log(`\n[✓] Backup integrity verified. Total rows archived: ${totalRows}`);
+  console.log(
+    `\n[✓] Backup integrity verified. Total rows archived: ${totalRows}`
+  );
   console.log("=================================================\n");
 }
 

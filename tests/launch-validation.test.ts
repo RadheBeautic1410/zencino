@@ -1,5 +1,8 @@
-import test from "node:test";
 import assert from "node:assert/strict";
+import test from "node:test";
+import { SELLER_INFO } from "../config/platform";
+import { isAmazonProductUrl } from "../lib/catalog/validation";
+import { DEFAULT_POLICIES } from "../lib/commerce/content-defaults";
 import {
   buildCampaignUtmUrl,
   calculateGstBreakdown,
@@ -13,11 +16,11 @@ import {
   isReturnEligible,
   numberToWordsRupees,
 } from "../lib/commerce/rules";
-import { isAmazonProductUrl } from "../lib/catalog/validation";
-import { checkRateLimit, resetRateLimitStore } from "../lib/security/rate-limit";
+import {
+  checkRateLimit,
+  resetRateLimitStore,
+} from "../lib/security/rate-limit";
 import { redactSensitiveData } from "../lib/security/redact";
-import { SELLER_INFO } from "../config/platform";
-import { DEFAULT_POLICIES } from "../lib/commerce/content-defaults";
 
 test("Launch Invariant: Rate limiting enforces threshold and window reset", () => {
   resetRateLimitStore();
@@ -56,34 +59,65 @@ test("Launch Invariant: Sensitive operational data is scrubbed before logging", 
     userEmail: "customer@example.com",
     password: "super-secret-password-123",
     authToken: "bearer-token-xyz-789",
-    databaseUrl: "postgresql://postgres:secret_pass@ep-cool-123.neon.tech/neondb?sslmode=require",
+    databaseUrl:
+      "postgresql://postgres:secret_pass@ep-cool-123.neon.tech/neondb?sslmode=require",
     cardDetails: {
       cardNumber: "4111 2222 3333 4444",
       cvv: "123",
     },
-    orderTotalMinor: 149900,
+    orderTotalMinor: 149_900,
   };
 
   const clean = redactSensitiveData(dirtyObject);
 
   assert.equal(clean.userEmail, "customer@example.com");
-  assert.equal(clean.orderTotalMinor, 149900);
-  assert.equal((clean as any).password, "[REDACTED]");
-  assert.equal((clean as any).authToken, "[REDACTED]");
-  assert.equal((clean as any).cardDetails.cvv, "[REDACTED]");
-  assert.ok(!(clean as any).databaseUrl.includes("secret_pass"));
-  assert.ok((clean as any).databaseUrl.includes("[REDACTED]"));
-  assert.ok(!(clean as any).cardDetails.cardNumber.includes("4111 2222"));
+  assert.equal(clean.orderTotalMinor, 149_900);
+  assert.equal(clean.password, "[REDACTED]");
+  assert.equal(clean.authToken, "[REDACTED]");
+  assert.equal(clean.cardDetails.cvv, "[REDACTED]");
+  assert.ok(!clean.databaseUrl.includes("secret_pass"));
+  assert.ok(clean.databaseUrl.includes("[REDACTED]"));
+  assert.ok(!clean.cardDetails.cardNumber.includes("4111 2222"));
 });
 
 test("Launch Invariant: Multi-category SKU naming conventions & Amazon destinations", () => {
   const onboardedSkus = [
-    { sku: "ZNC-ORG-2C-1P", amazonUrl: "https://www.amazon.in/dp/B08XYZ1234", price: 49900, mrp: 79900 },
-    { sku: "ZNC-ORG-2C-2P", amazonUrl: "https://www.amazon.in/dp/B08XYZ5678", price: 89900, mrp: 149900 },
-    { sku: "ZNC-DSK-RISER-CLR", amazonUrl: "https://www.amazon.in/dp/B09MNT9012", price: 129900, mrp: 199900 },
-    { sku: "ZNC-VAN-ROT-CLR", amazonUrl: "https://www.amazon.in/dp/B09ROT3456", price: 149900, mrp: 229900 },
-    { sku: "ZNC-SHF-FLT-2P", amazonUrl: "https://www.amazon.in/dp/B09SHF7890", price: 89900, mrp: 139900 },
-    { sku: "ZNC-KIT-MAG-40CM", amazonUrl: "https://www.amazon.in/dp/B09MAG1122", price: 119900, mrp: 179900 },
+    {
+      sku: "ZNC-ORG-2C-1P",
+      amazonUrl: "https://www.amazon.in/dp/B08XYZ1234",
+      price: 49_900,
+      mrp: 79_900,
+    },
+    {
+      sku: "ZNC-ORG-2C-2P",
+      amazonUrl: "https://www.amazon.in/dp/B08XYZ5678",
+      price: 89_900,
+      mrp: 149_900,
+    },
+    {
+      sku: "ZNC-DSK-RISER-CLR",
+      amazonUrl: "https://www.amazon.in/dp/B09MNT9012",
+      price: 129_900,
+      mrp: 199_900,
+    },
+    {
+      sku: "ZNC-VAN-ROT-CLR",
+      amazonUrl: "https://www.amazon.in/dp/B09ROT3456",
+      price: 149_900,
+      mrp: 229_900,
+    },
+    {
+      sku: "ZNC-SHF-FLT-2P",
+      amazonUrl: "https://www.amazon.in/dp/B09SHF7890",
+      price: 89_900,
+      mrp: 139_900,
+    },
+    {
+      sku: "ZNC-KIT-MAG-40CM",
+      amazonUrl: "https://www.amazon.in/dp/B09MAG1122",
+      price: 119_900,
+      mrp: 179_900,
+    },
   ];
 
   for (const item of onboardedSkus) {
@@ -107,31 +141,31 @@ test("Launch Invariant: Indian E-Commerce Shipping fee & Pincode serviceability"
   assert.equal(isPincodeServiceable("ABCDEF"), false); // Non-numeric
 
   // Free shipping threshold at ₹999 (99900 minor)
-  assert.equal(calculateShippingFee(49900), 7900); // ₹499 -> ₹79 shipping
-  assert.equal(calculateShippingFee(89900), 7900); // ₹899 -> ₹79 shipping
-  assert.equal(calculateShippingFee(99900), 0);    // ₹999 -> ₹0 free shipping
-  assert.equal(calculateShippingFee(149900), 0);   // ₹1,499 -> ₹0 free shipping
+  assert.equal(calculateShippingFee(49_900), 7900); // ₹499 -> ₹79 shipping
+  assert.equal(calculateShippingFee(89_900), 7900); // ₹899 -> ₹79 shipping
+  assert.equal(calculateShippingFee(99_900), 0); // ₹999 -> ₹0 free shipping
+  assert.equal(calculateShippingFee(149_900), 0); // ₹1,499 -> ₹0 free shipping
 });
 
 test("Launch Invariant: Statutory GST invoice calculation (CGST/SGST vs IGST)", () => {
   // Intra-state order in Maharashtra (Place of supply: Maharashtra)
-  const intra = calculateGstBreakdown(11800, "Maharashtra", "Maharashtra");
-  assert.equal(intra.taxableValueMinor, 10000);
+  const intra = calculateGstBreakdown(11_800, "Maharashtra", "Maharashtra");
+  assert.equal(intra.taxableValueMinor, 10_000);
   assert.equal(intra.taxMinor, 1800);
   assert.equal(intra.cgstMinor, 900); // 9%
   assert.equal(intra.sgstMinor, 900); // 9%
   assert.equal(intra.igstMinor, 0);
 
   // Inter-state order from Maharashtra to Karnataka
-  const inter = calculateGstBreakdown(11800, "Karnataka", "Maharashtra");
-  assert.equal(inter.taxableValueMinor, 10000);
+  const inter = calculateGstBreakdown(11_800, "Karnataka", "Maharashtra");
+  assert.equal(inter.taxableValueMinor, 10_000);
   assert.equal(inter.taxMinor, 1800);
   assert.equal(inter.cgstMinor, 0);
   assert.equal(inter.sgstMinor, 0);
   assert.equal(inter.igstMinor, 1800); // 18%
 
   // Legal amount in words
-  const words = numberToWordsRupees(Math.floor(11800 / 100));
+  const words = numberToWordsRupees(Math.floor(11_800 / 100));
   assert.equal(words, "One Hundred Eighteen Rupees Only");
 });
 

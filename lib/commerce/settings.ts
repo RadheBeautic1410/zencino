@@ -1,20 +1,20 @@
 import { eq } from "drizzle-orm";
-import { type StoreSetting, storeSettings } from "@/db/schema/settings";
+import { storeSettings } from "@/db/schema/settings";
 import { audit } from "@/lib/audit";
 import { db } from "@/lib/db";
 
 export interface StoreProfileConfig {
-  storeName: string;
-  legalEntityName: string;
-  gstin: string;
-  pan: string;
-  cin: string;
-  registeredAddress: string;
-  supportEmail: string;
-  supportPhone: string;
-  supportHours: string;
-  dispatchPromise: string;
   checkoutEnabled: boolean;
+  cin: string;
+  dispatchPromise: string;
+  gstin: string;
+  legalEntityName: string;
+  pan: string;
+  registeredAddress: string;
+  storeName: string;
+  supportEmail: string;
+  supportHours: string;
+  supportPhone: string;
 }
 
 export const DEFAULT_STORE_CONFIG: StoreProfileConfig = {
@@ -23,11 +23,13 @@ export const DEFAULT_STORE_CONFIG: StoreProfileConfig = {
   gstin: "27AAACZ1234A1Z5",
   pan: "AAACZ1234A",
   cin: "U52100MH2026PTC123456",
-  registeredAddress: "Unit 402, Trade Link Hub, Lower Parel, Mumbai, Maharashtra 400013, India",
+  registeredAddress:
+    "Unit 402, Trade Link Hub, Lower Parel, Mumbai, Maharashtra 400013, India",
   supportEmail: "support@zencino.com",
   supportPhone: "+91 98765 43210",
   supportHours: "Mon–Fri, 10:00 AM – 6:00 PM IST",
-  dispatchPromise: "Orders dispatched within 24-48 business hours via insured express courier networks.",
+  dispatchPromise:
+    "Orders dispatched within 24-48 business hours via insured express courier networks.",
   checkoutEnabled: true,
 };
 

@@ -26,11 +26,13 @@ export default async function EditProductPage({
   return (
     <div>
       <OrbitPageHeader
+        description={
+          "Manage variants, channel options (Website & Amazon), specifications, and gallery."
+        }
         eyebrow="Catalog / Products"
         title={product.name}
-        description={`Manage variants, channel options (Website & Amazon), specifications, and gallery.`}
       />
-      <ProductEditorTabs product={product} categories={categories} />
+      <ProductEditorTabs categories={categories} product={product} />
     </div>
   );
 }

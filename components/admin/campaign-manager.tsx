@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useTransition } from "react";
 import {
   ArrowSquareOut,
   Check,
@@ -9,16 +8,22 @@ import {
   Megaphone,
   Plus,
   Receipt,
-  ShoppingCart,
   WarningCircle,
 } from "@phosphor-icons/react";
+import { useState, useTransition } from "react";
 import { saveCampaignAction } from "@/app/actions/campaigns";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { buildCampaignUtmUrl } from "@/lib/commerce/rules";
 import type { CampaignPerformanceSummary } from "@/lib/commerce/campaigns";
+import { buildCampaignUtmUrl } from "@/lib/commerce/rules";
 
 interface Props {
   summaries: CampaignPerformanceSummary[];
@@ -78,12 +83,18 @@ export function CampaignManager({ summaries }: Props) {
       {/* Header action bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border pb-6">
         <div>
-          <h2 className="text-xl font-bold tracking-tight">Instagram & Marketing Campaigns</h2>
+          <h2 className="text-xl font-bold tracking-tight">
+            Instagram & Marketing Campaigns
+          </h2>
           <p className="text-xs text-muted-foreground mt-1">
-            Track organic social attribution, Instagram reels deep links, and conversion funnels.
+            Track organic social attribution, Instagram reels deep links, and
+            conversion funnels.
           </p>
         </div>
-        <Button onClick={() => setShowCreateModal(true)} className="gap-2 text-xs">
+        <Button
+          className="gap-2 text-xs"
+          onClick={() => setShowCreateModal(true)}
+        >
           <Plus size={14} /> New Campaign
         </Button>
       </div>
@@ -91,12 +102,17 @@ export function CampaignManager({ summaries }: Props) {
       {/* Campaigns Listing with Performance Funnel */}
       {summaries.length === 0 ? (
         <Card className="p-12 text-center space-y-4">
-          <Megaphone size={40} className="mx-auto text-muted-foreground" />
+          <Megaphone className="mx-auto text-muted-foreground" size={40} />
           <h3 className="font-bold text-base">No Marketing Campaigns Yet</h3>
           <p className="text-xs text-muted-foreground max-w-md mx-auto">
-            Create your first Instagram campaign to generate copyable deep links with UTM tracking parameters for your reels, bio, and stories.
+            Create your first Instagram campaign to generate copyable deep links
+            with UTM tracking parameters for your reels, bio, and stories.
           </p>
-          <Button onClick={() => setShowCreateModal(true)} size="sm" className="mt-2">
+          <Button
+            className="mt-2"
+            onClick={() => setShowCreateModal(true)}
+            size="sm"
+          >
             Create First Campaign
           </Button>
         </Card>
@@ -113,30 +129,42 @@ export function CampaignManager({ summaries }: Props) {
             });
 
             return (
-              <Card key={c.id} className="overflow-hidden">
+              <Card className="overflow-hidden" key={c.id}>
                 <CardHeader className="border-b border-border bg-muted/10 pb-4">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div className="space-y-1">
                       <div className="flex items-center gap-2">
-                        <InstagramLogo size={18} className="text-pink-600" />
-                        <CardTitle className="text-base font-bold">{c.name}</CardTitle>
-                        <Badge variant="outline" className="font-mono text-2xs uppercase">
+                        <InstagramLogo className="text-pink-600" size={18} />
+                        <CardTitle className="text-base font-bold">
+                          {c.name}
+                        </CardTitle>
+                        <Badge
+                          className="font-mono text-2xs uppercase"
+                          variant="outline"
+                        >
                           {c.code}
                         </Badge>
-                        <Badge variant="secondary" className="text-2xs capitalize">
+                        <Badge
+                          className="text-2xs capitalize"
+                          variant="secondary"
+                        >
                           {c.medium}
                         </Badge>
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        Target landing page: <span className="font-mono font-medium">{c.landingPath}</span>
+                        Target landing page:{" "}
+                        <span className="font-mono font-medium">
+                          {c.landingPath}
+                        </span>
                         {c.reelUrl && (
                           <>
-                            {" "}·{" "}
+                            {" "}
+                            ·{" "}
                             <a
-                              href={c.reelUrl}
-                              target="_blank"
-                              rel="noreferrer"
                               className="text-primary hover:underline font-semibold inline-flex items-center gap-1"
+                              href={c.reelUrl}
+                              rel="noreferrer"
+                              target="_blank"
                             >
                               View Reel <ArrowSquareOut size={12} />
                             </a>
@@ -147,14 +175,14 @@ export function CampaignManager({ summaries }: Props) {
 
                     {/* Copy Link Button */}
                     <Button
-                      variant="secondary"
-                      size="sm"
-                      onClick={() => handleCopy(fullUtmUrl, c.code)}
                       className="gap-1.5 text-xs font-mono shrink-0"
+                      onClick={() => handleCopy(fullUtmUrl, c.code)}
+                      size="sm"
+                      variant="secondary"
                     >
                       {copiedCode === c.code ? (
                         <>
-                          <Check size={14} className="text-success" /> Copied!
+                          <Check className="text-success" size={14} /> Copied!
                         </>
                       ) : (
                         <>
@@ -177,45 +205,70 @@ export function CampaignManager({ summaries }: Props) {
                   </p>
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
                     <div className="p-3 bg-muted/20 border border-border rounded-lg space-y-1">
-                      <span className="text-2xs font-semibold uppercase text-muted-foreground">Page Views</span>
+                      <span className="text-2xs font-semibold uppercase text-muted-foreground">
+                        Page Views
+                      </span>
                       <p className="font-black text-xl">{summary.pageViews}</p>
                     </div>
 
                     <div className="p-3 bg-muted/20 border border-border rounded-lg space-y-1">
-                      <span className="text-2xs font-semibold uppercase text-muted-foreground">Product Views</span>
-                      <p className="font-black text-xl">{summary.productViews}</p>
+                      <span className="text-2xs font-semibold uppercase text-muted-foreground">
+                        Product Views
+                      </span>
+                      <p className="font-black text-xl">
+                        {summary.productViews}
+                      </p>
                     </div>
 
                     <div className="p-3 bg-muted/20 border border-border rounded-lg space-y-1">
-                      <span className="text-2xs font-semibold uppercase text-muted-foreground">Added to Cart</span>
+                      <span className="text-2xs font-semibold uppercase text-muted-foreground">
+                        Added to Cart
+                      </span>
                       <p className="font-black text-xl">{summary.addToCarts}</p>
                     </div>
 
                     <div className="p-3 bg-muted/20 border border-border rounded-lg space-y-1">
-                      <span className="text-2xs font-semibold uppercase text-muted-foreground">Checkouts Started</span>
-                      <p className="font-black text-xl">{summary.checkoutStarts}</p>
+                      <span className="text-2xs font-semibold uppercase text-muted-foreground">
+                        Checkouts Started
+                      </span>
+                      <p className="font-black text-xl">
+                        {summary.checkoutStarts}
+                      </p>
                     </div>
 
                     {/* Direct Paid Orders */}
                     <div className="p-3 bg-success/10 border border-success/30 rounded-lg space-y-1">
                       <div className="flex items-center justify-between">
-                        <span className="text-2xs font-bold uppercase text-success">Direct Orders</span>
-                        <Receipt size={14} className="text-success" />
+                        <span className="text-2xs font-bold uppercase text-success">
+                          Direct Orders
+                        </span>
+                        <Receipt className="text-success" size={14} />
                       </div>
-                      <p className="font-black text-xl text-foreground">{summary.directOrdersCount}</p>
+                      <p className="font-black text-xl text-foreground">
+                        {summary.directOrdersCount}
+                      </p>
                       <p className="text-2xs text-muted-foreground font-semibold">
-                        ₹{(summary.directRevenueMinor / 100).toLocaleString("en-IN")}
+                        ₹
+                        {(summary.directRevenueMinor / 100).toLocaleString(
+                          "en-IN"
+                        )}
                       </p>
                     </div>
 
                     {/* Amazon Outbound Clicks (Explicitly Referral Clicks) */}
                     <div className="p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg space-y-1">
                       <div className="flex items-center justify-between">
-                        <span className="text-2xs font-bold uppercase text-amber-600">Amazon Clicks</span>
-                        <ArrowSquareOut size={14} className="text-amber-500" />
+                        <span className="text-2xs font-bold uppercase text-amber-600">
+                          Amazon Clicks
+                        </span>
+                        <ArrowSquareOut className="text-amber-500" size={14} />
                       </div>
-                      <p className="font-black text-xl text-foreground">{summary.amazonOutboundClicks}</p>
-                      <p className="text-2xs text-muted-foreground">Referral intent</p>
+                      <p className="font-black text-xl text-foreground">
+                        {summary.amazonOutboundClicks}
+                      </p>
+                      <p className="text-2xs text-muted-foreground">
+                        Referral intent
+                      </p>
                     </div>
                   </div>
                 </CardContent>
@@ -230,13 +283,16 @@ export function CampaignManager({ summaries }: Props) {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4">
           <Card className="w-full max-w-xl max-h-[90vh] overflow-y-auto">
             <CardHeader className="border-b border-border pb-4">
-              <CardTitle className="text-base font-bold">Create Marketing Campaign</CardTitle>
+              <CardTitle className="text-base font-bold">
+                Create Marketing Campaign
+              </CardTitle>
               <CardDescription className="text-xs">
-                Configure Instagram reel attribution and generate copyable UTM deep links.
+                Configure Instagram reel attribution and generate copyable UTM
+                deep links.
               </CardDescription>
             </CardHeader>
 
-            <form onSubmit={handleSubmit} className="p-6 space-y-4">
+            <form className="p-6 space-y-4" onSubmit={handleSubmit}>
               {formError && (
                 <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-xs text-destructive flex items-center gap-2">
                   <WarningCircle size={16} />
@@ -246,53 +302,88 @@ export function CampaignManager({ summaries }: Props) {
 
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
-                  <label className="block text-xs font-semibold uppercase tracking-ui text-muted-foreground mb-1">
+                  <label
+                    className="block text-xs font-semibold uppercase tracking-ui text-muted-foreground mb-1"
+                    htmlFor="campaign-manager-campaign-code-unique-slug"
+                  >
                     Campaign Code * (Unique Slug)
                   </label>
                   <Input
+                    id="campaign-manager-campaign-code-unique-slug"
                     name="code"
-                    required
-                    placeholder="e.g. acrylic_launch_01"
-                    value={formDataState.code}
                     onChange={(e) =>
-                      setFormDataState({ ...formDataState, code: e.target.value, campaign: e.target.value })
+                      setFormDataState({
+                        ...formDataState,
+                        code: e.target.value,
+                        campaign: e.target.value,
+                      })
                     }
+                    placeholder="e.g. acrylic_launch_01"
+                    required
+                    value={formDataState.code}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold uppercase tracking-ui text-muted-foreground mb-1">
+                  <label
+                    className="block text-xs font-semibold uppercase tracking-ui text-muted-foreground mb-1"
+                    htmlFor="campaign-manager-campaign-title"
+                  >
                     Campaign Title *
                   </label>
                   <Input
+                    id="campaign-manager-campaign-title"
                     name="name"
-                    required
+                    onChange={(e) =>
+                      setFormDataState({
+                        ...formDataState,
+                        name: e.target.value,
+                      })
+                    }
                     placeholder="e.g. Pen Holder Reel #1"
+                    required
                     value={formDataState.name}
-                    onChange={(e) => setFormDataState({ ...formDataState, name: e.target.value })}
                   />
                 </div>
               </div>
 
               <div className="grid gap-4 sm:grid-cols-3">
                 <div>
-                  <label className="block text-xs font-semibold uppercase tracking-ui text-muted-foreground mb-1">
+                  <label
+                    className="block text-xs font-semibold uppercase tracking-ui text-muted-foreground mb-1"
+                    htmlFor="campaign-manager-source"
+                  >
                     Source
                   </label>
                   <Input
+                    id="campaign-manager-source"
                     name="source"
+                    onChange={(e) =>
+                      setFormDataState({
+                        ...formDataState,
+                        source: e.target.value,
+                      })
+                    }
                     value={formDataState.source}
-                    onChange={(e) => setFormDataState({ ...formDataState, source: e.target.value })}
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold uppercase tracking-ui text-muted-foreground mb-1">
+                  <label
+                    className="block text-xs font-semibold uppercase tracking-ui text-muted-foreground mb-1"
+                    htmlFor="campaign-manager-medium"
+                  >
                     Medium
                   </label>
                   <select
-                    name="medium"
-                    value={formDataState.medium}
-                    onChange={(e) => setFormDataState({ ...formDataState, medium: e.target.value })}
                     className="w-full border border-border bg-background px-3 py-2 text-xs rounded focus:outline-none focus:ring-1 focus:ring-primary"
+                    id="campaign-manager-medium"
+                    name="medium"
+                    onChange={(e) =>
+                      setFormDataState({
+                        ...formDataState,
+                        medium: e.target.value,
+                      })
+                    }
+                    value={formDataState.medium}
                   >
                     <option value="reel">Reel</option>
                     <option value="story">Story</option>
@@ -302,40 +393,67 @@ export function CampaignManager({ summaries }: Props) {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold uppercase tracking-ui text-muted-foreground mb-1">
+                  <label
+                    className="block text-xs font-semibold uppercase tracking-ui text-muted-foreground mb-1"
+                    htmlFor="campaign-manager-content-tag-optional"
+                  >
                     Content Tag (Optional)
                   </label>
                   <Input
+                    id="campaign-manager-content-tag-optional"
                     name="content"
+                    onChange={(e) =>
+                      setFormDataState({
+                        ...formDataState,
+                        content: e.target.value,
+                      })
+                    }
                     placeholder="e.g. clip_desk_01"
                     value={formDataState.content}
-                    onChange={(e) => setFormDataState({ ...formDataState, content: e.target.value })}
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-ui text-muted-foreground mb-1">
+                <label
+                  className="block text-xs font-semibold uppercase tracking-ui text-muted-foreground mb-1"
+                  htmlFor="campaign-manager-destination-landing-path"
+                >
                   Destination Landing Path *
                 </label>
                 <Input
+                  id="campaign-manager-destination-landing-path"
                   name="landingPath"
-                  required
+                  onChange={(e) =>
+                    setFormDataState({
+                      ...formDataState,
+                      landingPath: e.target.value,
+                    })
+                  }
                   placeholder="/products/pencil-holder-2 or /collections/acrylic-essentials"
+                  required
                   value={formDataState.landingPath}
-                  onChange={(e) => setFormDataState({ ...formDataState, landingPath: e.target.value })}
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold uppercase tracking-ui text-muted-foreground mb-1">
+                <label
+                  className="block text-xs font-semibold uppercase tracking-ui text-muted-foreground mb-1"
+                  htmlFor="campaign-manager-instagram-reel-post-url"
+                >
                   Instagram Reel / Post URL (Optional)
                 </label>
                 <Input
+                  id="campaign-manager-instagram-reel-post-url"
                   name="reelUrl"
+                  onChange={(e) =>
+                    setFormDataState({
+                      ...formDataState,
+                      reelUrl: e.target.value,
+                    })
+                  }
                   placeholder="https://instagram.com/reel/..."
                   value={formDataState.reelUrl}
-                  onChange={(e) => setFormDataState({ ...formDataState, reelUrl: e.target.value })}
                 />
               </div>
 
@@ -351,14 +469,14 @@ export function CampaignManager({ summaries }: Props) {
 
               <div className="flex items-center justify-end gap-2 pt-4 border-t border-border">
                 <Button
+                  onClick={() => setShowCreateModal(false)}
+                  size="sm"
                   type="button"
                   variant="secondary"
-                  size="sm"
-                  onClick={() => setShowCreateModal(false)}
                 >
                   Cancel
                 </Button>
-                <Button type="submit" size="sm" disabled={isPending}>
+                <Button disabled={isPending} size="sm" type="submit">
                   {isPending ? "Saving..." : "Create Campaign"}
                 </Button>
               </div>

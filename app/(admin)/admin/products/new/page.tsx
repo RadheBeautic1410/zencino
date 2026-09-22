@@ -12,9 +12,9 @@ export default async function NewProductPage() {
   return (
     <div>
       <OrbitPageHeader
+        description="Add a new product to Zencino's catalog with specifications and attributes."
         eyebrow="Catalog"
         title="New Product"
-        description="Add a new product to Zencino's catalog with specifications and attributes."
       />
       <ProductForm categories={categories} />
     </div>

@@ -1,15 +1,9 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { Bag, List, MagnifyingGlass, User, X } from "@phosphor-icons/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  Bag,
-  List,
-  MagnifyingGlass,
-  User,
-  X,
-} from "@phosphor-icons/react";
+import { type ReactNode, useState } from "react";
 import { CampaignTracker } from "@/components/store/campaign-tracker";
 import { SELLER_INFO } from "@/config/platform";
 
@@ -42,7 +36,9 @@ export function StoreShell({ children }: { children: ReactNode }) {
           <span className="inline-flex size-2 animate-pulse rounded-full bg-gold" />
           <span>Complimentary Pan-India Delivery on orders above ₹999</span>
           <span className="hidden md:inline text-primary-foreground/50">·</span>
-          <span className="hidden md:inline text-primary-foreground/90 font-semibold">Direct Website & Amazon Prime Channels</span>
+          <span className="hidden md:inline text-primary-foreground/90 font-semibold">
+            Direct Website & Amazon Prime Channels
+          </span>
         </div>
       </div>
 
@@ -52,12 +48,16 @@ export function StoreShell({ children }: { children: ReactNode }) {
           {/* Logo & Mobile Menu Trigger */}
           <div className="flex items-center gap-4">
             <button
-              type="button"
+              aria-label="Toggle navigation menu"
               className="lg:hidden text-foreground p-1.5 rounded-lg hover:bg-muted/70 transition-colors"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              aria-label="Toggle navigation menu"
+              type="button"
             >
-              {mobileMenuOpen ? <X size={22} weight="bold" /> : <List size={22} weight="bold" />}
+              {mobileMenuOpen ? (
+                <X size={22} weight="bold" />
+              ) : (
+                <List size={22} weight="bold" />
+              )}
             </button>
 
             <Link className="flex items-center gap-2.5 group" href="/">
@@ -71,17 +71,32 @@ export function StoreShell({ children }: { children: ReactNode }) {
           </div>
 
           {/* Desktop Navigation Links */}
-          <nav aria-label="Main navigation" className="hidden lg:flex items-center gap-8 text-xs font-semibold uppercase tracking-ui">
-            <Link href="/products" className="text-foreground/75 hover:text-primary transition-colors">
+          <nav
+            aria-label="Main navigation"
+            className="hidden lg:flex items-center gap-8 text-xs font-semibold uppercase tracking-ui"
+          >
+            <Link
+              className="text-foreground/75 hover:text-primary transition-colors"
+              href="/products"
+            >
               All Products
             </Link>
-            <Link href="/categories/storage-organization" className="text-foreground/75 hover:text-primary transition-colors">
+            <Link
+              className="text-foreground/75 hover:text-primary transition-colors"
+              href="/categories/storage-organization"
+            >
               Storage & Organization
             </Link>
-            <Link href="/categories/home-kitchen" className="text-foreground/75 hover:text-primary transition-colors">
+            <Link
+              className="text-foreground/75 hover:text-primary transition-colors"
+              href="/categories/home-kitchen"
+            >
               Home & Kitchen
             </Link>
-            <Link href="/collections/acrylic-essentials" className="inline-flex items-center gap-1.5 text-foreground/75 hover:text-primary transition-colors">
+            <Link
+              className="inline-flex items-center gap-1.5 text-foreground/75 hover:text-primary transition-colors"
+              href="/collections/acrylic-essentials"
+            >
               <span>Acrylic Essentials</span>
               <span className="size-1.5 rounded-full bg-gold" />
             </Link>
@@ -90,21 +105,28 @@ export function StoreShell({ children }: { children: ReactNode }) {
           {/* Search & Actions */}
           <div className="flex items-center gap-3.5">
             {/* Desktop Search */}
-            <form onSubmit={handleSearch} className="relative hidden md:block w-60">
+            <form
+              className="relative hidden md:block w-60"
+              onSubmit={handleSearch}
+            >
               <input
-                type="text"
-                placeholder="Search acrylic organizers..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full rounded-full border border-border/80 bg-muted/40 pl-9 pr-4 py-1.5 text-xs text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search acrylic organizers..."
+                type="text"
+                value={searchQuery}
               />
-              <MagnifyingGlass className="absolute left-3 top-2 text-muted-foreground" size={14} weight="bold" />
+              <MagnifyingGlass
+                className="absolute left-3 top-2 text-muted-foreground"
+                size={14}
+                weight="bold"
+              />
             </form>
 
             {/* Track Order */}
             <Link
-              href="/track-order"
               className="hidden sm:inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-ui text-foreground/75 hover:text-primary transition-colors px-2 py-1 rounded-md"
+              href="/track-order"
               title="Track Order"
             >
               <span>Track</span>
@@ -112,8 +134,8 @@ export function StoreShell({ children }: { children: ReactNode }) {
 
             {/* Account Link */}
             <Link
-              href="/account"
               className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-ui text-foreground/75 hover:text-primary transition-colors px-2 py-1 rounded-md"
+              href="/account"
               title="Customer Account"
             >
               <User size={18} weight="bold" />
@@ -122,8 +144,8 @@ export function StoreShell({ children }: { children: ReactNode }) {
 
             {/* Cart Indicator */}
             <Link
-              href="/cart"
               className="relative flex items-center gap-1.5 rounded-full bg-primary text-primary-foreground px-4 py-1.5 text-xs font-bold uppercase tracking-ui hover:bg-primary/90 shadow-xs transition-all hover:scale-102"
+              href="/cart"
               title="Shopping Bag"
             >
               <Bag size={15} weight="bold" />
@@ -135,66 +157,70 @@ export function StoreShell({ children }: { children: ReactNode }) {
         {/* Mobile Navigation Drawer */}
         {mobileMenuOpen && (
           <div className="lg:hidden border-t border-border/80 bg-background/95 backdrop-blur-md px-6 py-5 space-y-4 shadow-lg animate-in slide-in-from-top-2 duration-200">
-            <form onSubmit={handleSearch} className="relative">
+            <form className="relative" onSubmit={handleSearch}>
               <input
-                type="text"
-                placeholder="Search acrylic organizers..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full rounded-full border border-border/80 bg-muted/40 pl-9 pr-4 py-2 text-sm text-foreground placeholder:text-muted-foreground/70 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search acrylic organizers..."
+                type="text"
+                value={searchQuery}
               />
-              <MagnifyingGlass className="absolute left-3 top-2.5 text-muted-foreground" size={16} weight="bold" />
+              <MagnifyingGlass
+                className="absolute left-3 top-2.5 text-muted-foreground"
+                size={16}
+                weight="bold"
+              />
             </form>
 
             <nav className="flex flex-col space-y-1 pt-2 text-sm font-semibold uppercase tracking-ui">
               <Link
+                className="px-3 py-2.5 rounded-xl bg-primary/10 text-primary flex items-center justify-between font-bold"
                 href="/cart"
                 onClick={() => setMobileMenuOpen(false)}
-                className="px-3 py-2.5 rounded-xl bg-primary/10 text-primary flex items-center justify-between font-bold"
               >
                 <span>Shopping Bag</span>
                 <Bag size={18} weight="bold" />
               </Link>
               <Link
+                className="px-3 py-2.5 rounded-lg text-foreground/80 hover:bg-muted/50 hover:text-foreground transition-colors"
                 href="/products"
                 onClick={() => setMobileMenuOpen(false)}
-                className="px-3 py-2.5 rounded-lg text-foreground/80 hover:bg-muted/50 hover:text-foreground transition-colors"
               >
                 All Products
               </Link>
               <Link
+                className="px-3 py-2.5 rounded-lg text-foreground/80 hover:bg-muted/50 hover:text-foreground transition-colors"
                 href="/categories/storage-organization"
                 onClick={() => setMobileMenuOpen(false)}
-                className="px-3 py-2.5 rounded-lg text-foreground/80 hover:bg-muted/50 hover:text-foreground transition-colors"
               >
                 Storage & Organization
               </Link>
               <Link
+                className="px-3 py-2.5 rounded-lg text-foreground/80 hover:bg-muted/50 hover:text-foreground transition-colors"
                 href="/categories/home-kitchen"
                 onClick={() => setMobileMenuOpen(false)}
-                className="px-3 py-2.5 rounded-lg text-foreground/80 hover:bg-muted/50 hover:text-foreground transition-colors"
               >
                 Home & Kitchen
               </Link>
               <Link
+                className="px-3 py-2.5 rounded-lg text-foreground/80 hover:bg-muted/50 hover:text-foreground transition-colors flex items-center justify-between"
                 href="/collections/acrylic-essentials"
                 onClick={() => setMobileMenuOpen(false)}
-                className="px-3 py-2.5 rounded-lg text-foreground/80 hover:bg-muted/50 hover:text-foreground transition-colors flex items-center justify-between"
               >
                 <span>Acrylic Essentials</span>
                 <span className="size-1.5 rounded-full bg-gold" />
               </Link>
               <Link
+                className="px-3 py-2.5 rounded-lg text-foreground/80 hover:bg-muted/50 hover:text-foreground transition-colors"
                 href="/track-order"
                 onClick={() => setMobileMenuOpen(false)}
-                className="px-3 py-2.5 rounded-lg text-foreground/80 hover:bg-muted/50 hover:text-foreground transition-colors"
               >
                 Track Order
               </Link>
               <Link
+                className="px-3 py-2.5 rounded-lg text-primary font-bold hover:bg-muted/50 transition-colors"
                 href="/account"
                 onClick={() => setMobileMenuOpen(false)}
-                className="px-3 py-2.5 rounded-lg text-primary font-bold hover:bg-muted/50 transition-colors"
               >
                 My Account
               </Link>
@@ -204,7 +230,7 @@ export function StoreShell({ children }: { children: ReactNode }) {
       </header>
 
       {/* Main Content Body */}
-      <main id="main-content" className="flex-1">
+      <main className="flex-1" id="main-content">
         {children}
       </main>
 
@@ -218,8 +244,12 @@ export function StoreShell({ children }: { children: ReactNode }) {
                 99%
               </div>
               <div>
-                <p className="text-xs font-bold uppercase tracking-ui text-foreground">Optical Acrylic</p>
-                <p className="text-2xs text-muted-foreground">Diamond-polished & shatter-resistant</p>
+                <p className="text-xs font-bold uppercase tracking-ui text-foreground">
+                  Optical Acrylic
+                </p>
+                <p className="text-2xs text-muted-foreground">
+                  Diamond-polished & shatter-resistant
+                </p>
               </div>
             </div>
             <div className="flex flex-col md:flex-row items-center gap-3">
@@ -227,8 +257,12 @@ export function StoreShell({ children }: { children: ReactNode }) {
                 ₹0
               </div>
               <div>
-                <p className="text-xs font-bold uppercase tracking-ui text-foreground">Complimentary Shipping</p>
-                <p className="text-2xs text-muted-foreground">All orders over ₹999 pan-India</p>
+                <p className="text-xs font-bold uppercase tracking-ui text-foreground">
+                  Complimentary Shipping
+                </p>
+                <p className="text-2xs text-muted-foreground">
+                  All orders over ₹999 pan-India
+                </p>
               </div>
             </div>
             <div className="flex flex-col md:flex-row items-center gap-3">
@@ -236,8 +270,12 @@ export function StoreShell({ children }: { children: ReactNode }) {
                 7D
               </div>
               <div>
-                <p className="text-xs font-bold uppercase tracking-ui text-foreground">Hassle-Free Returns</p>
-                <p className="text-2xs text-muted-foreground">Transit damage instant replacement</p>
+                <p className="text-xs font-bold uppercase tracking-ui text-foreground">
+                  Hassle-Free Returns
+                </p>
+                <p className="text-2xs text-muted-foreground">
+                  Transit damage instant replacement
+                </p>
               </div>
             </div>
             <div className="flex flex-col md:flex-row items-center gap-3">
@@ -245,8 +283,12 @@ export function StoreShell({ children }: { children: ReactNode }) {
                 100%
               </div>
               <div>
-                <p className="text-xs font-bold uppercase tracking-ui text-foreground">Secure Checkout</p>
-                <p className="text-2xs text-muted-foreground">UPI, Cards & Amazon Prime Option</p>
+                <p className="text-xs font-bold uppercase tracking-ui text-foreground">
+                  Secure Checkout
+                </p>
+                <p className="text-2xs text-muted-foreground">
+                  UPI, Cards & Amazon Prime Option
+                </p>
               </div>
             </div>
           </div>
@@ -265,18 +307,23 @@ export function StoreShell({ children }: { children: ReactNode }) {
                 </span>
               </Link>
               <p className="text-sm leading-relaxed text-muted-foreground max-w-sm">
-                A little order. A lot of possibility. Thoughtfully engineered crystal-clear acrylic organizers and home essentials designed for serene, clutter-free spaces.
+                A little order. A lot of possibility. Thoughtfully engineered
+                crystal-clear acrylic organizers and home essentials designed
+                for serene, clutter-free spaces.
               </p>
               <div className="space-y-1 pt-2 text-2xs text-muted-foreground/80">
                 <p>
-                  <span className="font-semibold text-foreground">{SELLER_INFO.legalName}</span>
+                  <span className="font-semibold text-foreground">
+                    {SELLER_INFO.legalName}
+                  </span>
                 </p>
                 <p>
                   GSTIN: {SELLER_INFO.gstin} · CIN: {SELLER_INFO.cin}
                 </p>
                 <p>
-                  Registered Office: {SELLER_INFO.addressLine1}, {SELLER_INFO.addressLine2},{" "}
-                  {SELLER_INFO.city}, {SELLER_INFO.state} {SELLER_INFO.pincode}
+                  Registered Office: {SELLER_INFO.addressLine1},{" "}
+                  {SELLER_INFO.addressLine2}, {SELLER_INFO.city},{" "}
+                  {SELLER_INFO.state} {SELLER_INFO.pincode}
                 </p>
               </div>
             </div>
@@ -288,22 +335,34 @@ export function StoreShell({ children }: { children: ReactNode }) {
               </h4>
               <ul className="space-y-2.5 text-sm text-muted-foreground">
                 <li>
-                  <Link href="/products" className="hover:text-primary transition-colors">
+                  <Link
+                    className="hover:text-primary transition-colors"
+                    href="/products"
+                  >
                     All Products
                   </Link>
                 </li>
                 <li>
-                  <Link href="/categories/storage-organization" className="hover:text-primary transition-colors">
+                  <Link
+                    className="hover:text-primary transition-colors"
+                    href="/categories/storage-organization"
+                  >
                     Storage & Organization
                   </Link>
                 </li>
                 <li>
-                  <Link href="/categories/home-kitchen" className="hover:text-primary transition-colors">
+                  <Link
+                    className="hover:text-primary transition-colors"
+                    href="/categories/home-kitchen"
+                  >
                     Home & Kitchen
                   </Link>
                 </li>
                 <li>
-                  <Link href="/collections/acrylic-essentials" className="hover:text-primary transition-colors">
+                  <Link
+                    className="hover:text-primary transition-colors"
+                    href="/collections/acrylic-essentials"
+                  >
                     Acrylic Essentials
                   </Link>
                 </li>
@@ -317,27 +376,42 @@ export function StoreShell({ children }: { children: ReactNode }) {
               </h4>
               <ul className="space-y-2.5 text-sm text-muted-foreground">
                 <li>
-                  <Link href="/about" className="hover:text-primary transition-colors">
+                  <Link
+                    className="hover:text-primary transition-colors"
+                    href="/about"
+                  >
                     About Zencino
                   </Link>
                 </li>
                 <li>
-                  <Link href="/contact" className="hover:text-primary transition-colors">
+                  <Link
+                    className="hover:text-primary transition-colors"
+                    href="/contact"
+                  >
                     Contact Us
                   </Link>
                 </li>
                 <li>
-                  <Link href="/faq" className="hover:text-primary transition-colors">
+                  <Link
+                    className="hover:text-primary transition-colors"
+                    href="/faq"
+                  >
                     Frequently Asked Questions
                   </Link>
                 </li>
                 <li>
-                  <Link href="/track-order" className="hover:text-primary transition-colors">
+                  <Link
+                    className="hover:text-primary transition-colors"
+                    href="/track-order"
+                  >
                     Track Your Order
                   </Link>
                 </li>
                 <li>
-                  <Link href="/account" className="hover:text-primary transition-colors">
+                  <Link
+                    className="hover:text-primary transition-colors"
+                    href="/account"
+                  >
                     Customer Account
                   </Link>
                 </li>
@@ -351,22 +425,34 @@ export function StoreShell({ children }: { children: ReactNode }) {
               </h4>
               <ul className="space-y-2.5 text-sm text-muted-foreground">
                 <li>
-                  <Link href="/policies/shipping" className="hover:text-primary transition-colors">
+                  <Link
+                    className="hover:text-primary transition-colors"
+                    href="/policies/shipping"
+                  >
                     Shipping Policy
                   </Link>
                 </li>
                 <li>
-                  <Link href="/policies/returns" className="hover:text-primary transition-colors">
+                  <Link
+                    className="hover:text-primary transition-colors"
+                    href="/policies/returns"
+                  >
                     Returns & Refund Policy
                   </Link>
                 </li>
                 <li>
-                  <Link href="/policies/privacy" className="hover:text-primary transition-colors">
+                  <Link
+                    className="hover:text-primary transition-colors"
+                    href="/policies/privacy"
+                  >
                     Privacy Policy
                   </Link>
                 </li>
                 <li>
-                  <Link href="/policies/terms" className="hover:text-primary transition-colors">
+                  <Link
+                    className="hover:text-primary transition-colors"
+                    href="/policies/terms"
+                  >
                     Terms of Service
                   </Link>
                 </li>
@@ -375,13 +461,26 @@ export function StoreShell({ children }: { children: ReactNode }) {
           </div>
 
           <div className="mt-14 border-t border-border/80 pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
-            <p>© {new Date().getFullYear()} Zencino. All rights reserved. Pan-India Delivery.</p>
+            <p>
+              © {new Date().getFullYear()} Zencino. All rights reserved.
+              Pan-India Delivery.
+            </p>
             <div className="flex flex-wrap items-center gap-3 text-2xs uppercase tracking-ui font-semibold text-muted-foreground">
-              <span className="px-2.5 py-1 rounded-md bg-muted/60 border border-border/60">UPI / QR</span>
-              <span className="px-2.5 py-1 rounded-md bg-muted/60 border border-border/60">RuPay</span>
-              <span className="px-2.5 py-1 rounded-md bg-muted/60 border border-border/60">Visa / MC</span>
-              <span className="px-2.5 py-1 rounded-md bg-muted/60 border border-border/60">NetBanking</span>
-              <span className="rounded-md border border-gold/30 bg-gold-subtle px-2.5 py-1 font-bold text-gold-foreground">Amazon Verified</span>
+              <span className="px-2.5 py-1 rounded-md bg-muted/60 border border-border/60">
+                UPI / QR
+              </span>
+              <span className="px-2.5 py-1 rounded-md bg-muted/60 border border-border/60">
+                RuPay
+              </span>
+              <span className="px-2.5 py-1 rounded-md bg-muted/60 border border-border/60">
+                Visa / MC
+              </span>
+              <span className="px-2.5 py-1 rounded-md bg-muted/60 border border-border/60">
+                NetBanking
+              </span>
+              <span className="rounded-md border border-gold/30 bg-gold-subtle px-2.5 py-1 font-bold text-gold-foreground">
+                Amazon Verified
+              </span>
             </div>
           </div>
         </div>

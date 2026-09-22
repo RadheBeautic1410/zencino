@@ -1,17 +1,16 @@
-import { getMediaAssetUrl } from "@/lib/media/url";
 import { asc, desc, eq, inArray, sql } from "drizzle-orm";
 import {
   categories,
   collectionProducts,
   collections,
   mediaAssets,
-  productCategories,
   productMedia,
   products,
   productVariants,
   variantChannels,
 } from "@/db/schema/catalog";
 import { db } from "@/lib/db";
+import { getMediaAssetUrl } from "@/lib/media/url";
 
 export async function getAllCategories() {
   return db
@@ -21,20 +20,23 @@ export async function getAllCategories() {
 }
 
 export async function getCategoryById(id: string) {
-  const [cat] = await db.select().from(categories).where(eq(categories.id, id)).limit(1);
+  const [cat] = await db
+    .select()
+    .from(categories)
+    .where(eq(categories.id, id))
+    .limit(1);
   return cat || null;
 }
 
 export interface ProductListParams {
-  status?: "draft" | "published" | "archived";
   categoryId?: string;
-  query?: string;
   limit?: number;
   offset?: number;
+  status?: "draft" | "published" | "archived";
 }
 
 export async function getAdminProducts(params: ProductListParams = {}) {
-  const { status, categoryId, query, limit = 50, offset = 0 } = params;
+  const { status, categoryId, limit = 50, offset = 0 } = params;
 
   let queryBuilder = db
     .select({
@@ -56,7 +58,9 @@ export async function getAdminProducts(params: ProductListParams = {}) {
   }
 
   if (categoryId) {
-    queryBuilder = queryBuilder.where(eq(products.primaryCategoryId, categoryId));
+    queryBuilder = queryBuilder.where(
+      eq(products.primaryCategoryId, categoryId)
+    );
   }
 
   const productRows = await queryBuilder
@@ -85,16 +89,17 @@ export async function getAdminProducts(params: ProductListParams = {}) {
 
   const variantIds = variants.map((v) => v.id);
 
-  const channels = variantIds.length > 0
-    ? await db
-        .select({
-          variantId: variantChannels.variantId,
-          channel: variantChannels.channel,
-          enabled: variantChannels.enabled,
-        })
-        .from(variantChannels)
-        .where(inArray(variantChannels.variantId, variantIds))
-    : [];
+  const channels =
+    variantIds.length > 0
+      ? await db
+          .select({
+            variantId: variantChannels.variantId,
+            channel: variantChannels.channel,
+            enabled: variantChannels.enabled,
+          })
+          .from(variantChannels)
+          .where(inArray(variantChannels.variantId, variantIds))
+      : [];
 
   // Fetch primary media for each product
   const mediaRows = await db
@@ -112,11 +117,17 @@ export async function getAdminProducts(params: ProductListParams = {}) {
   return productRows.map((prod) => {
     const prodVariants = variants.filter((v) => v.productId === prod.id);
     const prodVariantIds = new Set(prodVariants.map((v) => v.id));
-    const prodChannels = channels.filter((c) => prodVariantIds.has(c.variantId));
+    const prodChannels = channels.filter((c) =>
+      prodVariantIds.has(c.variantId)
+    );
     const prodMedia = mediaRows.filter((m) => m.productId === prod.id);
 
-    const hasWebsite = prodChannels.some((c) => c.channel === "website" && c.enabled);
-    const hasAmazon = prodChannels.some((c) => c.channel === "amazon" && c.enabled);
+    const hasWebsite = prodChannels.some(
+      (c) => c.channel === "website" && c.enabled
+    );
+    const hasAmazon = prodChannels.some(
+      (c) => c.channel === "amazon" && c.enabled
+    );
 
     return {
       ...prod,
@@ -124,20 +135,35 @@ export async function getAdminProducts(params: ProductListParams = {}) {
       hasWebsiteChannel: hasWebsite,
       hasAmazonChannel: hasAmazon,
       minPriceMinor: prodVariants.reduce(
-        (min, v) => (v.priceMinor !== null && (min === null || v.priceMinor < min) ? v.priceMinor : min),
+        (min, v) =>
+          v.priceMinor !== null && (min === null || v.priceMinor < min)
+            ? v.priceMinor
+            : min,
         null as number | null
       ),
-      primaryImage: prodMedia[0] ? getMediaAssetUrl(prodMedia[0].storageKey) : null,
+      primaryImage: prodMedia[0]
+        ? getMediaAssetUrl(prodMedia[0].storageKey)
+        : null,
     };
   });
 }
 
 export async function getProductWithDetails(id: string) {
-  const [product] = await db.select().from(products).where(eq(products.id, id)).limit(1);
-  if (!product) return null;
+  const [product] = await db
+    .select()
+    .from(products)
+    .where(eq(products.id, id))
+    .limit(1);
+  if (!product) {
+    return null;
+  }
 
   const [category] = product.primaryCategoryId
-    ? await db.select().from(categories).where(eq(categories.id, product.primaryCategoryId)).limit(1)
+    ? await db
+        .select()
+        .from(categories)
+        .where(eq(categories.id, product.primaryCategoryId))
+        .limit(1)
     : [null];
 
   const variants = await db
@@ -148,12 +174,13 @@ export async function getProductWithDetails(id: string) {
 
   const variantIds = variants.map((v) => v.id);
 
-  const channels = variantIds.length > 0
-    ? await db
-        .select()
-        .from(variantChannels)
-        .where(inArray(variantChannels.variantId, variantIds))
-    : [];
+  const channels =
+    variantIds.length > 0
+      ? await db
+          .select()
+          .from(variantChannels)
+          .where(inArray(variantChannels.variantId, variantIds))
+      : [];
 
   const media = await db
     .select({
@@ -220,8 +247,14 @@ export async function getAllCollections() {
 }
 
 export async function getCollectionWithProducts(id: string) {
-  const [col] = await db.select().from(collections).where(eq(collections.id, id)).limit(1);
-  if (!col) return null;
+  const [col] = await db
+    .select()
+    .from(collections)
+    .where(eq(collections.id, id))
+    .limit(1);
+  if (!col) {
+    return null;
+  }
 
   const items = await db
     .select({

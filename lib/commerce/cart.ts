@@ -1,7 +1,6 @@
-import { getMediaAssetUrl } from "@/lib/media/url";
-import { createHash, randomUUID } from "node:crypto";
-import { cookies } from "next/headers";
+import { randomUUID } from "node:crypto";
 import { and, asc, eq, inArray } from "drizzle-orm";
+import { cookies } from "next/headers";
 import {
   cartItems,
   carts,
@@ -14,6 +13,7 @@ import {
 import { getCurrentSession } from "@/lib/authz";
 import { getVariantStock } from "@/lib/commerce/inventory";
 import { db } from "@/lib/db";
+import { getMediaAssetUrl } from "@/lib/media/url";
 import { hashGuestToken } from "./rules";
 
 export { hashGuestToken };
@@ -21,7 +21,10 @@ export { hashGuestToken };
 const CART_COOKIE_NAME = "zencino_cart";
 const GUEST_CART_EXPIRY_DAYS = 30;
 
-export async function getOrCreateCartId(): Promise<{ cartId: string; cookieToSet?: { name: string; value: string; maxAge: number } }> {
+export async function getOrCreateCartId(): Promise<{
+  cartId: string;
+  cookieToSet?: { name: string; value: string; maxAge: number };
+}> {
   const cookieStore = await cookies();
   const session = await getCurrentSession();
 
@@ -64,7 +67,9 @@ export async function getOrCreateCartId(): Promise<{ cartId: string; cookieToSet
   // Create new guest cart
   const rawToken = randomUUID();
   const tokenHash = hashGuestToken(rawToken);
-  const expiresAt = new Date(Date.now() + GUEST_CART_EXPIRY_DAYS * 24 * 60 * 60 * 1000);
+  const expiresAt = new Date(
+    Date.now() + GUEST_CART_EXPIRY_DAYS * 24 * 60 * 60 * 1000
+  );
 
   const [newCart] = await db
     .insert(carts)
@@ -86,7 +91,9 @@ export async function getOrCreateCartId(): Promise<{ cartId: string; cookieToSet
 }
 
 export async function addItemToCart(variantId: string, quantity = 1) {
-  if (quantity < 1) throw new Error("Quantity must be at least 1");
+  if (quantity < 1) {
+    throw new Error("Quantity must be at least 1");
+  }
 
   // Validate variant exists and has website channel enabled
   const [variant] = await db
@@ -100,7 +107,7 @@ export async function addItemToCart(variantId: string, quantity = 1) {
     .where(eq(productVariants.id, variantId))
     .limit(1);
 
-  if (!variant || !variant.active || variant.priceMinor === null) {
+  if (!variant?.active || variant.priceMinor === null) {
     throw new Error("This item is not available for purchase on the website.");
   }
 
@@ -146,17 +153,16 @@ export async function addItemToCart(variantId: string, quantity = 1) {
     .select()
     .from(cartItems)
     .where(
-      and(
-        eq(cartItems.cartId, cartId),
-        eq(cartItems.variantId, variantId)
-      )
+      and(eq(cartItems.cartId, cartId), eq(cartItems.variantId, variantId))
     )
     .limit(1);
 
   if (existingItem) {
     const newQuantity = existingItem.quantity + quantity;
     if (newQuantity > stock.available) {
-      throw new Error(`Cannot add more. Maximum available stock is ${stock.available}.`);
+      throw new Error(
+        `Cannot add more. Maximum available stock is ${stock.available}.`
+      );
     }
 
     await db
@@ -188,7 +194,9 @@ export async function updateCartItemQuantity(itemId: string, quantity: number) {
     .where(eq(cartItems.id, itemId))
     .limit(1);
 
-  if (!item) throw new Error("Item not found in cart");
+  if (!item) {
+    throw new Error("Item not found in cart");
+  }
 
   const stock = await getVariantStock(item.variantId);
   if (quantity > stock.available) {
@@ -223,7 +231,9 @@ export async function getCartDetails() {
       .from(carts)
       .where(eq(carts.userId, session.user.id))
       .limit(1);
-    if (userCart) cartId = userCart.id;
+    if (userCart) {
+      cartId = userCart.id;
+    }
   }
 
   if (!cartId) {
@@ -235,7 +245,9 @@ export async function getCartDetails() {
         .from(carts)
         .where(eq(carts.guestTokenHash, tokenHash))
         .limit(1);
-      if (guestCart) cartId = guestCart.id;
+      if (guestCart) {
+        cartId = guestCart.id;
+      }
     }
   }
 
@@ -298,7 +310,10 @@ export async function getCartDetails() {
       const media = mediaRows.find((m) => m.productId === line.productId);
       const unitPrice = line.priceMinor ?? 0;
       const lineTotal = unitPrice * line.quantity;
-      const isAvailable = line.active && line.productStatus === "published" && stock.available >= line.quantity;
+      const isAvailable =
+        line.active &&
+        line.productStatus === "published" &&
+        stock.available >= line.quantity;
 
       return {
         id: line.id,
@@ -322,7 +337,10 @@ export async function getCartDetails() {
   );
 
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
-  const subtotalMinor = items.reduce((sum, item) => sum + item.lineTotalMinor, 0);
+  const subtotalMinor = items.reduce(
+    (sum, item) => sum + item.lineTotalMinor,
+    0
+  );
 
   return {
     cartId,
@@ -332,7 +350,10 @@ export async function getCartDetails() {
   };
 }
 
-export async function mergeGuestCartOnLogin(userId: string, guestToken: string) {
+export async function mergeGuestCartOnLogin(
+  userId: string,
+  guestToken: string
+) {
   const tokenHash = hashGuestToken(guestToken);
   const [guestCart] = await db
     .select({ id: carts.id })
@@ -340,7 +361,9 @@ export async function mergeGuestCartOnLogin(userId: string, guestToken: string) 
     .where(eq(carts.guestTokenHash, tokenHash))
     .limit(1);
 
-  if (!guestCart) return;
+  if (!guestCart) {
+    return;
+  }
 
   const [userCart] = await db
     .select({ id: carts.id })
@@ -405,4 +428,3 @@ export async function clearCart(cartId?: string) {
     await db.delete(cartItems).where(eq(cartItems.cartId, details.cartId));
   }
 }
-

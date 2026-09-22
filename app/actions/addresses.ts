@@ -9,11 +9,13 @@ import {
 } from "@/lib/commerce/customer-account";
 
 export interface AddressActionResult {
-  success?: boolean;
   error?: string;
+  success?: boolean;
 }
 
-export async function saveAddressAction(formData: FormData): Promise<AddressActionResult> {
+export async function saveAddressAction(
+  formData: FormData
+): Promise<AddressActionResult> {
   try {
     const session = await requireSession();
 
@@ -47,12 +49,17 @@ export async function saveAddressAction(formData: FormData): Promise<AddressActi
 
     return { success: true };
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Failed to save delivery address";
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Failed to save delivery address";
     return { error: message };
   }
 }
 
-export async function deleteAddressAction(addressId: string): Promise<AddressActionResult> {
+export async function deleteAddressAction(
+  addressId: string
+): Promise<AddressActionResult> {
   try {
     const session = await requireSession();
     await deleteCustomerAddress(addressId, session.user.id);
@@ -62,12 +69,15 @@ export async function deleteAddressAction(addressId: string): Promise<AddressAct
 
     return { success: true };
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Failed to delete address";
+    const message =
+      error instanceof Error ? error.message : "Failed to delete address";
     return { error: message };
   }
 }
 
-export async function setDefaultAddressAction(addressId: string): Promise<AddressActionResult> {
+export async function setDefaultAddressAction(
+  addressId: string
+): Promise<AddressActionResult> {
   try {
     const session = await requireSession();
     await setDefaultCustomerAddress(addressId, session.user.id);
@@ -77,7 +87,8 @@ export async function setDefaultAddressAction(addressId: string): Promise<Addres
 
     return { success: true };
   } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : "Failed to set default address";
+    const message =
+      error instanceof Error ? error.message : "Failed to set default address";
     return { error: message };
   }
 }

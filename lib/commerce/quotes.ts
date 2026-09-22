@@ -1,39 +1,35 @@
-import { createHash, randomUUID } from "node:crypto";
-import { eq, inArray } from "drizzle-orm";
-import {
-  cartItems,
-  checkoutAttempts,
-  productVariants,
-} from "@/db/schema";
+import { createHash } from "node:crypto";
+import { eq } from "drizzle-orm";
+import { cartItems, checkoutAttempts, productVariants } from "@/db/schema";
 import { db } from "@/lib/db";
 
 import {
-  FREE_SHIPPING_THRESHOLD_PAISE,
-  GST_RATE,
-  STANDARD_SHIPPING_PAISE,
   calculateInclusiveGst,
   calculateShippingFee,
+  FREE_SHIPPING_THRESHOLD_PAISE,
+  GST_RATE,
   isPincodeServiceable,
+  STANDARD_SHIPPING_PAISE,
 } from "./rules";
 
 export {
-  FREE_SHIPPING_THRESHOLD_PAISE,
-  GST_RATE,
-  STANDARD_SHIPPING_PAISE,
   calculateInclusiveGst,
   calculateShippingFee,
+  FREE_SHIPPING_THRESHOLD_PAISE,
+  GST_RATE,
   isPincodeServiceable,
+  STANDARD_SHIPPING_PAISE,
 };
 
 export interface ShippingAddressInput {
-  recipient: string;
-  phone: string;
+  city: string;
+  countryCode?: string;
   line1: string;
   line2?: string;
-  city: string;
-  state: string;
+  phone: string;
   postcode: string;
-  countryCode?: string;
+  recipient: string;
+  state: string;
 }
 
 export async function calculateCheckoutQuote(params: {
@@ -43,7 +39,9 @@ export async function calculateCheckoutQuote(params: {
   const { cartId, shippingAddress } = params;
 
   if (!isPincodeServiceable(shippingAddress.postcode)) {
-    throw new Error("Invalid or unserviceable PIN code. Please enter a valid 6-digit Indian PIN code.");
+    throw new Error(
+      "Invalid or unserviceable PIN code. Please enter a valid 6-digit Indian PIN code."
+    );
   }
 
   // Fetch cart items with fresh variant prices
@@ -68,7 +66,9 @@ export async function calculateCheckoutQuote(params: {
 
   const quoteItems = items.map((item) => {
     if (!item.active || item.priceMinor === null || item.priceMinor <= 0) {
-      throw new Error(`Item ${item.sku} is currently not available for purchase.`);
+      throw new Error(
+        `Item ${item.sku} is currently not available for purchase.`
+      );
     }
 
     const lineTotalMinor = item.priceMinor * item.quantity;
@@ -83,7 +83,10 @@ export async function calculateCheckoutQuote(params: {
     };
   });
 
-  const subtotalMinor = quoteItems.reduce((acc, it) => acc + it.lineTotalMinor, 0);
+  const subtotalMinor = quoteItems.reduce(
+    (acc, it) => acc + it.lineTotalMinor,
+    0
+  );
 
   // Shipping calculation
   const isFreeShipping = subtotalMinor >= FREE_SHIPPING_THRESHOLD_PAISE;

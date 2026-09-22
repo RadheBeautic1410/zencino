@@ -3,9 +3,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { StoreShell } from "@/components/store/store-shell";
 import {
-  type PolicyContentData,
   DEFAULT_POLICIES,
   getPublishedContent,
+  type PolicyContentData,
 } from "@/lib/commerce/content";
 
 interface Props {
@@ -18,7 +18,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     `policies-${policy}`,
     "policy"
   );
-  if (!data?.title) return { title: "Policy Not Found - Zencino" };
+  if (!data?.title) {
+    return { title: "Policy Not Found - Zencino" };
+  }
   return {
     title: `${data.title} - Zencino Policies`,
     description: data.subtitle,
@@ -45,7 +47,7 @@ export default async function PolicyPage({ params }: Props) {
           aria-label="Breadcrumb"
           className="mb-4 flex items-center gap-2 text-xs text-muted-foreground"
         >
-          <Link href="/" className="hover:text-foreground">
+          <Link className="hover:text-foreground" href="/">
             Home
           </Link>
           <span>/</span>
@@ -58,13 +60,17 @@ export default async function PolicyPage({ params }: Props) {
           <h1 className="text-4xl font-black tracking-tight md:text-5xl">
             {data.title}
           </h1>
-          <p className="mt-3 text-base text-muted-foreground">{data.subtitle}</p>
+          <p className="mt-3 text-base text-muted-foreground">
+            {data.subtitle}
+          </p>
         </div>
 
         <div className="mt-12 space-y-8">
-          {(data.content || []).map((item, idx) => (
-            <section key={idx} className="space-y-3">
-              <h2 className="text-lg font-bold text-foreground">{item.heading}</h2>
+          {(data.content || []).map((item) => (
+            <section className="space-y-3" key={item.heading}>
+              <h2 className="text-lg font-bold text-foreground">
+                {item.heading}
+              </h2>
               <p className="text-sm md:text-base leading-relaxed text-muted-foreground">
                 {item.body}
               </p>
@@ -78,9 +84,9 @@ export default async function PolicyPage({ params }: Props) {
             .filter(([key]) => key !== policy)
             .map(([key, val]) => (
               <Link
-                key={key}
-                href={`/policies/${key}`}
                 className="underline hover:text-foreground"
+                href={`/policies/${key}`}
+                key={key}
               >
                 {val.title}
               </Link>

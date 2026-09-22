@@ -1,8 +1,19 @@
 "use client";
 
-import { Suspense, useEffect, useRef } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useRef } from "react";
 import { recordClientAnalyticsAction } from "@/app/actions/campaigns";
+
+const COOKIE_MAX_AGE_SECONDS = 2_592_000; // 30 days
+
+/**
+ * The CookieStore API is still unavailable in Safari and Firefox, so first-party
+ * attribution cookies are written through document.cookie.
+ */
+function setTrackingCookie(name: string, value: string) {
+  // biome-ignore lint/suspicious/noDocumentCookie: CookieStore lacks Safari/Firefox support.
+  document.cookie = `${name}=${value}; path=/; max-age=${COOKIE_MAX_AGE_SECONDS}; SameSite=Lax`;
+}
 
 function TrackerContent() {
   const searchParams = useSearchParams();
@@ -16,7 +27,7 @@ function TrackerContent() {
       if (!sessionId) {
         sessionId = `anon_${Math.random().toString(36).slice(2, 11)}_${Date.now()}`;
         localStorage.setItem("zen_anon_session", sessionId);
-        document.cookie = `zen_anon_session=${sessionId}; path=/; max-age=2592000; SameSite=Lax`;
+        setTrackingCookie("zen_anon_session", sessionId);
       }
 
       // 2. Parse UTM campaign parameters
@@ -40,9 +51,10 @@ function TrackerContent() {
         };
 
         // Persist 30-day attribution cookie
-        document.cookie = `zen_attribution=${encodeURIComponent(
-          JSON.stringify(attributionData)
-        )}; path=/; max-age=2592000; SameSite=Lax`;
+        setTrackingCookie(
+          "zen_attribution",
+          encodeURIComponent(JSON.stringify(attributionData))
+        );
       } else {
         // Read existing cookie if present
         const match = document.cookie.match(/(?:^|; )zen_attribution=([^;]*)/);

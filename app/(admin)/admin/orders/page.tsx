@@ -1,13 +1,5 @@
+import { Receipt } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
-import {
-  ArrowSquareOut,
-  Clock,
-  CurrencyInr,
-  MagnifyingGlass,
-  Receipt,
-  ShieldCheck,
-  WarningCircle,
-} from "@phosphor-icons/react/dist/ssr";
 import { OrbitPageHeader } from "@/components/admin/orbit-page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -26,7 +18,8 @@ import { formatDateTime } from "@/lib/utils";
 
 export const metadata = {
   title: "Orders Management - Zencino Admin",
-  description: "Verify UPI payments, manage customer orders, and dispatch shipments.",
+  description:
+    "Verify UPI payments, manage customer orders, and dispatch shipments.",
 };
 
 interface SearchParams {
@@ -62,14 +55,17 @@ export default async function AdminOrdersPage({
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <OrbitPageHeader
+          description="Verify direct UPI transfers, approve stock deductions, and manage shipment dispatch."
           eyebrow="Sales & Fulfilment"
           title="Customer Orders"
-          description="Verify direct UPI transfers, approve stock deductions, and manage shipment dispatch."
         />
-        <Button asChild variant="outline" size="sm" className="h-8 text-xs font-bold uppercase tracking-ui">
-          <Link href="/admin/returns">
-            Return Claims Queue
-          </Link>
+        <Button
+          asChild
+          className="h-8 text-xs font-bold uppercase tracking-ui"
+          size="sm"
+          variant="outline"
+        >
+          <Link href="/admin/returns">Return Claims Queue</Link>
         </Button>
       </div>
 
@@ -79,13 +75,19 @@ export default async function AdminOrdersPage({
           const isActive = statusFilter === tab.value;
           return (
             <Button
-              key={tab.value}
               asChild
-              variant={isActive ? "default" : "outline"}
-              size="sm"
               className="text-xs h-8"
+              key={tab.value}
+              size="sm"
+              variant={isActive ? "default" : "outline"}
             >
-              <Link href={tab.value === "all" ? "/admin/orders" : `/admin/orders?status=${tab.value}`}>
+              <Link
+                href={
+                  tab.value === "all"
+                    ? "/admin/orders"
+                    : `/admin/orders?status=${tab.value}`
+                }
+              >
                 {tab.label}
               </Link>
             </Button>
@@ -116,22 +118,34 @@ export default async function AdminOrdersPage({
             <TableBody>
               {ordersList.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="py-12 text-center text-xs text-muted-foreground">
+                  <TableCell
+                    className="py-12 text-center text-xs text-muted-foreground"
+                    colSpan={7}
+                  >
                     No orders found matching the selected status filter.
                   </TableCell>
                 </TableRow>
               ) : (
                 ordersList.map((ord) => {
-                  const isReviewNeeded = ord.status === "payment_review" || ord.paymentStatus === "under_review";
+                  const isReviewNeeded =
+                    ord.status === "payment_review" ||
+                    ord.paymentStatus === "under_review";
                   const isVerified = ord.paymentStatus === "verified";
                   const isRejected = ord.paymentStatus === "rejected";
 
                   return (
-                    <TableRow key={ord.id} className={isReviewNeeded ? "bg-amber-50/40 dark:bg-amber-950/20" : ""}>
+                    <TableRow
+                      className={
+                        isReviewNeeded
+                          ? "bg-amber-50/40 dark:bg-amber-950/20"
+                          : ""
+                      }
+                      key={ord.id}
+                    >
                       <TableCell className="font-mono text-xs font-bold">
                         <Link
-                          href={`/admin/orders/${ord.id}`}
                           className="hover:underline text-primary"
+                          href={`/admin/orders/${ord.id}`}
                         >
                           {ord.orderNumber}
                         </Link>
@@ -161,19 +175,31 @@ export default async function AdminOrdersPage({
 
                       <TableCell className="text-center">
                         {isReviewNeeded ? (
-                          <Badge variant="outline" className="text-2xs uppercase border-amber-500 text-amber-600 dark:text-amber-400 font-bold animate-pulse">
+                          <Badge
+                            className="text-2xs uppercase border-amber-500 text-amber-600 dark:text-amber-400 font-bold animate-pulse"
+                            variant="outline"
+                          >
                             Review Proof
                           </Badge>
                         ) : isVerified ? (
-                          <Badge variant="secondary" className="text-2xs uppercase text-emerald-600 dark:text-emerald-400 font-bold">
+                          <Badge
+                            className="text-2xs uppercase text-emerald-600 dark:text-emerald-400 font-bold"
+                            variant="secondary"
+                          >
                             Verified
                           </Badge>
                         ) : isRejected ? (
-                          <Badge variant="destructive" className="text-2xs uppercase">
+                          <Badge
+                            className="text-2xs uppercase"
+                            variant="destructive"
+                          >
                             Rejected
                           </Badge>
                         ) : (
-                          <Badge variant="outline" className="text-2xs uppercase text-muted-foreground">
+                          <Badge
+                            className="text-2xs uppercase text-muted-foreground"
+                            variant="outline"
+                          >
                             {ord.paymentStatus}
                           </Badge>
                         )}
@@ -181,21 +207,26 @@ export default async function AdminOrdersPage({
 
                       <TableCell className="text-center">
                         <Badge
+                          className="text-2xs uppercase"
                           variant={
                             ord.status === "delivered"
                               ? "secondary"
                               : ord.status === "cancelled"
-                              ? "destructive"
-                              : "outline"
+                                ? "destructive"
+                                : "outline"
                           }
-                          className="text-2xs uppercase"
                         >
                           {ord.status.replace("_", " ")}
                         </Badge>
                       </TableCell>
 
                       <TableCell className="text-right">
-                        <Button asChild size="sm" variant={isReviewNeeded ? "default" : "outline"} className="h-7 text-xs font-semibold">
+                        <Button
+                          asChild
+                          className="h-7 text-xs font-semibold"
+                          size="sm"
+                          variant={isReviewNeeded ? "default" : "outline"}
+                        >
                           <Link href={`/admin/orders/${ord.id}`}>
                             {isReviewNeeded ? "Verify Proof" : "Manage"}
                           </Link>

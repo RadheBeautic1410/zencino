@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
-import { db } from "../lib/db";
+import { campaigns } from "../db/schema/campaigns";
 import {
   categories,
   collectionProducts,
@@ -11,6 +11,7 @@ import {
   productVariants,
   variantChannels,
 } from "../db/schema/catalog";
+import { contentPages, contentVersions } from "../db/schema/content";
 import {
   inventoryBalances,
   inventoryLocations,
@@ -25,10 +26,9 @@ import {
   orders,
   paymentProofs,
 } from "../db/schema/orders";
-import { contentPages, contentVersions } from "../db/schema/content";
-import { supportMessages, supportRequests } from "../db/schema/support";
-import { campaigns } from "../db/schema/campaigns";
 import { storeSettings } from "../db/schema/settings";
+import { supportMessages, supportRequests } from "../db/schema/support";
+import { db } from "../lib/db";
 
 if (existsSync(".env")) {
   process.loadEnvFile();
@@ -88,7 +88,7 @@ async function main() {
 
   console.log("\nSnapshot Summary:");
   for (const [table, rows] of Object.entries(snapshot.tables)) {
-    console.log(`  - ${table.padEnd(22)}: ${(rows as any[]).length} rows`);
+    console.log(`  - ${table.padEnd(22)}: ${rows.length} rows`);
   }
 
   console.log(`\n[✓] Successfully generated backup snapshot: ${backupFile}`);

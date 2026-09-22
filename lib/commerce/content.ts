@@ -9,6 +9,7 @@ import { audit } from "@/lib/audit";
 import { db } from "@/lib/db";
 
 export * from "./content-defaults";
+
 import {
   DEFAULT_ABOUT_CONTENT,
   DEFAULT_FAQ_CONTENT,
@@ -16,12 +17,30 @@ import {
   DEFAULT_POLICIES,
 } from "./content-defaults";
 
+export const CONTENT_PAGE_TYPES = [
+  "homepage",
+  "faq",
+  "about",
+  "policy",
+] as const;
+
+export type ContentPageType = (typeof CONTENT_PAGE_TYPES)[number];
+
+export function isContentPageType(value: string): value is ContentPageType {
+  return (CONTENT_PAGE_TYPES as readonly string[]).includes(value);
+}
+
 // Core Content Retrieval Service with Fallback
 
 export async function getPublishedContent<T>(
   slug: string,
-  type: "homepage" | "faq" | "about" | "policy"
-): Promise<{ data: T; version: number; publishedAt: Date | null; isDefault: boolean }> {
+  type: ContentPageType
+): Promise<{
+  data: T;
+  version: number;
+  publishedAt: Date | null;
+  isDefault: boolean;
+}> {
   try {
     const [page] = await db
       .select()
@@ -51,15 +70,21 @@ export async function getPublishedContent<T>(
       }
     }
   } catch (error) {
-    console.error(`[content] error reading published content for slug '${slug}':`, error);
+    console.error(
+      `[content] error reading published content for slug '${slug}':`,
+      error
+    );
   }
 
   // Graceful fallback
   let fallback: unknown;
-  if (type === "homepage") fallback = DEFAULT_HOMEPAGE_CONTENT;
-  else if (type === "faq") fallback = DEFAULT_FAQ_CONTENT;
-  else if (type === "about") fallback = DEFAULT_ABOUT_CONTENT;
-  else if (type === "policy") {
+  if (type === "homepage") {
+    fallback = DEFAULT_HOMEPAGE_CONTENT;
+  } else if (type === "faq") {
+    fallback = DEFAULT_FAQ_CONTENT;
+  } else if (type === "about") {
+    fallback = DEFAULT_ABOUT_CONTENT;
+  } else if (type === "policy") {
     const policyKey = slug.replace("policies-", "");
     fallback = DEFAULT_POLICIES[policyKey] || DEFAULT_POLICIES.terms;
   } else {
@@ -77,7 +102,12 @@ export async function getPublishedContent<T>(
 // Administrative Content Services
 
 export async function listAllContentPages(): Promise<
-  Array<ContentPage & { currentVersionNumber: number | null; publishedAt: Date | null }>
+  Array<
+    ContentPage & {
+      currentVersionNumber: number | null;
+      publishedAt: Date | null;
+    }
+  >
 > {
   const pages = await db.select().from(contentPages).orderBy(contentPages.slug);
 
@@ -134,7 +164,7 @@ export async function getContentVersionHistory(slug: string): Promise<{
 export async function saveContentVersionDraft(input: {
   slug: string;
   title: string;
-  type: "homepage" | "faq" | "about" | "policy";
+  type: ContentPageType;
   data: Record<string, unknown>;
   summary?: string;
   authorId?: string;

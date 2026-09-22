@@ -8,8 +8,8 @@ import { requireAdmin } from "@/lib/authz";
 import { db } from "@/lib/db";
 
 export interface CollectionFormState {
-  success?: boolean;
   error?: string;
+  success?: boolean;
 }
 
 export async function upsertCollectionAction(
@@ -20,16 +20,23 @@ export async function upsertCollectionAction(
 
   const id = String(formData.get("id") || "").trim() || undefined;
   const name = String(formData.get("name") || "").trim();
-  const slug = String(formData.get("slug") || "").trim().toLowerCase();
+  const slug = String(formData.get("slug") || "")
+    .trim()
+    .toLowerCase();
   const description = String(formData.get("description") || "").trim();
-  const status = (String(formData.get("status") || "draft") as "draft" | "published" | "archived");
+  const status = String(formData.get("status") || "draft") as
+    | "draft"
+    | "published"
+    | "archived";
 
   if (!name || name.length < 2) {
     return { error: "Collection name must be at least 2 characters long." };
   }
 
   if (!slug || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
-    return { error: "Slug must contain only lowercase letters, numbers, and hyphens." };
+    return {
+      error: "Slug must contain only lowercase letters, numbers, and hyphens.",
+    };
   }
 
   try {
@@ -97,7 +104,8 @@ export async function upsertCollectionAction(
     revalidatePath("/admin/collections");
     return { success: true };
   } catch (error: unknown) {
-    const msg = error instanceof Error ? error.message : "Failed to save collection";
+    const msg =
+      error instanceof Error ? error.message : "Failed to save collection";
     return { error: msg };
   }
 }
@@ -126,7 +134,10 @@ export async function addProductToCollectionAction(
     revalidatePath("/admin/collections");
     return { success: true };
   } catch (error: unknown) {
-    const msg = error instanceof Error ? error.message : "Failed to add product to collection";
+    const msg =
+      error instanceof Error
+        ? error.message
+        : "Failed to add product to collection";
     return { error: msg };
   }
 }
@@ -150,7 +161,10 @@ export async function removeProductFromCollectionAction(
     revalidatePath("/admin/collections");
     return { success: true };
   } catch (error: unknown) {
-    const msg = error instanceof Error ? error.message : "Failed to remove product from collection";
+    const msg =
+      error instanceof Error
+        ? error.message
+        : "Failed to remove product from collection";
     return { error: msg };
   }
 }

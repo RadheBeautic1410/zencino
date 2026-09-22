@@ -1,6 +1,6 @@
+import { ArrowSquareOut, Package, Plus } from "@phosphor-icons/react/dist/ssr";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowSquareOut, Package, Plus } from "@phosphor-icons/react/dist/ssr";
 import { OrbitPageHeader } from "@/components/admin/orbit-page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { getAdminProducts, getAllCategories } from "@/lib/catalog/queries";
+import { getAdminProducts } from "@/lib/catalog/queries";
 import { formatDateTime } from "@/lib/utils";
 
 export const metadata = {
@@ -21,8 +21,8 @@ export const metadata = {
 };
 
 interface SearchParams {
-  status?: "draft" | "published" | "archived";
   category?: string;
+  status?: "draft" | "published" | "archived";
 }
 
 export default async function AdminProductsPage({
@@ -34,23 +34,20 @@ export default async function AdminProductsPage({
   const statusFilter = resolvedParams.status;
   const categoryFilter = resolvedParams.category;
 
-  const [products, categories] = await Promise.all([
-    getAdminProducts({
-      status: statusFilter,
-      categoryId: categoryFilter,
-    }),
-    getAllCategories(),
-  ]);
+  const products = await getAdminProducts({
+    status: statusFilter,
+    categoryId: categoryFilter,
+  });
 
   return (
     <div>
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <OrbitPageHeader
+          description="Manage multi-variant products, channel availability (Website & Amazon), and media."
           eyebrow="Catalog"
           title="Products"
-          description="Manage multi-variant products, channel availability (Website & Amazon), and media."
         />
-        <Button asChild size="sm" className="self-start sm:self-auto">
+        <Button asChild className="self-start sm:self-auto" size="sm">
           <Link href="/admin/products/new">
             <Plus className="mr-1.5" size={14} /> New Product
           </Link>
@@ -60,40 +57,42 @@ export default async function AdminProductsPage({
       {/* Filter Tabs */}
       <div className="mb-6 flex flex-wrap items-center gap-2 border-b border-border pb-3">
         <Link
-          href="/admin/products"
           className={`px-3 py-1.5 text-xs font-semibold uppercase tracking-ui transition-colors ${
-            !statusFilter ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+            statusFilter
+              ? "text-muted-foreground hover:text-foreground"
+              : "bg-primary text-primary-foreground"
           }`}
+          href="/admin/products"
         >
           All
         </Link>
         <Link
-          href="/admin/products?status=published"
           className={`px-3 py-1.5 text-xs font-semibold uppercase tracking-ui transition-colors ${
             statusFilter === "published"
               ? "bg-primary text-primary-foreground"
               : "text-muted-foreground hover:text-foreground"
           }`}
+          href="/admin/products?status=published"
         >
           Published
         </Link>
         <Link
-          href="/admin/products?status=draft"
           className={`px-3 py-1.5 text-xs font-semibold uppercase tracking-ui transition-colors ${
             statusFilter === "draft"
               ? "bg-primary text-primary-foreground"
               : "text-muted-foreground hover:text-foreground"
           }`}
+          href="/admin/products?status=draft"
         >
           Drafts
         </Link>
         <Link
-          href="/admin/products?status=archived"
           className={`px-3 py-1.5 text-xs font-semibold uppercase tracking-ui transition-colors ${
             statusFilter === "archived"
               ? "bg-primary text-primary-foreground"
               : "text-muted-foreground hover:text-foreground"
           }`}
+          href="/admin/products?status=archived"
         >
           Archived
         </Link>
@@ -107,10 +106,15 @@ export default async function AdminProductsPage({
         <CardContent className="p-0">
           {products.length === 0 ? (
             <div className="p-12 text-center">
-              <Package className="mx-auto mb-3 text-muted-foreground/50" size={36} />
+              <Package
+                className="mx-auto mb-3 text-muted-foreground/50"
+                size={36}
+              />
               <p className="font-semibold text-sm">No products found</p>
               <p className="mt-1 text-muted-foreground text-xs">
-                {statusFilter ? `No products with status "${statusFilter}".` : "Start by creating your first product."}
+                {statusFilter
+                  ? `No products with status "${statusFilter}".`
+                  : "Start by creating your first product."}
               </p>
               <Button asChild className="mt-4" size="sm">
                 <Link href="/admin/products/new">Create Product</Link>
@@ -137,34 +141,45 @@ export default async function AdminProductsPage({
                       <div className="relative size-12 overflow-hidden border border-border bg-muted flex items-center justify-center">
                         {p.primaryImage ? (
                           <Image
-                            src={p.primaryImage}
                             alt={p.name}
-                            fill
                             className="object-cover"
+                            fill
                             sizes="48px"
+                            src={p.primaryImage}
                           />
                         ) : (
-                          <Package className="text-muted-foreground/40" size={20} />
+                          <Package
+                            className="text-muted-foreground/40"
+                            size={20}
+                          />
                         )}
                       </div>
                     </TableCell>
                     <TableCell>
                       <Link
-                        href={`/admin/products/${p.id}`}
                         className="font-semibold text-sm hover:underline"
+                        href={`/admin/products/${p.id}`}
                       >
                         {p.name}
                       </Link>
-                      <p className="font-mono text-2xs text-muted-foreground">/{p.slug}</p>
+                      <p className="font-mono text-2xs text-muted-foreground">
+                        /{p.slug}
+                      </p>
                     </TableCell>
                     <TableCell className="text-xs">
-                      {p.primaryCategoryName || <span className="text-muted-foreground">Unassigned</span>}
+                      {p.primaryCategoryName || (
+                        <span className="text-muted-foreground">
+                          Unassigned
+                        </span>
+                      )}
                     </TableCell>
                     <TableCell className="text-xs font-mono">
-                      {p.variantCount} {p.variantCount === 1 ? "variant" : "variants"}
+                      {p.variantCount}{" "}
+                      {p.variantCount === 1 ? "variant" : "variants"}
                       {p.minPriceMinor !== null && (
                         <span className="block text-2xs text-muted-foreground">
-                          From ₹{(p.minPriceMinor / 100).toLocaleString("en-IN")}
+                          From ₹
+                          {(p.minPriceMinor / 100).toLocaleString("en-IN")}
                         </span>
                       )}
                     </TableCell>
@@ -181,14 +196,20 @@ export default async function AdminProductsPage({
                           </span>
                         )}
                         {!p.hasWebsiteChannel && !p.hasAmazonChannel && (
-                          <span className="text-muted-foreground text-2xs">None</span>
+                          <span className="text-muted-foreground text-2xs">
+                            None
+                          </span>
                         )}
                       </div>
                     </TableCell>
                     <TableCell>
                       <Badge
-                        variant={p.status === "published" ? "default" : "secondary"}
-                        className={p.status === "published" ? "text-success" : ""}
+                        className={
+                          p.status === "published" ? "text-success" : ""
+                        }
+                        variant={
+                          p.status === "published" ? "default" : "secondary"
+                        }
                       >
                         {p.status}
                       </Badge>

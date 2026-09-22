@@ -17,7 +17,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   const title = product.seoTitle || `${product.name} | Zencino`;
-  const description = product.seoDescription || product.description.slice(0, 160);
+  const description =
+    product.seoDescription || product.description.slice(0, 160);
   const primaryImg = product.media[0]?.url;
 
   return {
@@ -51,7 +52,8 @@ export default async function ProductDetailPage({ params }: Props) {
 
   // Generate JSON-LD Schema
   const minPrice = product.variants.reduce(
-    (min, v) => (v.priceMinor && (min === null || v.priceMinor < min) ? v.priceMinor : min),
+    (min, v) =>
+      v.priceMinor && (min === null || v.priceMinor < min) ? v.priceMinor : min,
     null as number | null
   );
 
@@ -73,8 +75,9 @@ export default async function ProductDetailPage({ params }: Props) {
   return (
     <StoreShell>
       <script
-        type="application/ld+json"
+        // biome-ignore lint/security/noDangerouslySetInnerHtml: JSON-LD structured data serialized from our own catalog record.
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        type="application/ld+json"
       />
       <ProductDetailView product={product} />
     </StoreShell>

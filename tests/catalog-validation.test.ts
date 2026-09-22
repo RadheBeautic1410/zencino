@@ -8,38 +8,37 @@ import {
 } from "../lib/catalog/validation";
 
 test("isAmazonProductUrl accepts only valid Amazon India product URLs", () => {
-  assert.equal(
-    isAmazonProductUrl("https://www.amazon.in/dp/B08XYZ1234"),
-    true
-  );
+  assert.equal(isAmazonProductUrl("https://www.amazon.in/dp/B08XYZ1234"), true);
   assert.equal(
     isAmazonProductUrl("https://amazon.in/gp/product/B08XYZ1234"),
     true
   );
   // Amazon share short link formats
-  assert.equal(
-    isAmazonProductUrl("https://amzn.in/d/0beM940h"),
-    true
-  );
-  assert.equal(
-    isAmazonProductUrl("https://amzn.in/0beM940h"),
-    true
-  );
-  assert.equal(
-    isAmazonProductUrl("https://amzn.to/3xyz123"),
-    true
-  );
+  assert.equal(isAmazonProductUrl("https://amzn.in/d/0beM940h"), true);
+  assert.equal(isAmazonProductUrl("https://amzn.in/0beM940h"), true);
+  assert.equal(isAmazonProductUrl("https://amzn.to/3xyz123"), true);
   // Full Amazon product URL with title slug
   assert.equal(
-    isAmazonProductUrl("https://www.amazon.in/Clear-Acrylic-Sports-Ball/dp/B0HHZ4FLKV/ref=sr_1_8"),
+    isAmazonProductUrl(
+      "https://www.amazon.in/Clear-Acrylic-Sports-Ball/dp/B0HHZ4FLKV/ref=sr_1_8"
+    ),
     true
   );
 
   // Invalid: other domains, missing ASIN/slug, http, malicious credentials
-  assert.equal(isAmazonProductUrl("https://www.amazon.com/dp/B08XYZ1234"), false);
+  assert.equal(
+    isAmazonProductUrl("https://www.amazon.com/dp/B08XYZ1234"),
+    false
+  );
   assert.equal(isAmazonProductUrl("http://www.amazon.in/dp/B08XYZ1234"), false);
-  assert.equal(isAmazonProductUrl("https://user:pass@www.amazon.in/dp/B08XYZ1234"), false);
-  assert.equal(isAmazonProductUrl("https://www.amazon.in/s?k=pencil+holder"), false);
+  assert.equal(
+    isAmazonProductUrl("https://user:pass@www.amazon.in/dp/B08XYZ1234"),
+    false
+  );
+  assert.equal(
+    isAmazonProductUrl("https://www.amazon.in/s?k=pencil+holder"),
+    false
+  );
   assert.equal(isAmazonProductUrl("https://amzn.in/"), false);
   assert.equal(isAmazonProductUrl("not-a-url"), false);
 });
@@ -48,7 +47,13 @@ test("optionSignature produces deterministic sorted JSON array representation", 
   const sig1 = optionSignature({ Size: "Large", Color: "Clear" });
   const sig2 = optionSignature({ Color: "Clear", Size: "Large" });
   assert.equal(sig1, sig2);
-  assert.equal(sig1, JSON.stringify([["Color", "Clear"], ["Size", "Large"]]));
+  assert.equal(
+    sig1,
+    JSON.stringify([
+      ["Color", "Clear"],
+      ["Size", "Large"],
+    ])
+  );
 
   const emptySig = optionSignature({});
   assert.equal(emptySig, "[]");
@@ -60,8 +65,8 @@ test("variantInput enforces pricing and delivery rules", () => {
     sku: "ZNC-CLR-01",
     title: "Clear Standard",
     options: { Color: "Clear" },
-    priceMinor: 49900,
-    mrpMinor: 69900,
+    priceMinor: 49_900,
+    mrpMinor: 69_900,
     weightG: 350,
     lengthMm: 150,
     widthMm: 100,
@@ -96,8 +101,8 @@ test("variantInput enforces pricing and delivery rules", () => {
     sku: "ZNC-CLR-03",
     title: "Bad MRP",
     options: {},
-    priceMinor: 50000,
-    mrpMinor: 40000,
+    priceMinor: 50_000,
+    mrpMinor: 40_000,
     weightG: 300,
     lengthMm: null,
     widthMm: null,
@@ -114,8 +119,8 @@ test("variantInput enforces pricing and delivery rules", () => {
     sku: "ZNC-CLR-04",
     title: "Bad Amazon Link",
     options: {},
-    priceMinor: 50000,
-    mrpMinor: 60000,
+    priceMinor: 50_000,
+    mrpMinor: 60_000,
     weightG: 300,
     lengthMm: null,
     widthMm: null,
@@ -144,7 +149,7 @@ test("productInput rejects duplicate SKUs or duplicate option signatures", () =>
         sku: "ZNC-01",
         title: "V1",
         options: { Color: "Clear" },
-        priceMinor: 10000,
+        priceMinor: 10_000,
         mrpMinor: null,
         weightG: 200,
         lengthMm: null,
@@ -159,7 +164,7 @@ test("productInput rejects duplicate SKUs or duplicate option signatures", () =>
         sku: "znc-01", // duplicate case-insensitive
         title: "V2",
         options: { Color: "Frosted" },
-        priceMinor: 12000,
+        priceMinor: 12_000,
         mrpMinor: null,
         weightG: 200,
         lengthMm: null,
