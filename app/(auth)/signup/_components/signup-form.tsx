@@ -6,23 +6,25 @@ import { type FormEvent, Suspense, useEffect, useState } from "react";
 import { AuthShell } from "@/app/(auth)/_components/auth-shell";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { signIn, useSession } from "@/lib/auth-client";
+import { signUp, useSession } from "@/lib/auth-client";
 import { safeReturnPath } from "@/lib/auth-redirect";
 
-export function AuthForm() {
+export function SignupForm() {
   return (
     <Suspense fallback={null}>
-      <AuthFormInner />
+      <SignupFormInner />
     </Suspense>
   );
 }
 
-function AuthFormInner() {
+function SignupFormInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { data: session, isPending } = useSession();
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -39,17 +41,23 @@ function AuthFormInner() {
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError(null);
-    setSubmitting(true);
 
+    if (password !== confirmPassword) {
+      setError("Passwords do not match.");
+      return;
+    }
+
+    setSubmitting(true);
     try {
       const callbackURL = safeReturnPath(searchParams.get("next"));
-      const result = await signIn.email({
+      const result = await signUp.email({
         callbackURL,
         email,
+        name,
         password,
       });
       if (result.error) {
-        setError(result.error.message ?? "Failed to sign in.");
+        setError(result.error.message ?? "Failed to create account.");
       }
     } catch {
       setError("Could not connect. Please try again.");
@@ -60,16 +68,22 @@ function AuthFormInner() {
 
   return (
     <AuthShell
-      description="Enter your email and password to sign in."
-      title="Sign in"
+      description="Enter your details to create a Zencino account."
+      title="Create account"
     >
-      {searchParams.has("error") && (
-        <p className="mb-4 text-destructive text-sm" role="alert">
-          This account is unavailable or the link you used is no longer valid.
-          Sign in again or contact support.
-        </p>
-      )}
       <form className="space-y-4" onSubmit={onSubmit}>
+        <label className="block" htmlFor="name">
+          <span className="mb-2 block font-semibold text-foreground text-sm">
+            Name
+          </span>
+          <Input
+            autoComplete="name"
+            id="name"
+            onChange={(event) => setName(event.target.value)}
+            required
+            value={name}
+          />
+        </label>
         <label className="block" htmlFor="email">
           <span className="mb-2 block font-semibold text-foreground text-sm">
             Email
@@ -85,22 +99,31 @@ function AuthFormInner() {
           />
         </label>
         <label className="block" htmlFor="password">
-          <span className="mb-2 flex items-center justify-between font-semibold text-foreground text-sm">
+          <span className="mb-2 block font-semibold text-foreground text-sm">
             Password
-            <Link
-              className="font-medium text-muted-foreground text-xs hover:text-foreground"
-              href="/forgot-password"
-            >
-              Forgot password?
-            </Link>
           </span>
           <Input
-            autoComplete="current-password"
+            autoComplete="new-password"
             id="password"
+            minLength={8}
             onChange={(event) => setPassword(event.target.value)}
             required
             type="password"
             value={password}
+          />
+        </label>
+        <label className="block" htmlFor="confirmPassword">
+          <span className="mb-2 block font-semibold text-foreground text-sm">
+            Confirm password
+          </span>
+          <Input
+            autoComplete="new-password"
+            id="confirmPassword"
+            minLength={8}
+            onChange={(event) => setConfirmPassword(event.target.value)}
+            required
+            type="password"
+            value={confirmPassword}
           />
         </label>
         {error && (
@@ -109,13 +132,13 @@ function AuthFormInner() {
           </p>
         )}
         <Button className="w-full" disabled={submitting} type="submit">
-          {submitting ? "Signing in..." : "Sign in"}
+          {submitting ? "Creating account..." : "Create account"}
         </Button>
       </form>
       <p className="mt-6 text-center text-muted-foreground text-xs">
-        Don&apos;t have an account?{" "}
-        <Link className="font-semibold text-foreground" href="/signup">
-          Create one
+        Already have an account?{" "}
+        <Link className="font-semibold text-foreground" href="/login">
+          Sign in
         </Link>
       </p>
     </AuthShell>

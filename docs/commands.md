@@ -8,7 +8,7 @@ pnpm db:migrate
 pnpm dev
 ```
 
-Promote an account to Orbit admin after the first magic-link sign-in:
+Promote an account to Orbit admin after signing up at `/signup`:
 
 ```bash
 pnpm make:admin you@example.com

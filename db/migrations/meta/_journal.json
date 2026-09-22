@@ -50,6 +50,13 @@
       "when": 1789271944309,
       "tag": "0006_chunky_phil_sheldon",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1790096878634,
+      "tag": "0007_add_account_password",
+      "breakpoints": true
     }
   ]
 }

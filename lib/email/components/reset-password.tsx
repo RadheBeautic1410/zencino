@@ -2,37 +2,39 @@ import { Button, Link, Section, Text } from "react-email";
 import { PRODUCT_NAME } from "@/config/platform";
 import { EmailLayout, emailStyles } from "@/lib/email/components/layout";
 
-export function MagicLinkEmail({
+export function ResetPasswordEmail({
   email,
-  magicLinkUrl,
+  resetUrl,
   productName = PRODUCT_NAME,
 }: {
   email: string;
-  magicLinkUrl: string;
+  resetUrl: string;
   productName?: string;
 }) {
   return (
     <EmailLayout
-      preview={`Sign in to ${productName}`}
+      preview={`Reset your ${productName} password`}
       productName={productName}
     >
-      <Text style={emailStyles.heading}>Sign in to {productName}</Text>
+      <Text style={emailStyles.heading}>Reset your password</Text>
       <Text style={emailStyles.paragraph}>
-        Use the button below to sign in as{" "}
-        <strong style={{ color: "#171717" }}>{email}</strong>.
+        We received a request to reset the password for{" "}
+        <strong style={{ color: "#171717" }}>{email}</strong>. Use the button
+        below to choose a new one.
       </Text>
       <Section style={{ margin: "24px 0" }}>
-        <Button href={magicLinkUrl} style={emailStyles.button}>
-          Sign In
+        <Button href={resetUrl} style={emailStyles.button}>
+          Reset Password
         </Button>
       </Section>
       <Text style={emailStyles.muted}>
-        This link expires shortly and can only be used once.
+        This link expires in 1 hour and can only be used once. If you did not
+        request this, you can safely ignore this email.
       </Text>
       <Text style={emailStyles.fallbackLink}>
         If the button does not work, paste this link into your browser:{" "}
-        <Link href={magicLinkUrl} style={emailStyles.link}>
-          {magicLinkUrl}
+        <Link href={resetUrl} style={emailStyles.link}>
+          {resetUrl}
         </Link>
       </Text>
     </EmailLayout>

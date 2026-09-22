@@ -1,6 +1,7 @@
 import { desc, eq } from "drizzle-orm";
 import {
   AccountIdentityForms,
+  ChangePasswordForm,
   DeleteAccountForm,
 } from "@/components/profile/account-forms";
 import {
@@ -67,6 +68,8 @@ export default async function ProfilePage() {
 
       <div className="space-y-6">
         <AccountIdentityForms email={freshUser.email} name={freshUser.name} />
+
+        <ChangePasswordForm />
 
         <SessionsCard sessions={sessionRows} />
 

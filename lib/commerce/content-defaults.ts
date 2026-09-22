@@ -182,7 +182,7 @@ export const DEFAULT_POLICIES: Record<string, PolicyContentData> = {
       },
       {
         heading: "2. Secure Authentication",
-        body: "We use passwordless magic-link authentication to prevent credential leakage. Payment card and sensitive financial information are handled securely by accredited payment gateways and never touch our servers.",
+        body: "Account passwords are hashed and salted before storage and are never stored or transmitted in plain text. Payment card and sensitive financial information are handled securely by accredited payment gateways and never touch our servers.",
       },
       {
         heading: "3. Amazon Outbound Links",

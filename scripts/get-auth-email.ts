@@ -10,7 +10,7 @@ if (existsSync(".env")) {
 async function main() {
   const targetEmail = process.argv[2] || "tavethiyasahaj4356@gmail.com";
 
-  console.log(`Looking up latest magic link email for: ${targetEmail}...\n`);
+  console.log(`Looking up latest auth email for: ${targetEmail}...\n`);
 
   const emails = await db
     .select()
@@ -26,9 +26,9 @@ async function main() {
   });
 
   if (!matched?.payload) {
-    console.log(`No sign-in emails found for ${targetEmail}.`);
+    console.log(`No auth emails found for ${targetEmail}.`);
     console.log(
-      "Go to http://localhost:3000/login and request a sign-in link first."
+      "Go to http://localhost:3000/signup, /login, or /forgot-password first."
     );
     process.exit(0);
   }
@@ -38,16 +38,17 @@ async function main() {
 
   if (match) {
     console.log("=========================================================");
-    console.log("             ZENCINO 1-CLICK SIGN-IN LINK               ");
+    console.log("                   ZENCINO AUTH EMAIL LINK              ");
     console.log("=========================================================");
-    console.log(`\nEmail: ${targetEmail}`);
-    console.log(`Sent:  ${matched.createdAt.toISOString()}`);
+    console.log(`\nEmail:   ${targetEmail}`);
+    console.log(`Subject: ${matched.payload.subject || ""}`);
+    console.log(`Sent:    ${matched.createdAt.toISOString()}`);
     console.log("\nClick or paste this link into your browser:\n");
     console.log(`👉  ${match[1]}\n`);
     console.log("=========================================================");
   } else {
     console.log(
-      "Found email, but could not parse verification URL from text payload."
+      "Found email, but could not parse a URL from the text payload."
     );
     console.log(text);
   }
@@ -56,6 +57,6 @@ async function main() {
 }
 
 main().catch((err) => {
-  console.error("Error retrieving magic link:", err);
+  console.error("Error retrieving auth email:", err);
   process.exit(1);
 });

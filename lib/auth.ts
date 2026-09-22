@@ -1,13 +1,12 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { admin } from "better-auth/plugins/admin";
-import { magicLink } from "better-auth/plugins/magic-link";
 import { PRODUCT_NAME } from "@/config/platform";
 import * as schema from "@/db/schema";
 import { audit } from "@/lib/audit";
 import { db } from "@/lib/db";
 import { enqueueEmail } from "@/lib/email";
-import { magicLinkTemplate } from "@/lib/email/templates/magic-link";
+import { resetPasswordTemplate } from "@/lib/email/templates/reset-password";
 import { env } from "@/lib/env";
 
 export const auth = betterAuth({
@@ -47,33 +46,35 @@ export const auth = betterAuth({
       });
     },
   },
+  emailAndPassword: {
+    enabled: true,
+    minPasswordLength: 8,
+    sendResetPassword: async ({ user, url }) => {
+      const { html, text } = await resetPasswordTemplate({
+        email: user.email,
+        resetUrl: url,
+      });
+
+      await enqueueEmail({
+        to: user.email,
+        subject: `Reset your ${PRODUCT_NAME} password`,
+        html,
+        text,
+      });
+
+      await audit({
+        action: "auth.password_reset_requested",
+        actorEmail: user.email,
+        description: `Password reset requested for ${user.email}`,
+        entityType: "user",
+        metadata: { email: user.email },
+      });
+    },
+  },
   plugins: [
     admin({
       impersonationSessionDuration: 3600,
       allowImpersonatingAdmins: false,
-    }),
-    magicLink({
-      sendMagicLink: async ({ email, url }) => {
-        const { html, text } = await magicLinkTemplate({
-          email,
-          magicLinkUrl: url,
-        });
-
-        await enqueueEmail({
-          to: email,
-          subject: `Sign in to ${PRODUCT_NAME}`,
-          html,
-          text,
-        });
-
-        await audit({
-          action: "auth.magic_link_sent",
-          actorEmail: email,
-          description: `Magic link sent to ${email}`,
-          entityType: "user",
-          metadata: { email },
-        });
-      },
     }),
   ],
   session: {

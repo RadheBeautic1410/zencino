@@ -91,6 +91,44 @@ export async function changeEmailAction(
   };
 }
 
+export async function changePasswordAction(
+  _state: ActionState,
+  formData: FormData
+): Promise<ActionState> {
+  const current = await requireSession();
+  const currentPassword = String(formData.get("currentPassword") ?? "");
+  const newPassword = String(formData.get("newPassword") ?? "");
+  const confirmNewPassword = String(formData.get("confirmNewPassword") ?? "");
+
+  if (newPassword.length < 8) {
+    return { error: "New password must be at least 8 characters." };
+  }
+  if (newPassword !== confirmNewPassword) {
+    return { error: "New passwords do not match." };
+  }
+
+  try {
+    await auth.api.changePassword({
+      headers: await headers(),
+      body: { currentPassword, newPassword, revokeOtherSessions: true },
+    });
+  } catch {
+    return { error: "Current password is incorrect." };
+  }
+
+  await audit({
+    action: "profile.password_changed",
+    actorEmail: current.user.email,
+    actorId: current.user.id,
+    description: "Changed account password",
+    entityId: current.user.id,
+    entityType: "user",
+  });
+
+  revalidatePath("/account/profile");
+  return { success: "Password updated. Other sessions were signed out." };
+}
+
 export async function revokeSessionAction(formData: FormData): Promise<void> {
   const current = await requireSession();
   const sessionId = String(formData.get("sessionId") ?? "");

@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import {
   type ActionState,
   changeEmailAction,
+  changePasswordAction,
   deleteAccountAction,
   updateNameAction,
 } from "@/app/actions/profile";
@@ -87,7 +88,7 @@ export function AccountIdentityForms({
         <CardHeader>
           <CardTitle>Email Address</CardTitle>
           <CardDescription>
-            Magic-link authentication uses this email as the account identity.
+            Used to sign in and receive account notifications.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -112,6 +113,70 @@ export function AccountIdentityForms({
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export function ChangePasswordForm() {
+  const [state, action, pending] = useActionState(
+    changePasswordAction,
+    initialState
+  );
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Password</CardTitle>
+        <CardDescription>
+          Update your password. Other active sessions will be signed out.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form action={action} className="space-y-4">
+          <label className="block" htmlFor="currentPassword">
+            <span className="mb-2 block font-semibold text-foreground text-sm">
+              Current password
+            </span>
+            <Input
+              autoComplete="current-password"
+              id="currentPassword"
+              name="currentPassword"
+              required
+              type="password"
+            />
+          </label>
+          <label className="block" htmlFor="newPassword">
+            <span className="mb-2 block font-semibold text-foreground text-sm">
+              New password
+            </span>
+            <Input
+              autoComplete="new-password"
+              id="newPassword"
+              minLength={8}
+              name="newPassword"
+              required
+              type="password"
+            />
+          </label>
+          <label className="block" htmlFor="confirmNewPassword">
+            <span className="mb-2 block font-semibold text-foreground text-sm">
+              Confirm new password
+            </span>
+            <Input
+              autoComplete="new-password"
+              id="confirmNewPassword"
+              minLength={8}
+              name="confirmNewPassword"
+              required
+              type="password"
+            />
+          </label>
+          <ActionMessage state={state} />
+          <Button disabled={pending} type="submit">
+            {pending ? "Saving..." : "Update password"}
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
   );
 }
 
