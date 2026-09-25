@@ -1,4 +1,4 @@
-import { and, desc, eq, sql } from "drizzle-orm";
+import { and, desc, eq, ilike, or, type SQL, sql } from "drizzle-orm";
 import {
   inventoryBalances,
   inventoryMovements,
@@ -600,10 +600,21 @@ function readAttributionCampaignCode(
  */
 export async function getAdminOrders(params?: {
   status?: string;
+  paymentStatus?: string;
+  paymentMethod?: string;
+  /** Matches order number, customer name, email or phone. */
+  search?: string;
   limit?: number;
   offset?: number;
 }) {
-  const { status, limit = 50, offset = 0 } = params || {};
+  const {
+    status,
+    paymentStatus,
+    paymentMethod,
+    search,
+    limit = 50,
+    offset = 0,
+  } = params || {};
 
   let query = db
     .select({
@@ -624,8 +635,37 @@ export async function getAdminOrders(params?: {
     .from(orders)
     .$dynamic();
 
+  const conditions: SQL[] = [];
   if (status && isOrderStatus(status)) {
-    query = query.where(eq(orders.status, status));
+    conditions.push(eq(orders.status, status));
+  }
+  const paymentStatusValue = orders.paymentStatus.enumValues.find(
+    (value) => value === paymentStatus
+  );
+  if (paymentStatusValue) {
+    conditions.push(eq(orders.paymentStatus, paymentStatusValue));
+  }
+  const paymentMethodValue = orders.paymentMethod.enumValues.find(
+    (value) => value === paymentMethod
+  );
+  if (paymentMethodValue) {
+    conditions.push(eq(orders.paymentMethod, paymentMethodValue));
+  }
+  const term = search?.trim();
+  if (term) {
+    const pattern = `%${term}%`;
+    const match = or(
+      ilike(orders.orderNumber, pattern),
+      ilike(orders.customerName, pattern),
+      ilike(orders.customerEmail, pattern),
+      ilike(orders.customerPhone, pattern)
+    );
+    if (match) {
+      conditions.push(match);
+    }
+  }
+  if (conditions.length > 0) {
+    query = query.where(and(...conditions));
   }
 
   return query.orderBy(desc(orders.createdAt)).limit(limit).offset(offset);

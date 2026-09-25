@@ -1,8 +1,9 @@
 "use client";
 
 import { PencilSimple, Plus, SquaresFour } from "@phosphor-icons/react";
-import { useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { upsertCollectionAction } from "@/app/actions/catalog-collections";
+import { FilterControls } from "@/components/admin/admin-filter-bar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -42,6 +43,20 @@ export function CollectionManager({
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+
+  const hasFilters = Boolean(searchTerm.trim() || statusFilter);
+  const filteredCollections = useMemo(() => {
+    const term = searchTerm.trim().toLowerCase();
+    return collections.filter(
+      (c) =>
+        (!term ||
+          c.name.toLowerCase().includes(term) ||
+          c.slug.toLowerCase().includes(term)) &&
+        (!statusFilter || c.status === statusFilter)
+    );
+  }, [collections, searchTerm, statusFilter]);
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -88,14 +103,46 @@ export function CollectionManager({
               <Plus className="mr-1.5" size={14} /> New Collection
             </Button>
           </CardHeader>
+          <div className="border-border border-b px-4 pb-4">
+            <FilterControls
+              onClear={
+                hasFilters
+                  ? () => {
+                      setSearchTerm("");
+                      setStatusFilter("");
+                    }
+                  : undefined
+              }
+              onSearchChange={setSearchTerm}
+              searchPlaceholder="Search name or slug..."
+              searchValue={searchTerm}
+              selects={[
+                {
+                  label: "Status",
+                  param: "status",
+                  value: statusFilter,
+                  onChange: setStatusFilter,
+                  options: [
+                    { label: "Published", value: "published" },
+                    { label: "Draft", value: "draft" },
+                    { label: "Archived", value: "archived" },
+                  ],
+                },
+              ]}
+            />
+          </div>
           <CardContent className="p-0">
             {collections.length === 0 ? (
               <div className="p-8 text-center text-muted-foreground text-sm">
                 No collections created yet.
               </div>
+            ) : filteredCollections.length === 0 ? (
+              <div className="p-8 text-center text-muted-foreground text-sm">
+                No collections match the selected filters.
+              </div>
             ) : (
               <div className="divide-y divide-border">
-                {collections.map((col) => (
+                {filteredCollections.map((col) => (
                   <div
                     className="flex items-center justify-between p-4"
                     key={col.id}

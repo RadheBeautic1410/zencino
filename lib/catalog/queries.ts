@@ -1,4 +1,15 @@
-import { asc, desc, eq, inArray, sql } from "drizzle-orm";
+import {
+  and,
+  asc,
+  desc,
+  eq,
+  exists,
+  ilike,
+  inArray,
+  or,
+  type SQL,
+  sql,
+} from "drizzle-orm";
 import {
   categories,
   collectionProducts,
@@ -32,11 +43,13 @@ export interface ProductListParams {
   categoryId?: string;
   limit?: number;
   offset?: number;
+  /** Matches product name, slug or any variant SKU. */
+  search?: string;
   status?: "draft" | "published" | "archived";
 }
 
 export async function getAdminProducts(params: ProductListParams = {}) {
-  const { status, categoryId, limit = 50, offset = 0 } = params;
+  const { status, categoryId, search, limit = 50, offset = 0 } = params;
 
   let queryBuilder = db
     .select({
@@ -53,14 +66,39 @@ export async function getAdminProducts(params: ProductListParams = {}) {
     .leftJoin(categories, eq(products.primaryCategoryId, categories.id))
     .$dynamic();
 
+  // Chained .where() calls on a dynamic query replace each other, so collect
+  // every condition and apply them together.
+  const conditions: SQL[] = [];
   if (status) {
-    queryBuilder = queryBuilder.where(eq(products.status, status));
+    conditions.push(eq(products.status, status));
   }
-
   if (categoryId) {
-    queryBuilder = queryBuilder.where(
-      eq(products.primaryCategoryId, categoryId)
+    conditions.push(eq(products.primaryCategoryId, categoryId));
+  }
+  const term = search?.trim();
+  if (term) {
+    const pattern = `%${term}%`;
+    const match = or(
+      ilike(products.name, pattern),
+      ilike(products.slug, pattern),
+      exists(
+        db
+          .select({ one: sql`1` })
+          .from(productVariants)
+          .where(
+            and(
+              eq(productVariants.productId, products.id),
+              ilike(productVariants.sku, pattern)
+            )
+          )
+      )
     );
+    if (match) {
+      conditions.push(match);
+    }
+  }
+  if (conditions.length > 0) {
+    queryBuilder = queryBuilder.where(and(...conditions));
   }
 
   const productRows = await queryBuilder
