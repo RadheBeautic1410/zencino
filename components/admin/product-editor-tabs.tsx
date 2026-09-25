@@ -30,6 +30,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 import {
   Table,
@@ -107,6 +108,7 @@ export function ProductEditorTabs({
   const [editingVariant, setEditingVariant] = useState<Variant | null>(null);
   const [isAddingVariant, setIsAddingVariant] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const [confirm, confirmDialog] = useConfirm();
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -151,9 +153,14 @@ export function ProductEditorTabs({
   };
 
   // Variant delete
-  const handleDeleteVariant = (variantId: string, sku: string) => {
-    // biome-ignore lint/suspicious/noAlert: native confirmation kept until a shared dialog component exists.
-    if (!confirm(`Are you sure you want to delete variant ${sku}?`)) {
+  const handleDeleteVariant = async (variantId: string, sku: string) => {
+    const confirmed = await confirm({
+      title: "Delete variant?",
+      description: `Are you sure you want to delete variant ${sku}?`,
+      confirmLabel: "Delete",
+      destructive: true,
+    });
+    if (!confirmed) {
       return;
     }
     setError(null);
@@ -216,9 +223,14 @@ export function ProductEditorTabs({
   };
 
   // Media detach
-  const handleDetachMedia = (mediaId: string) => {
-    // biome-ignore lint/suspicious/noAlert: native confirmation kept until a shared dialog component exists.
-    if (!confirm("Remove image from this product?")) {
+  const handleDetachMedia = async (mediaId: string) => {
+    const confirmed = await confirm({
+      title: "Remove image?",
+      description: "Remove this image from the product gallery?",
+      confirmLabel: "Remove",
+      destructive: true,
+    });
+    if (!confirmed) {
       return;
     }
     setError(null);
@@ -235,6 +247,7 @@ export function ProductEditorTabs({
 
   return (
     <div className="space-y-6">
+      {confirmDialog}
       {/* Product Status Bar */}
       <div className="flex flex-wrap items-center justify-between gap-4 border border-border bg-card p-4">
         <div className="flex items-center gap-3">

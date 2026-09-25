@@ -16,6 +16,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 
 interface Category {
@@ -32,6 +33,7 @@ export function CategoryManager({ categories }: { categories: Category[] }) {
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [isCreating, setIsCreating] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const [confirm, confirmDialog] = useConfirm();
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
@@ -59,9 +61,14 @@ export function CategoryManager({ categories }: { categories: Category[] }) {
     });
   };
 
-  const handleDelete = (id: string, name: string) => {
-    // biome-ignore lint/suspicious/noAlert: native confirmation kept until a shared dialog component exists.
-    if (!confirm(`Are you sure you want to delete category "${name}"?`)) {
+  const handleDelete = async (id: string, name: string) => {
+    const confirmed = await confirm({
+      title: "Delete category?",
+      description: `Are you sure you want to delete category "${name}"?`,
+      confirmLabel: "Delete",
+      destructive: true,
+    });
+    if (!confirmed) {
       return;
     }
     setError(null);
@@ -107,6 +114,7 @@ export function CategoryManager({ categories }: { categories: Category[] }) {
 
   return (
     <div className="grid gap-6 lg:grid-cols-3">
+      {confirmDialog}
       {/* Category Tree / List */}
       <div className="lg:col-span-2">
         <Card>
