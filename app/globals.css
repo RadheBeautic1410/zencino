@@ -10,6 +10,9 @@
 
 html {
   background: var(--background);
+  scroll-behavior: smooth;
+  /* Anchored sections clear the sticky storefront header. */
+  scroll-padding-top: 6rem;
 }
 
 body {
@@ -211,6 +214,10 @@ body {
   }
 }
 
+/* ══ Motion keyframes ═══════════════════════════════════════════
+   Everything below is declarative CSS, so the storefront sections
+   stay server components. Nothing here requires JavaScript. */
+
 @keyframes rise-in {
   from {
     opacity: 0;
@@ -230,6 +237,34 @@ body {
   to {
     opacity: 1;
     transform: none;
+  }
+}
+
+/* Softer entrance for section headers: rises and sharpens at once. */
+@keyframes blur-rise {
+  from {
+    opacity: 0;
+    transform: translateY(2.25rem);
+    filter: blur(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: blur(0);
+  }
+}
+
+/* Per-word headline reveal — each word settles up onto the line. */
+@keyframes word-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.55em) rotate(1.5deg);
+    filter: blur(7px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: blur(0);
   }
 }
 
@@ -253,6 +288,110 @@ body {
   }
 }
 
+/* Ambient lift for the hero composition — long, shallow, never busy. */
+@keyframes soft-float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -0.85rem, 0);
+  }
+}
+
+@keyframes glow-breathe {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.07);
+  }
+}
+
+/* A single band of light crossing a surface. */
+@keyframes sheen-sweep {
+  from {
+    transform: translateX(-130%) skewX(-18deg);
+  }
+  to {
+    transform: translateX(240%) skewX(-18deg);
+  }
+}
+
+/* The track holds two identical halves, so -50% loops seamlessly. */
+@keyframes marquee-x {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@keyframes shimmer-x {
+  to {
+    background-position: 220% center;
+  }
+}
+
+@keyframes cue-bob {
+  0%,
+  100% {
+    opacity: 0.4;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(0.4rem);
+  }
+}
+
+/* Scroll-linked; --from and --to are set per element. */
+@keyframes parallax-shift {
+  from {
+    transform: translate3d(0, var(--from, 2.5rem), 0);
+  }
+  to {
+    transform: translate3d(0, var(--to, -2.5rem), 0);
+  }
+}
+
+@keyframes progress-x {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* The header lifts off the page as soon as content passes under it. */
+@keyframes header-settle {
+  /* `from` mirrors the header's own utility classes so nothing jumps at rest. */
+  from {
+    background-color: color-mix(in oklch, var(--background) 60%, transparent);
+    border-bottom-color: color-mix(in oklch, var(--border) 50%, transparent);
+    box-shadow: 0 0 0 0 transparent;
+  }
+  to {
+    background-color: color-mix(in oklch, var(--background) 90%, transparent);
+    border-bottom-color: var(--border);
+    box-shadow: 0 12px 32px -20px rgba(19, 56, 50, 0.45);
+  }
+}
+
+@keyframes header-tighten {
+  from {
+    padding-block: 0.875rem; /* matches py-3.5 on the header row */
+  }
+  to {
+    padding-block: 0.55rem;
+  }
+}
+
 @layer utilities {
   .glass-card {
     background: color-mix(in oklch, var(--background) 88%, transparent);
@@ -261,15 +400,15 @@ body {
   }
   .card-hover {
     transition:
-      transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
-      box-shadow 0.25s cubic-bezier(0.16, 1, 0.3, 1),
-      border-color 0.25s ease;
+      transform 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+      box-shadow 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+      border-color 0.35s ease;
   }
   .card-hover:hover {
     box-shadow:
-      0 16px 32px -8px rgba(19, 56, 50, 0.08),
-      0 4px 12px -2px rgba(0, 0, 0, 0.04);
-    transform: translateY(-3px);
+      0 22px 44px -12px rgba(19, 56, 50, 0.13),
+      0 6px 14px -4px rgba(0, 0, 0, 0.05);
+    transform: translateY(-5px);
   }
 
   /* Display type: the serif needs a tighter optical fit than Inter's defaults */
@@ -321,6 +460,110 @@ body {
     background-size: 100% 1px;
   }
 
+  /* Champagne type that catches the light — hero pricing and stats */
+  .text-shimmer {
+    color: transparent;
+    background: linear-gradient(
+      100deg,
+      var(--gold) 18%,
+      color-mix(in oklch, var(--gold) 45%, white) 38%,
+      var(--gold) 58%
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    background-size: 220% auto;
+    animation: shimmer-x 6s linear infinite;
+  }
+
+  /* ── Hover finishes ──────────────────────────────────────────── */
+
+  /* One band of light crosses the surface per hover. */
+  .sheen {
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .sheen::after {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    content: "";
+    background: linear-gradient(
+      100deg,
+      transparent 22%,
+      var(--sheen-color, rgba(255, 255, 255, 0.3)) 50%,
+      transparent 78%
+    );
+    transform: translateX(-130%) skewX(-18deg);
+  }
+  .sheen:hover::after,
+  .sheen:focus-visible::after,
+  .group:hover .sheen::after {
+    animation: sheen-sweep 0.95s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  /* White light disappears on pale cards; champagne reads on both. */
+  .sheen-gold {
+    --sheen-color: color-mix(in oklch, var(--gold) 26%, transparent);
+  }
+
+  /* Champagne halo blooming from a card's top edge. */
+  .glow-hover::before {
+    position: absolute;
+    inset: -1px;
+    z-index: 0;
+    pointer-events: none;
+    content: "";
+    background: radial-gradient(
+      125% 85% at 50% 0%,
+      color-mix(in oklch, var(--gold) 20%, transparent),
+      transparent 62%
+    );
+    border-radius: inherit;
+    opacity: 0;
+    transition: opacity 0.45s ease;
+  }
+  .glow-hover:hover::before {
+    opacity: 1;
+  }
+
+  /* Gentle 3D settle for the hero product composition. */
+  .tilt {
+    transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .tilt:hover {
+    transform: perspective(1200px) rotateX(2deg) rotateY(-3.5deg)
+      translateY(-6px);
+  }
+
+  /* ── Marquee ─────────────────────────────────────────────────── */
+
+  .marquee {
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(
+      90deg,
+      transparent,
+      #000 7%,
+      #000 93%,
+      transparent
+    );
+    mask-image: linear-gradient(
+      90deg,
+      transparent,
+      #000 7%,
+      #000 93%,
+      transparent
+    );
+  }
+  .marquee-track {
+    display: flex;
+    width: max-content;
+    animation: marquee-x var(--marquee-duration, 70s) linear infinite;
+  }
+  .marquee:hover .marquee-track {
+    animation-play-state: paused;
+  }
+
   /* ── Motion ──────────────────────────────────────────────────
      Above the fold plays once on load; below the fold is driven by
      scroll position. Both use fill modes that always settle on the
@@ -339,10 +582,25 @@ body {
     animation: draw-rule 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
     animation-delay: var(--delay, 0ms);
   }
+  /* Each word carries its own index, so one rule covers the whole line. */
+  .intro-word {
+    display: inline-block;
+    animation: word-in 0.95s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: calc(var(--delay, 0ms) + var(--i, 0) * 85ms);
+  }
 
   /* Ambient movement for the decorative blur fields */
   .drift {
     animation: drift 20s ease-in-out infinite alternate;
+  }
+  .float-soft {
+    animation: soft-float 7.5s ease-in-out infinite;
+  }
+  .glow-breathe {
+    animation: glow-breathe 9s ease-in-out infinite;
+  }
+  .scroll-cue {
+    animation: cue-bob 2.4s ease-in-out infinite;
   }
 
   /* Scroll-driven reveals. Where view timelines are unsupported the
@@ -352,6 +610,11 @@ body {
       animation: rise-in linear both;
       animation-timeline: view();
       animation-range: entry 0% entry 50%;
+    }
+    .reveal-soft {
+      animation: blur-rise linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 55%;
     }
     .reveal-media {
       animation: unveil linear both;
@@ -366,24 +629,76 @@ body {
       animation-range: entry calc(var(--i, 0) * 5%) entry
         calc(50% + var(--i, 0) * 5%);
     }
+    /* Decorative layers travelling at their own speed through a band. */
+    .parallax {
+      animation: parallax-shift linear both;
+      animation-timeline: view();
+      animation-range: cover 0% cover 100%;
+      will-change: transform;
+    }
+  }
+
+  @supports (animation-timeline: scroll()) {
+    .scroll-progress {
+      transform-origin: 0 50%;
+      animation: progress-x linear both;
+      animation-timeline: scroll(root block);
+    }
+    /* Both resolve over the first screenful, so the header settles once
+       and then holds. Unsupported browsers keep the static header. */
+    .header-settle {
+      animation: header-settle linear both;
+      animation-timeline: scroll(root block);
+      animation-range: 0 140px;
+    }
+    .header-tighten {
+      animation: header-tighten linear both;
+      animation-timeline: scroll(root block);
+      animation-range: 0 140px;
+    }
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
   .card-hover,
-  .link-underline {
+  .link-underline,
+  .tilt {
     transition: none;
   }
-  .card-hover:hover {
+  .card-hover:hover,
+  .tilt:hover {
     transform: none;
+  }
+  .sheen::after {
+    display: none;
   }
   .intro,
   .intro-media,
   .intro-rule,
+  .intro-word,
   .drift,
+  .float-soft,
+  .glow-breathe,
+  .scroll-cue,
+  .marquee-track,
+  .parallax,
+  .header-settle,
+  .header-tighten,
   .reveal,
+  .reveal-soft,
   .reveal-media,
   .reveal-item {
+    animation: none !important;
+  }
+  /* Clipped gradient text is only legible while it animates. */
+  .text-shimmer {
+    color: var(--gold);
+    background: none;
+    -webkit-background-clip: border-box;
+    background-clip: border-box;
     animation: none !important;
   }
 }
