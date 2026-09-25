@@ -1,4 +1,5 @@
-import { desc } from "drizzle-orm";
+import { and, desc, eq, ilike, ne, or, type SQL } from "drizzle-orm";
+import { AdminFilterBar } from "@/components/admin/admin-filter-bar";
 import { OrbitPageHeader } from "@/components/admin/orbit-page-header";
 import { UserBanForm, UserRoleForm } from "@/components/orbit/user-actions";
 import { Badge } from "@/components/ui/badge";
@@ -26,8 +27,44 @@ export const metadata = {
   title: "Users",
 };
 
-export default async function OrbitUsersPage() {
-  const users = await db.select().from(user).orderBy(desc(user.createdAt));
+interface SearchParams {
+  q?: string;
+  role?: string;
+  state?: string;
+}
+
+export default async function OrbitUsersPage({
+  searchParams,
+}: {
+  searchParams: Promise<SearchParams>;
+}) {
+  const { q, role, state } = await searchParams;
+
+  const conditions: SQL[] = [];
+  const term = q?.trim();
+  if (term) {
+    const match = or(
+      ilike(user.email, `%${term}%`),
+      ilike(user.name, `%${term}%`)
+    );
+    if (match) {
+      conditions.push(match);
+    }
+  }
+  if (role === ADMIN_ROLE) {
+    conditions.push(eq(user.role, ADMIN_ROLE));
+  } else if (role === "user") {
+    conditions.push(ne(user.role, ADMIN_ROLE));
+  }
+  if (state === "active" || state === "banned") {
+    conditions.push(eq(user.banned, state === "banned"));
+  }
+
+  const users = await db
+    .select()
+    .from(user)
+    .where(conditions.length > 0 ? and(...conditions) : undefined)
+    .orderBy(desc(user.createdAt));
 
   return (
     <div>
@@ -37,9 +74,33 @@ export default async function OrbitUsersPage() {
         title="User Management"
       />
 
+      <div className="mb-6">
+        <AdminFilterBar
+          searchPlaceholder="Search by email or name..."
+          selects={[
+            {
+              label: "Role",
+              param: "role",
+              options: [
+                { label: "Admin", value: ADMIN_ROLE },
+                { label: "Customer", value: "user" },
+              ],
+            },
+            {
+              label: "Status",
+              param: "state",
+              options: [
+                { label: "Active", value: "active" },
+                { label: "Banned", value: "banned" },
+              ],
+            },
+          ]}
+        />
+      </div>
+
       <Card>
         <CardHeader>
-          <CardTitle>Users</CardTitle>
+          <CardTitle>Users ({users.length})</CardTitle>
           <CardDescription>
             All registered accounts ordered by sign-up date.
           </CardDescription>
@@ -56,6 +117,16 @@ export default async function OrbitUsersPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
+              {users.length === 0 && (
+                <TableRow>
+                  <TableCell
+                    className="py-12 text-center text-muted-foreground text-xs"
+                    colSpan={5}
+                  >
+                    No users match the selected filters.
+                  </TableCell>
+                </TableRow>
+              )}
               {users.map((item) => (
                 <TableRow key={item.id}>
                   <TableCell>

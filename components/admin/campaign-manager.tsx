@@ -10,8 +10,9 @@ import {
   Receipt,
   WarningCircle,
 } from "@phosphor-icons/react";
-import { useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { saveCampaignAction } from "@/app/actions/campaigns";
+import { FilterControls } from "@/components/admin/admin-filter-bar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,6 +33,36 @@ interface Props {
 export function CampaignManager({ summaries }: Props) {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [copiedCode, setCopiedCode] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sourceFilter, setSourceFilter] = useState("");
+  const [mediumFilter, setMediumFilter] = useState("");
+
+  const hasFilters = Boolean(searchTerm.trim() || sourceFilter || mediumFilter);
+  const toOptions = (values: string[]) =>
+    [...new Set(values)].sort().map((value) => ({ label: value, value }));
+  const sourceOptions = toOptions(summaries.map((s) => s.campaign.source));
+  const mediumOptions = toOptions(summaries.map((s) => s.campaign.medium));
+
+  const filteredSummaries = useMemo(() => {
+    const term = searchTerm.trim().toLowerCase();
+    return summaries.filter(({ campaign: c }) => {
+      if (
+        term &&
+        ![c.name, c.code, c.campaign, c.content ?? ""].some((field) =>
+          field.toLowerCase().includes(term)
+        )
+      ) {
+        return false;
+      }
+      if (sourceFilter && c.source !== sourceFilter) {
+        return false;
+      }
+      if (mediumFilter && c.medium !== mediumFilter) {
+        return false;
+      }
+      return true;
+    });
+  }, [summaries, searchTerm, sourceFilter, mediumFilter]);
   const [isPending, startTransition] = useTransition();
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -118,7 +149,44 @@ export function CampaignManager({ summaries }: Props) {
         </Card>
       ) : (
         <div className="grid gap-6">
-          {summaries.map((summary) => {
+          <div className="border-border border-b pb-3">
+            <FilterControls
+              onClear={
+                hasFilters
+                  ? () => {
+                      setSearchTerm("");
+                      setSourceFilter("");
+                      setMediumFilter("");
+                    }
+                  : undefined
+              }
+              onSearchChange={setSearchTerm}
+              searchPlaceholder="Search campaign name, code or UTM..."
+              searchValue={searchTerm}
+              selects={[
+                {
+                  label: "Source",
+                  param: "source",
+                  value: sourceFilter,
+                  onChange: setSourceFilter,
+                  options: sourceOptions,
+                },
+                {
+                  label: "Medium",
+                  param: "medium",
+                  value: mediumFilter,
+                  onChange: setMediumFilter,
+                  options: mediumOptions,
+                },
+              ]}
+            />
+          </div>
+          {filteredSummaries.length === 0 && (
+            <p className="py-8 text-center text-muted-foreground text-xs">
+              No campaigns match the selected filters.
+            </p>
+          )}
+          {filteredSummaries.map((summary) => {
             const { campaign: c } = summary;
             const fullUtmUrl = buildCampaignUtmUrl({
               landingPath: c.landingPath,

@@ -1,11 +1,12 @@
 "use client";
 
 import { FolderSimple, PencilSimple, Plus, Trash } from "@phosphor-icons/react";
-import { useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import {
   deleteCategoryAction,
   upsertCategoryAction,
 } from "@/app/actions/catalog-categories";
+import { FilterControls } from "@/components/admin/admin-filter-bar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,6 +34,8 @@ export function CategoryManager({ categories }: { categories: Category[] }) {
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
 
   const parentOptions = categories.filter(
     (c) => !editingCategory || c.id !== editingCategory.id
@@ -74,16 +77,33 @@ export function CategoryManager({ categories }: { categories: Category[] }) {
     });
   };
 
-  // Group top-level and subcategories
-  const topLevel = categories.filter((c) => !c.parentId);
-  const childrenMap = new Map<string, Category[]>();
-  for (const c of categories) {
-    if (c.parentId) {
-      const list = childrenMap.get(c.parentId) || [];
-      list.push(c);
-      childrenMap.set(c.parentId, list);
+  const hasFilters = Boolean(searchTerm.trim() || statusFilter);
+
+  // Group top-level and subcategories. While filtering, a parent stays visible
+  // when any of its subcategories match so the hierarchy remains readable.
+  const { topLevel, childrenMap } = useMemo(() => {
+    const term = searchTerm.trim().toLowerCase();
+    const matches = (c: Category) =>
+      (!term ||
+        c.name.toLowerCase().includes(term) ||
+        c.slug.toLowerCase().includes(term)) &&
+      (!statusFilter || c.status === statusFilter);
+
+    const children = new Map<string, Category[]>();
+    for (const c of categories) {
+      if (c.parentId && matches(c)) {
+        const list = children.get(c.parentId) || [];
+        list.push(c);
+        children.set(c.parentId, list);
+      }
     }
-  }
+    return {
+      topLevel: categories.filter(
+        (c) => !c.parentId && (matches(c) || children.has(c.id))
+      ),
+      childrenMap: children,
+    };
+  }, [categories, searchTerm, statusFilter]);
 
   return (
     <div className="grid gap-6 lg:grid-cols-3">
@@ -109,11 +129,43 @@ export function CategoryManager({ categories }: { categories: Category[] }) {
               <Plus className="mr-1.5" size={14} /> Add Category
             </Button>
           </CardHeader>
+          <div className="border-border border-b px-4 pb-4">
+            <FilterControls
+              onClear={
+                hasFilters
+                  ? () => {
+                      setSearchTerm("");
+                      setStatusFilter("");
+                    }
+                  : undefined
+              }
+              onSearchChange={setSearchTerm}
+              searchPlaceholder="Search name or slug..."
+              searchValue={searchTerm}
+              selects={[
+                {
+                  label: "Status",
+                  param: "status",
+                  value: statusFilter,
+                  onChange: setStatusFilter,
+                  options: [
+                    { label: "Published", value: "published" },
+                    { label: "Draft", value: "draft" },
+                    { label: "Archived", value: "archived" },
+                  ],
+                },
+              ]}
+            />
+          </div>
           <CardContent className="p-0">
             {categories.length === 0 ? (
               <div className="p-8 text-center text-muted-foreground text-sm">
                 No categories created yet. Click &quot;Add Category&quot; to
                 create your first category.
+              </div>
+            ) : topLevel.length === 0 ? (
+              <div className="p-8 text-center text-muted-foreground text-sm">
+                No categories match the selected filters.
               </div>
             ) : (
               <div className="divide-y divide-border">

@@ -10,6 +10,7 @@ import {
 } from "@phosphor-icons/react";
 import { useState, useTransition } from "react";
 import { updateSettingsAction } from "@/app/actions/settings";
+import { AdminFilterBar } from "@/components/admin/admin-filter-bar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -33,12 +34,19 @@ interface AuditLogRow {
 }
 
 interface Props {
+  auditEntityTypes: string[];
   auditLogs: AuditLogRow[];
   initialConfig: StoreProfileConfig;
+  initialTab?: "profile" | "audit";
 }
 
-export function SettingsManager({ initialConfig, auditLogs }: Props) {
-  const [activeTab, setActiveTab] = useState<"profile" | "audit">("profile");
+export function SettingsManager({
+  initialConfig,
+  auditEntityTypes,
+  auditLogs,
+  initialTab = "profile",
+}: Props) {
+  const [activeTab, setActiveTab] = useState<"profile" | "audit">(initialTab);
   const [config, setConfig] = useState(initialConfig);
   const [isPending, startTransition] = useTransition();
   const [feedback, setFeedback] = useState<{
@@ -361,10 +369,25 @@ export function SettingsManager({ initialConfig, auditLogs }: Props) {
               operations.
             </CardDescription>
           </CardHeader>
+          <div className="px-4 pt-4">
+            <AdminFilterBar
+              searchPlaceholder="Search action, actor email or description..."
+              selects={[
+                {
+                  label: "Entity",
+                  param: "entity",
+                  options: auditEntityTypes.map((value) => ({
+                    label: value,
+                    value,
+                  })),
+                },
+              ]}
+            />
+          </div>
           <CardContent className="p-0">
             {auditLogs.length === 0 ? (
               <div className="p-12 text-center text-xs text-muted-foreground">
-                No audit log entries recorded yet.
+                No audit log entries match the selected filters.
               </div>
             ) : (
               <div className="divide-y divide-border">

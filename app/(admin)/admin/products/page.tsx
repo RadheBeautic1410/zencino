@@ -1,6 +1,7 @@
 import { ArrowSquareOut, Package, Plus } from "@phosphor-icons/react/dist/ssr";
 import Image from "next/image";
 import Link from "next/link";
+import { AdminFilterBar } from "@/components/admin/admin-filter-bar";
 import { OrbitPageHeader } from "@/components/admin/orbit-page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,16 +14,19 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { getAdminProducts } from "@/lib/catalog/queries";
+import { getAdminProducts, getAllCategories } from "@/lib/catalog/queries";
 import { formatDateTime } from "@/lib/utils";
 
 export const metadata = {
   title: "Products - Zencino Admin",
 };
 
+const PRODUCT_STATUSES = ["draft", "published", "archived"] as const;
+
 interface SearchParams {
   category?: string;
-  status?: "draft" | "published" | "archived";
+  q?: string;
+  status?: string;
 }
 
 export default async function AdminProductsPage({
@@ -31,13 +35,26 @@ export default async function AdminProductsPage({
   searchParams: Promise<SearchParams>;
 }) {
   const resolvedParams = await searchParams;
-  const statusFilter = resolvedParams.status;
+  const statusFilter = PRODUCT_STATUSES.find(
+    (s) => s === resolvedParams.status
+  );
   const categoryFilter = resolvedParams.category;
+  const searchFilter = resolvedParams.q?.trim();
+  const hasFilters = Boolean(statusFilter || categoryFilter || searchFilter);
 
-  const products = await getAdminProducts({
-    status: statusFilter,
-    categoryId: categoryFilter,
-  });
+  const [products, categories] = await Promise.all([
+    getAdminProducts({
+      status: statusFilter,
+      categoryId: categoryFilter,
+      search: searchFilter,
+    }),
+    getAllCategories(),
+  ]);
+
+  const categoryOptions = categories.map((c) => ({
+    label: c.name,
+    value: c.id,
+  }));
 
   return (
     <div>
@@ -54,48 +71,22 @@ export default async function AdminProductsPage({
         </Button>
       </div>
 
-      {/* Filter Tabs */}
-      <div className="mb-6 flex flex-wrap items-center gap-2 border-b border-border pb-3">
-        <Link
-          className={`px-3 py-1.5 text-xs font-semibold uppercase tracking-ui transition-colors ${
-            statusFilter
-              ? "text-muted-foreground hover:text-foreground"
-              : "bg-primary text-primary-foreground"
-          }`}
-          href="/admin/products"
-        >
-          All
-        </Link>
-        <Link
-          className={`px-3 py-1.5 text-xs font-semibold uppercase tracking-ui transition-colors ${
-            statusFilter === "published"
-              ? "bg-primary text-primary-foreground"
-              : "text-muted-foreground hover:text-foreground"
-          }`}
-          href="/admin/products?status=published"
-        >
-          Published
-        </Link>
-        <Link
-          className={`px-3 py-1.5 text-xs font-semibold uppercase tracking-ui transition-colors ${
-            statusFilter === "draft"
-              ? "bg-primary text-primary-foreground"
-              : "text-muted-foreground hover:text-foreground"
-          }`}
-          href="/admin/products?status=draft"
-        >
-          Drafts
-        </Link>
-        <Link
-          className={`px-3 py-1.5 text-xs font-semibold uppercase tracking-ui transition-colors ${
-            statusFilter === "archived"
-              ? "bg-primary text-primary-foreground"
-              : "text-muted-foreground hover:text-foreground"
-          }`}
-          href="/admin/products?status=archived"
-        >
-          Archived
-        </Link>
+      <div className="mb-6">
+        <AdminFilterBar
+          searchPlaceholder="Search product name, slug or SKU..."
+          selects={[
+            { label: "Category", param: "category", options: categoryOptions },
+          ]}
+          tabs={{
+            param: "status",
+            options: [
+              { label: "All", value: "all" },
+              { label: "Published", value: "published" },
+              { label: "Drafts", value: "draft" },
+              { label: "Archived", value: "archived" },
+            ],
+          }}
+        />
       </div>
 
       {/* Product Table */}
@@ -112,8 +103,8 @@ export default async function AdminProductsPage({
               />
               <p className="font-semibold text-sm">No products found</p>
               <p className="mt-1 text-muted-foreground text-xs">
-                {statusFilter
-                  ? `No products with status "${statusFilter}".`
+                {hasFilters
+                  ? "No products match the selected filters."
                   : "Start by creating your first product."}
               </p>
               <Button asChild className="mt-4" size="sm">

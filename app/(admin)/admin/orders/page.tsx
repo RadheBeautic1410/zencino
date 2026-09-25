@@ -1,5 +1,6 @@
 import { Receipt } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
+import { AdminFilterBar } from "@/components/admin/admin-filter-bar";
 import { OrbitPageHeader } from "@/components/admin/orbit-page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -23,6 +24,9 @@ export const metadata = {
 };
 
 interface SearchParams {
+  method?: string;
+  payment?: string;
+  q?: string;
   status?: string;
 }
 
@@ -38,17 +42,34 @@ export default async function AdminOrdersPage({
 
   const ordersList = await getAdminOrders({
     status: statusFilter,
+    paymentStatus: resolvedParams.payment,
+    paymentMethod: resolvedParams.method,
+    search: resolvedParams.q,
     limit: 50,
   });
 
   const filterTabs = [
     { label: "All Orders", value: "all" },
+    { label: "Pending Payment", value: "pending_payment" },
     { label: "Payment Review", value: "payment_review" },
     { label: "Confirmed", value: "confirmed" },
     { label: "Processing", value: "processing" },
     { label: "Shipped", value: "shipped" },
     { label: "Delivered", value: "delivered" },
     { label: "Cancelled", value: "cancelled" },
+  ];
+
+  const paymentOptions = [
+    { label: "Pending", value: "pending" },
+    { label: "Under Review", value: "under_review" },
+    { label: "Verified", value: "verified" },
+    { label: "Rejected", value: "rejected" },
+    { label: "Refunded", value: "refunded" },
+  ];
+
+  const methodOptions = [
+    { label: "UPI QR", value: "upi_qr" },
+    { label: "Razorpay", value: "razorpay" },
   ];
 
   return (
@@ -69,31 +90,14 @@ export default async function AdminOrdersPage({
         </Button>
       </div>
 
-      {/* Filter Tabs */}
-      <div className="flex flex-wrap items-center gap-1.5 border-b border-border pb-3">
-        {filterTabs.map((tab) => {
-          const isActive = statusFilter === tab.value;
-          return (
-            <Button
-              asChild
-              className="text-xs h-8"
-              key={tab.value}
-              size="sm"
-              variant={isActive ? "default" : "outline"}
-            >
-              <Link
-                href={
-                  tab.value === "all"
-                    ? "/admin/orders"
-                    : `/admin/orders?status=${tab.value}`
-                }
-              >
-                {tab.label}
-              </Link>
-            </Button>
-          );
-        })}
-      </div>
+      <AdminFilterBar
+        searchPlaceholder="Search order #, customer name, email or phone..."
+        selects={[
+          { label: "Payment", param: "payment", options: paymentOptions },
+          { label: "Method", param: "method", options: methodOptions },
+        ]}
+        tabs={{ param: "status", options: filterTabs }}
+      />
 
       <Card className="border-border">
         <CardHeader className="border-b border-border pb-4">
@@ -122,7 +126,7 @@ export default async function AdminOrdersPage({
                     className="py-12 text-center text-xs text-muted-foreground"
                     colSpan={7}
                   >
-                    No orders found matching the selected status filter.
+                    No orders found matching the selected filters.
                   </TableCell>
                 </TableRow>
               ) : (

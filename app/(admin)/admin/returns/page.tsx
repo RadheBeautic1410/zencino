@@ -1,5 +1,6 @@
 import { ArrowLeft, Package } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
+import { AdminFilterBar } from "@/components/admin/admin-filter-bar";
 import { OrbitPageHeader } from "@/components/admin/orbit-page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,7 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { requireAdmin } from "@/lib/authz";
-import { getAllAdminReturns } from "@/lib/commerce/returns";
+import { getAllAdminReturns, RETURN_REASONS } from "@/lib/commerce/returns";
 import { formatDateTime } from "@/lib/utils";
 
 export const metadata = {
@@ -23,6 +24,8 @@ export const metadata = {
 };
 
 interface SearchParams {
+  q?: string;
+  reason?: string;
   status?: string;
 }
 
@@ -36,7 +39,10 @@ export default async function AdminReturnsPage({
   const resolvedParams = await searchParams;
   const statusFilter = resolvedParams.status || "all";
 
-  const returnsList = await getAllAdminReturns(statusFilter);
+  const returnsList = await getAllAdminReturns(statusFilter, {
+    reason: resolvedParams.reason,
+    search: resolvedParams.q,
+  });
 
   const filterTabs = [
     { label: "All Returns", value: "all" },
@@ -45,7 +51,13 @@ export default async function AdminReturnsPage({
     { label: "Received & Inspected", value: "received" },
     { label: "Completed", value: "completed" },
     { label: "Rejected", value: "rejected" },
+    { label: "Cancelled", value: "cancelled" },
   ];
+
+  const reasonOptions = RETURN_REASONS.map((reason) => ({
+    label: reason.replace(/_/g, " "),
+    value: reason,
+  }));
 
   return (
     <div className="space-y-8">
@@ -63,31 +75,11 @@ export default async function AdminReturnsPage({
         </Button>
       </div>
 
-      {/* Filter Tabs */}
-      <div className="flex flex-wrap items-center gap-1.5 border-b border-border pb-3">
-        {filterTabs.map((tab) => {
-          const isActive = statusFilter === tab.value;
-          return (
-            <Button
-              asChild
-              className="text-xs h-8"
-              key={tab.value}
-              size="sm"
-              variant={isActive ? "default" : "outline"}
-            >
-              <Link
-                href={
-                  tab.value === "all"
-                    ? "/admin/returns"
-                    : `/admin/returns?status=${tab.value}`
-                }
-              >
-                {tab.label}
-              </Link>
-            </Button>
-          );
-        })}
-      </div>
+      <AdminFilterBar
+        searchPlaceholder="Search return #, order #, customer, product or SKU..."
+        selects={[{ label: "Reason", param: "reason", options: reasonOptions }]}
+        tabs={{ param: "status", options: filterTabs }}
+      />
 
       <Card className="border-border">
         <CardHeader className="border-b border-border pb-4">
@@ -117,7 +109,7 @@ export default async function AdminReturnsPage({
                     className="py-12 text-center text-xs text-muted-foreground"
                     colSpan={8}
                   >
-                    No return claims found for this filter.
+                    No return claims found matching the selected filters.
                   </TableCell>
                 </TableRow>
               ) : (

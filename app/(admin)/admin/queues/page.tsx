@@ -1,3 +1,4 @@
+import { AdminFilterBar } from "@/components/admin/admin-filter-bar";
 import { OrbitPageHeader } from "@/components/admin/orbit-page-header";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -21,8 +22,27 @@ export const metadata = {
   title: "Queues",
 };
 
-export default async function OrbitQueuesPage() {
-  const queues = await getQueueSummary();
+interface SearchParams {
+  q?: string;
+  state?: string;
+}
+
+export default async function OrbitQueuesPage({
+  searchParams,
+}: {
+  searchParams: Promise<SearchParams>;
+}) {
+  const { q, state } = await searchParams;
+  const allQueues = await getQueueSummary();
+  const term = q?.trim().toLowerCase();
+  const queues = allQueues.filter(
+    (queue) =>
+      (!term || queue.name.toLowerCase().includes(term)) &&
+      (!state || queue.state === state)
+  );
+  const stateOptions = [...new Set(allQueues.map((queue) => queue.state))]
+    .sort()
+    .map((value) => ({ label: value, value }));
 
   return (
     <div>
@@ -31,6 +51,13 @@ export default async function OrbitQueuesPage() {
         eyebrow="Admin"
         title="Queues"
       />
+
+      <div className="mb-6">
+        <AdminFilterBar
+          searchPlaceholder="Search queue name..."
+          selects={[{ label: "State", param: "state", options: stateOptions }]}
+        />
+      </div>
 
       <Card>
         <CardHeader>
@@ -49,7 +76,13 @@ export default async function OrbitQueuesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {queues.length === 0 ? (
+              {allQueues.length > 0 && queues.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={3}>
+                    No queues match the selected filters.
+                  </TableCell>
+                </TableRow>
+              ) : queues.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={3}>
                     No pg-boss rows yet. Run <code>pnpm worker</code> or enqueue

@@ -1,4 +1,4 @@
-﻿import { and, desc, eq, sql } from "drizzle-orm";
+﻿import { and, desc, eq, ilike, or, type SQL, sql } from "drizzle-orm";
 import {
   inventoryBalances,
   inventoryReservations,
@@ -809,7 +809,10 @@ export async function getOrderReturnAndRefundDetails(orderId: string) {
 /**
  * Retrieves all returns across the store for the admin operational exception queue.
  */
-export async function getAllAdminReturns(statusFilter?: string) {
+export async function getAllAdminReturns(
+  statusFilter?: string,
+  filters: { reason?: string; search?: string } = {}
+) {
   let query = db
     .select({
       id: orderReturns.id,
@@ -834,8 +837,30 @@ export async function getAllAdminReturns(statusFilter?: string) {
     .innerJoin(orderItems, eq(orderReturns.orderItemId, orderItems.id))
     .$dynamic();
 
+  const conditions: SQL[] = [];
   if (statusFilter && isReturnStatus(statusFilter)) {
-    query = query.where(eq(orderReturns.status, statusFilter));
+    conditions.push(eq(orderReturns.status, statusFilter));
+  }
+  if (filters.reason && isReturnReason(filters.reason)) {
+    conditions.push(eq(orderReturns.reason, filters.reason));
+  }
+  const term = filters.search?.trim();
+  if (term) {
+    const pattern = `%${term}%`;
+    const match = or(
+      ilike(orderReturns.returnNumber, pattern),
+      ilike(orders.orderNumber, pattern),
+      ilike(orders.customerName, pattern),
+      ilike(orders.customerEmail, pattern),
+      ilike(orderItems.productName, pattern),
+      ilike(orderItems.sku, pattern)
+    );
+    if (match) {
+      conditions.push(match);
+    }
+  }
+  if (conditions.length > 0) {
+    query = query.where(and(...conditions));
   }
 
   return query.orderBy(desc(orderReturns.createdAt)).limit(100);

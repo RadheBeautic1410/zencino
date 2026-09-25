@@ -1,4 +1,5 @@
-import { desc } from "drizzle-orm";
+import { and, desc, eq, ilike, or, type SQL, sql } from "drizzle-orm";
+import { AdminFilterBar } from "@/components/admin/admin-filter-bar";
 import { OrbitPageHeader } from "@/components/admin/orbit-page-header";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -16,7 +17,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { emailEvents, emailOutbox } from "@/db/schema";
+import { emailEvents, emailOutbox, emailOutboxStatus } from "@/db/schema";
 import { db } from "@/lib/db";
 import { formatDateTime } from "@/lib/utils";
 
@@ -24,18 +25,61 @@ export const metadata = {
   title: "Email",
 };
 
-export default async function OrbitEmailPage() {
-  const [outbox, events] = await Promise.all([
+interface SearchParams {
+  event?: string;
+  q?: string;
+  status?: string;
+}
+
+export default async function OrbitEmailPage({
+  searchParams,
+}: {
+  searchParams: Promise<SearchParams>;
+}) {
+  const { event, q, status } = await searchParams;
+  const term = q?.trim();
+  const pattern = term ? `%${term}%` : null;
+
+  const outboxConditions: SQL[] = [];
+  const statusValue = emailOutboxStatus.enumValues.find((v) => v === status);
+  if (statusValue) {
+    outboxConditions.push(eq(emailOutbox.status, statusValue));
+  }
+  if (pattern) {
+    const match = or(
+      ilike(sql`${emailOutbox.payload}->>'to'`, pattern),
+      ilike(sql`${emailOutbox.payload}->>'subject'`, pattern)
+    );
+    if (match) {
+      outboxConditions.push(match);
+    }
+  }
+
+  const eventConditions: SQL[] = [];
+  if (event) {
+    eventConditions.push(eq(emailEvents.eventType, event));
+  }
+  if (pattern) {
+    eventConditions.push(ilike(emailEvents.recipient, pattern));
+  }
+
+  const [outbox, events, eventTypes] = await Promise.all([
     db
       .select()
       .from(emailOutbox)
+      .where(outboxConditions.length > 0 ? and(...outboxConditions) : undefined)
       .orderBy(desc(emailOutbox.createdAt))
       .limit(50),
     db
       .select()
       .from(emailEvents)
+      .where(eventConditions.length > 0 ? and(...eventConditions) : undefined)
       .orderBy(desc(emailEvents.receivedAt))
       .limit(50),
+    db
+      .selectDistinct({ eventType: emailEvents.eventType })
+      .from(emailEvents)
+      .orderBy(emailEvents.eventType),
   ]);
 
   return (
@@ -45,6 +89,30 @@ export default async function OrbitEmailPage() {
         eyebrow="Admin"
         title="Email"
       />
+
+      <div className="mb-6">
+        <AdminFilterBar
+          searchPlaceholder="Search recipient or subject..."
+          selects={[
+            {
+              label: "Outbox status",
+              param: "status",
+              options: emailOutboxStatus.enumValues.map((v) => ({
+                label: v,
+                value: v,
+              })),
+            },
+            {
+              label: "Event type",
+              param: "event",
+              options: eventTypes.map((e) => ({
+                label: e.eventType,
+                value: e.eventType,
+              })),
+            },
+          ]}
+        />
+      </div>
 
       <div className="grid gap-4 xl:grid-cols-2">
         <Card>
@@ -65,6 +133,16 @@ export default async function OrbitEmailPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
+                {outbox.length === 0 && (
+                  <TableRow>
+                    <TableCell
+                      className="py-8 text-center text-muted-foreground text-xs"
+                      colSpan={4}
+                    >
+                      No emails match the selected filters.
+                    </TableCell>
+                  </TableRow>
+                )}
                 {outbox.map((email) => (
                   <TableRow key={email.id}>
                     <TableCell>{email.payload.to}</TableCell>
@@ -105,6 +183,16 @@ export default async function OrbitEmailPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
+                {events.length === 0 && (
+                  <TableRow>
+                    <TableCell
+                      className="py-8 text-center text-muted-foreground text-xs"
+                      colSpan={3}
+                    >
+                      No events match the selected filters.
+                    </TableCell>
+                  </TableRow>
+                )}
                 {events.map((event) => (
                   <TableRow key={event.id}>
                     <TableCell>{event.eventType}</TableCell>
