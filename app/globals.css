@@ -37,6 +37,7 @@ body {
   --color-page: var(--page);
   --color-primary-soft: var(--primary-soft);
   --color-primary-wash: var(--primary-wash);
+  --color-footer-top: var(--footer-top);
   --color-gold: var(--gold);
   --color-gold-foreground: var(--gold-foreground);
   --color-gold-subtle: var(--gold-subtle);
@@ -100,6 +101,9 @@ body {
   --primary-soft: oklch(0.44 0.062 168);
   /* Palest evergreen wash for chips and tinted panels */
   --primary-wash: oklch(0.965 0.013 168);
+  /* One step off the brand band — the shade the footer's inner wave breaks
+     against, so the curve reads without a second colour entering the palette */
+  --footer-top: oklch(0.375 0.058 168);
 
   /* ── Brand Accent: Champagne Gold ─────────────────────────── */
   --gold: oklch(0.76 0.12 78);
@@ -172,6 +176,8 @@ body {
   --primary-foreground: oklch(0.205 0 0);
   --primary-soft: oklch(0.78 0 0);
   --primary-wash: oklch(0.269 0 0);
+  /* Dark inverts `--primary` to near-white, so the step runs the other way. */
+  --footer-top: oklch(0.83 0 0);
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.269 0 0);
@@ -359,6 +365,16 @@ body {
   }
 }
 
+/* One slow revolution of the hero object. */
+@keyframes acrylic-turn {
+  from {
+    transform: rotateX(14deg) rotateY(-18deg);
+  }
+  to {
+    transform: rotateX(14deg) rotateY(342deg);
+  }
+}
+
 @keyframes progress-x {
   from {
     transform: scaleX(0);
@@ -536,6 +552,325 @@ body {
       translateY(-6px);
   }
 
+  /* The still only takes over under reduced motion. */
+  .hero-still {
+    display: none;
+  }
+
+  /* ── Acrylic scene ───────────────────────────────────────────
+     The hero object is a desk organizer built from translucent
+     planes, which is what the product physically is. CSS 3D rather
+     than WebGL: no client bundle, no canvas, and it renders on the
+     server with every other section. Overlapping faces tint each
+     other, so depth comes out of the material itself, and every wall
+     carries a rim so the sheet reads as a thickness, not a line. */
+
+  .acrylic-stage {
+    --w: clamp(13rem, 24vw, 19.5rem);
+    --d: clamp(7.5rem, 13.5vw, 11rem);
+    --h: clamp(5.5rem, 9.5vw, 7.75rem);
+    --t: 0.4rem; /* sheet thickness */
+    --pen-h: calc(var(--h) * 1.45);
+    --glass: color-mix(in oklch, var(--primary) 6%, transparent);
+    --glass-strong: color-mix(in oklch, var(--primary) 15%, transparent);
+    --edge: color-mix(in oklch, var(--primary) 30%, transparent);
+    --rim: color-mix(in oklch, var(--primary) 26%, white);
+    position: relative;
+    display: grid;
+    place-items: center;
+    height: calc(var(--h) + var(--pen-h) + 3.5rem);
+    perspective: 1200px;
+  }
+
+  .acrylic-spin {
+    position: relative;
+    transform-style: preserve-3d;
+    animation: acrylic-turn 30s linear infinite;
+  }
+  .acrylic-stage:hover .acrylic-spin {
+    animation-play-state: paused;
+  }
+
+  .acrylic-box {
+    position: relative;
+    width: var(--w);
+    height: var(--h);
+    transform-style: preserve-3d;
+  }
+
+  /* `--tint` is how much of the wall faces the light. Varying it per
+     face is what makes a set of identical planes read as one solid. */
+  .acrylic-face {
+    --tint: 12;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in oklch, white 70%, transparent) 0 1px,
+        transparent 1px
+      ),
+      linear-gradient(
+        135deg,
+        color-mix(in oklch, var(--primary) calc(var(--tint) * 1%), transparent),
+        color-mix(
+            in oklch,
+            var(--primary) calc(var(--tint) * 0.4%),
+            transparent
+          )
+          58%,
+        color-mix(
+          in oklch,
+          var(--primary) calc(var(--tint) * 0.8%),
+          transparent
+        )
+      );
+    border: 1px solid var(--edge);
+  }
+
+  .acrylic-front,
+  .acrylic-back {
+    width: var(--w);
+    height: var(--h);
+  }
+  .acrylic-side,
+  .acrylic-divider {
+    width: var(--d);
+    height: var(--h);
+  }
+  .acrylic-floor {
+    --tint: 26;
+    width: var(--w);
+    height: var(--d);
+  }
+  .acrylic-back {
+    --tint: 16;
+  }
+  .acrylic-left {
+    --tint: 20;
+  }
+  .acrylic-right {
+    --tint: 7;
+  }
+  .acrylic-divider {
+    --tint: 14;
+  }
+  .acrylic-front {
+    --tint: 9;
+  }
+  /* One band of light crossing the front sheet. */
+  .acrylic-front::after {
+    position: absolute;
+    inset: 0;
+    content: "";
+    background: linear-gradient(
+      112deg,
+      transparent 18%,
+      color-mix(in oklch, white 55%, transparent) 31%,
+      transparent 45%
+    );
+  }
+
+  .acrylic-front {
+    transform: translate(-50%, -50%) translateZ(calc(var(--d) / 2));
+  }
+  .acrylic-back {
+    transform: translate(-50%, -50%) rotateY(180deg)
+      translateZ(calc(var(--d) / 2));
+  }
+  .acrylic-right {
+    transform: translate(-50%, -50%) rotateY(90deg)
+      translateZ(calc(var(--w) / 2));
+  }
+  .acrylic-left {
+    transform: translate(-50%, -50%) rotateY(-90deg)
+      translateZ(calc(var(--w) / 2));
+  }
+  .acrylic-floor {
+    transform: translate(-50%, -50%) rotateX(-90deg)
+      translateZ(calc(var(--h) / 2));
+  }
+  /* The compartment wall, a third of the way across. */
+  .acrylic-divider {
+    transform: translate(-50%, -50%) translateX(calc(var(--w) / -6))
+      rotateY(90deg);
+  }
+
+  /* Polished top edge. Without it the walls read as hairlines rather
+     than as cut sheet with a thickness. */
+  .acrylic-rim {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    background: var(--rim);
+    box-shadow: inset 0 0 0 1px color-mix(in oklch, white 55%, transparent);
+  }
+  .acrylic-rim-x {
+    width: var(--w);
+    height: var(--t);
+  }
+  .acrylic-rim-z {
+    width: var(--t);
+    height: var(--d);
+  }
+  .acrylic-rim-front {
+    transform: translate(-50%, -50%) translateY(calc(var(--h) / -2))
+      translateZ(calc(var(--d) / 2 - var(--t) / 2)) rotateX(90deg);
+  }
+  .acrylic-rim-back {
+    transform: translate(-50%, -50%) translateY(calc(var(--h) / -2))
+      translateZ(calc(var(--d) / -2 + var(--t) / 2)) rotateX(90deg);
+  }
+  .acrylic-rim-left {
+    transform: translate(-50%, -50%) translateY(calc(var(--h) / -2))
+      translateX(calc(var(--w) / -2 + var(--t) / 2)) rotateX(90deg);
+  }
+  .acrylic-rim-right {
+    transform: translate(-50%, -50%) translateY(calc(var(--h) / -2))
+      translateX(calc(var(--w) / 2 - var(--t) / 2)) rotateX(90deg);
+  }
+  .acrylic-rim-divider {
+    transform: translate(-50%, -50%) translateY(calc(var(--h) / -2))
+      translateX(calc(var(--w) / -6)) rotateX(90deg);
+  }
+
+  /* Each pen is two quads crossed at 90deg, so it stays solid as the
+     box turns instead of vanishing edge-on. */
+  .acrylic-pen {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0.7rem;
+    height: var(--pen-h);
+    transform: translate(-50%, -50%) translateX(var(--x))
+      translateY(calc(var(--h) / 2 - var(--pen-h) / 2)) translateZ(var(--z, 0));
+    transform-style: preserve-3d;
+  }
+  .acrylic-pen > i {
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(
+        180deg,
+        color-mix(in oklch, var(--pen) 55%, black) 0 14%,
+        transparent 14%
+      ),
+      linear-gradient(
+        90deg,
+        color-mix(in oklch, var(--pen) 70%, black),
+        color-mix(in oklch, var(--pen) 55%, white) 38%,
+        var(--pen) 72%,
+        color-mix(in oklch, var(--pen) 75%, black)
+      );
+    border-radius: 0.35rem 0.35rem 0.1rem 0.1rem;
+  }
+  .acrylic-pen > i:last-child {
+    transform: rotateY(90deg);
+  }
+
+  /* A block of cards in the wide compartment, so the tray reads in use. */
+  .acrylic-block {
+    --bw: calc(var(--w) * 0.34);
+    --bd: calc(var(--d) * 0.52);
+    --bh: calc(var(--h) * 0.42);
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: var(--bw);
+    height: var(--bh);
+    transform: translate(-50%, -50%) translateX(calc(var(--w) * 0.16))
+      translateY(calc(var(--h) / 2 - var(--bh) / 2));
+    transform-style: preserve-3d;
+  }
+  .acrylic-block > b {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: var(--bw);
+    height: var(--bh);
+    /* A pad of cards: paper, with the cut edges reading as fine lines. */
+    background:
+      repeating-linear-gradient(
+        180deg,
+        transparent 0 3px,
+        color-mix(in oklch, var(--gold) 22%, transparent) 3px 4px
+      ),
+      linear-gradient(
+        180deg,
+        oklch(0.99 0.004 90),
+        color-mix(in oklch, var(--gold) 14%, white)
+      );
+    box-shadow: inset 0 0 0 1px color-mix(in oklch, var(--gold) 35%, white);
+  }
+  .acrylic-block > b:nth-child(1) {
+    transform: translate(-50%, -50%) translateZ(calc(var(--bd) / 2));
+  }
+  .acrylic-block > b:nth-child(2) {
+    transform: translate(-50%, -50%) rotateY(180deg)
+      translateZ(calc(var(--bd) / 2));
+  }
+  .acrylic-block > b:nth-child(3) {
+    width: var(--bd);
+    transform: translate(-50%, -50%) rotateY(90deg)
+      translateZ(calc(var(--bw) / 2));
+  }
+  .acrylic-block > b:nth-child(4) {
+    width: var(--bd);
+    transform: translate(-50%, -50%) rotateY(-90deg)
+      translateZ(calc(var(--bw) / 2));
+  }
+  .acrylic-block > b:nth-child(5) {
+    height: var(--bd);
+    background: color-mix(in oklch, var(--gold) 22%, white);
+    transform: translate(-50%, -50%) rotateX(90deg)
+      translateZ(calc(var(--bh) / 2));
+  }
+
+  /* Anchored to the box rather than the stage, so the object sits on a
+     surface instead of hovering above an unrelated smudge. */
+  .acrylic-shadow {
+    position: absolute;
+    top: calc(50% + var(--h) * 0.62);
+    left: 50%;
+    width: calc(var(--w) * 1.2);
+    height: 1.75rem;
+    background: radial-gradient(
+      50% 50% at 50% 50%,
+      color-mix(in oklch, var(--primary) 26%, transparent),
+      transparent 72%
+    );
+    filter: blur(8px);
+    transform: translate(-50%, -50%);
+  }
+
+  /* ── Accordion ───────────────────────────────────────────────
+     Native <details>, so the homepage questions stay server-rendered
+     and open before hydration. */
+
+  .faq-item {
+    /* Scoped, so only this element opts into interpolating to `auto`. */
+    interpolate-size: allow-keywords;
+  }
+  /* Safari draws its own disclosure triangle; `list-none` misses it. */
+  .faq-item summary::-webkit-details-marker {
+    display: none;
+  }
+  /* Where ::details-content is unsupported the panel simply appears. */
+  .faq-item::details-content {
+    block-size: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition:
+      block-size 0.45s cubic-bezier(0.16, 1, 0.3, 1),
+      opacity 0.35s ease,
+      content-visibility 0.45s allow-discrete;
+  }
+  .faq-item[open]::details-content {
+    block-size: auto;
+    opacity: 1;
+  }
+
   /* ── Marquee ─────────────────────────────────────────────────── */
 
   .marquee {
@@ -668,6 +1003,10 @@ body {
   .tilt {
     transition: none;
   }
+  /* The panel still opens — it just opens instantly. */
+  .faq-item::details-content {
+    transition: none;
+  }
   .card-hover:hover,
   .tilt:hover {
     transform: none;
@@ -692,6 +1031,19 @@ body {
   .reveal-media,
   .reveal-item {
     animation: none !important;
+  }
+  /* The object still reads as an object — it just stops turning. */
+  .acrylic-spin {
+    transform: rotateX(14deg) rotateY(-26deg);
+    animation: none !important;
+  }
+  /* A video cannot be paused from CSS, so the hero shows its poster
+     frame instead and the section keeps its picture. */
+  .hero-video {
+    display: none;
+  }
+  .hero-still {
+    display: block;
   }
   /* Clipped gradient text is only legible while it animates. */
   .text-shimmer {

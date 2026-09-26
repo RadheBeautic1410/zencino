@@ -23,3 +23,16 @@ export const SELLER_INFO = {
   supportPhone: "+91 98765 43210",
   defaultHsn: "39269099", // Optical acrylic organizers & household storage
 };
+
+/**
+ * Storefront social profiles. Handles are placeholders until the accounts are
+ * claimed — the footer renders only the entries listed here, so drop any row
+ * that will not exist at launch.
+ */
+export const SOCIAL_LINKS = [
+  { href: "https://instagram.com/zencino", label: "Instagram" },
+  { href: "https://facebook.com/zencino", label: "Facebook" },
+  { href: "https://youtube.com/@zencino", label: "YouTube" },
+  { href: "https://x.com/zencino", label: "X" },
+  { href: "https://pinterest.com/zencino", label: "Pinterest" },
+] as const;

@@ -8,6 +8,16 @@ export interface HomepageContentData {
   eyebrowBadge: string;
   headline: string;
   headlineSub: string;
+  /**
+   * Still frame shown while the clip loads, and in place of it when the
+   * viewer prefers reduced motion.
+   */
+  heroVideoPoster?: string;
+  /**
+   * Optional hero clip. When empty the homepage renders the acrylic organizer
+   * in 3D instead, so the section is never waiting on an asset.
+   */
+  heroVideoUrl?: string;
   highlights: Array<{ title: string; subtitle: string; icon: string }>;
 }
 
@@ -44,16 +54,18 @@ export type EditableContentValue =
   EditableContentData[keyof EditableContentData];
 
 export const DEFAULT_HOMEPAGE_CONTENT: HomepageContentData = {
-  eyebrowBadge: "Modern Everyday Organization",
-  headline: "A little order.",
-  headlineSub: "A lot of possibility.",
+  eyebrowBadge: "Optical-grade acrylic organizers",
+  headline: "Everything in its place.",
+  headlineSub: "Everything in plain sight.",
   description:
-    "Discover Zencino for your home, kitchen, and workspace. From crystal-clear acrylic organizers to functional daily essentials.",
+    "Acrylic organizers for the desk, the drawer and the countertop — cut to the dimensions we publish and polished smooth at every edge. Order direct, or through our verified Amazon India listings.",
   ctaPrimaryText: "Shop All Products",
   ctaPrimaryLink: "/products",
   ctaSecondaryText: "Explore Acrylic Essentials",
   ctaSecondaryLink: "/collections/acrylic-essentials",
   announcementBanner: "Complimentary pan-India delivery on orders above ₹999",
+  heroVideoUrl: "/video/hero-1.mp4",
+  heroVideoPoster: "/video/hero-1-poster.jpg",
   highlights: [
     {
       title: "Diamond Polished",

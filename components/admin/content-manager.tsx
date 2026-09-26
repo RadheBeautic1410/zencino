@@ -333,6 +333,47 @@ export function ContentManager({ pages, initialContents }: Props) {
                     />
                   </div>
                 </div>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div>
+                    <label
+                      className="block text-xs font-semibold uppercase tracking-ui text-muted-foreground mb-1"
+                      htmlFor="content-manager-hero-video-url"
+                    >
+                      Hero Video URL
+                    </label>
+                    <Input
+                      id="content-manager-hero-video-url"
+                      onChange={(e) =>
+                        handleUpdateField("heroVideoUrl", e.target.value)
+                      }
+                      placeholder="/video/hero-1.mp4"
+                      value={currentData.heroVideoUrl || ""}
+                    />
+                  </div>
+                  <div>
+                    <label
+                      className="block text-xs font-semibold uppercase tracking-ui text-muted-foreground mb-1"
+                      htmlFor="content-manager-hero-video-poster"
+                    >
+                      Hero Video Poster
+                    </label>
+                    <Input
+                      id="content-manager-hero-video-poster"
+                      onChange={(e) =>
+                        handleUpdateField("heroVideoPoster", e.target.value)
+                      }
+                      placeholder="/video/hero-1-poster.jpg"
+                      value={currentData.heroVideoPoster || ""}
+                    />
+                  </div>
+                </div>
+                <p className="-mt-2 text-2xs text-muted-foreground">
+                  The clip plays muted and looped behind the headline. The
+                  poster shows while it loads, and replaces it entirely for
+                  visitors who ask for reduced motion. Clear the video field to
+                  fall back to the acrylic organizer rendered in 3D.
+                </p>
               </div>
             )}
 

@@ -1,27 +1,31 @@
-import type { Icon } from "@phosphor-icons/react";
 import {
   ArrowRight,
   ArrowSquareOut,
-  CaretDown,
   Diamond,
-  Leaf,
-  Package,
   ShieldCheck,
-  Sparkle,
   Truck,
 } from "@phosphor-icons/react/dist/ssr";
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
-import { type CSSProperties, Fragment } from "react";
+import { Hero } from "@/components/store/hero";
+import {
+  ChannelChoice,
+  ClosingInvitation,
+  CollectionRail,
+  CraftProcess,
+  HomeFaq,
+} from "@/components/store/home-sections";
+import { order, travel } from "@/components/store/motion";
 import { ProductCard } from "@/components/store/product-card";
 import { StoreShell } from "@/components/store/store-shell";
+import { WaveEdge } from "@/components/store/wave-edge";
 import {
   getStorefrontCategories,
   getStorefrontFeaturedCollections,
   getStorefrontProducts,
 } from "@/lib/catalog/storefront";
 import {
+  type FaqContentData,
   getPublishedContent,
   type HomepageContentData,
 } from "@/lib/commerce/content";
@@ -32,36 +36,6 @@ export const metadata: Metadata = {
   },
   description:
     "Diamond-polished optical acrylic organizers for the home, kitchen and workspace. Shop direct with Zencino or through verified Amazon India listings.",
-};
-
-/** Custom properties carry the stagger, so there is no class per delay. */
-const delay = (ms: number) => ({ "--delay": `${ms}ms` }) as CSSProperties;
-const order = (i: number) => ({ "--i": i }) as CSSProperties;
-/** Word index plus the line's own delay, for the headline reveal. */
-const wordStep = (i: number, base: number) =>
-  ({ "--i": i, "--delay": `${base}ms` }) as CSSProperties;
-/** Travel distance for a scroll-linked decorative layer. */
-const travel = (from: string, to: string) =>
-  ({ "--from": from, "--to": to }) as CSSProperties;
-
-/**
- * Splits a headline for the per-word reveal. Index is folded into the id so
- * repeated words still get stable keys.
- */
-const toWords = (line: string) =>
-  line
-    .split(/\s+/)
-    .filter(Boolean)
-    .map((text, index) => ({ id: `${index}-${text}`, index, text }));
-
-/** Icons the homepage content editor can reference by name in `highlights`. */
-const HIGHLIGHT_ICONS: Record<string, Icon> = {
-  ShieldCheck,
-  ArrowSquareOut,
-  Truck,
-  Sparkle,
-  Package,
-  Leaf,
 };
 
 /** Ticker copy — short, factual claims that survive a slow read. */
@@ -120,11 +94,13 @@ export default async function HomePage() {
     collections,
     { products: featuredProducts },
     { data: heroContent },
+    { data: faqContent },
   ] = await Promise.all([
     getStorefrontCategories(),
     getStorefrontFeaturedCollections(),
     getStorefrontProducts({ pageSize: 8 }),
     getPublishedContent<HomepageContentData>("home", "homepage"),
+    getPublishedContent<FaqContentData>("faq", "faq"),
   ]);
 
   // Sub-categories belong on their parent's page, not in the homepage grid.
@@ -133,7 +109,14 @@ export default async function HomePage() {
   const primaryCollection =
     collections.find((c) => c.slug === "acrylic-essentials") || collections[0];
 
-  const [spotlight, companion] = featuredProducts;
+  // The signature band already carries the primary line, so the rail shows the
+  // rest — and disappears entirely while there is only one collection.
+  const otherCollections = collections
+    .filter((c) => c.id !== primaryCollection?.id)
+    .slice(0, 3);
+
+  // A short set here; the FAQ page keeps the full list.
+  const faqItems = (faqContent.items || []).slice(0, 5);
 
   const secondaryCtaLink =
     heroContent.ctaSecondaryLink ||
@@ -146,273 +129,92 @@ export default async function HomePage() {
       ? `Explore ${primaryCollection.name}`
       : "Browse the catalog");
 
-  const headlineWords = toWords(heroContent.headline);
-  const headlineSubWords = toWords(heroContent.headlineSub);
-  // The second line continues the first, so its stagger picks up where that ended.
-  const subDelay = 90 + headlineWords.length * 85;
-
   return (
     <StoreShell>
-      {/* 1. Hero */}
-      <section className="grain relative overflow-hidden bg-page">
-        <div
-          aria-hidden
-          className="drift pointer-events-none absolute inset-x-0 -top-40 mx-auto size-[46rem] rounded-full bg-primary/[0.055] blur-3xl"
-        />
-        <div
-          aria-hidden
-          className="drift pointer-events-none absolute -right-24 top-1/3 size-[28rem] rounded-full bg-gold/10 blur-3xl"
-          style={{
-            animationDuration: "27s",
-            animationDirection: "alternate-reverse",
-          }}
-        />
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-gold/50 to-transparent"
-        />
+      {/* 1. Hero — the clip carries it, with the 3D object as the fallback */}
+      <Hero
+        content={heroContent}
+        secondaryCtaLink={secondaryCtaLink}
+        secondaryCtaText={secondaryCtaText}
+      />
 
-        <div className="relative mx-auto grid max-w-7xl items-center gap-14 px-6 py-20 md:grid-cols-12 md:gap-12 md:py-28 lg:py-32">
-          <div className="md:col-span-6">
-            <span className="intro inline-flex items-center gap-2 rounded-full border border-gold/45 bg-gold-subtle px-4 py-1.5 text-2xs font-bold uppercase tracking-eyebrow text-gold-foreground">
-              <Sparkle
-                className="glow-breathe text-gold"
-                size={12}
-                weight="fill"
+      {/* 2. Editorial band — the page's first full-bleed statement */}
+      <section className="reveal-soft relative text-primary">
+        <WaveEdge side="top" />
+
+        <div className="grain relative overflow-hidden bg-primary text-primary-foreground">
+          {/* Light entering from above, the way it enters the material */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0"
+            style={{
+              background:
+                "radial-gradient(56% 58% at 50% 0%, color-mix(in oklch, var(--gold) 18%, transparent), transparent 72%)",
+            }}
+          />
+          <div
+            aria-hidden
+            className="parallax pointer-events-none absolute -left-24 top-0 size-[26rem] rounded-full bg-gold/10 blur-3xl"
+            style={travel("3rem", "-3rem")}
+          />
+          <div
+            aria-hidden
+            className="parallax pointer-events-none absolute -right-20 bottom-0 size-[22rem] rounded-full bg-primary-foreground/[0.07] blur-3xl"
+            style={travel("-2.5rem", "2.5rem")}
+          />
+          {/* A hairline frame gives the statement a deliberate edge */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-4 rounded-[2rem] border border-primary-foreground/10 md:inset-8"
+          />
+
+          <div className="relative mx-auto max-w-4xl px-6 py-20 text-center md:py-28">
+            <div className="mx-auto flex max-w-sm items-center gap-4">
+              <span
+                aria-hidden
+                className="h-px flex-1 bg-linear-to-r from-transparent to-gold/60"
               />
-              {heroContent.eyebrowBadge}
-            </span>
+              <p className="text-2xs font-bold uppercase tracking-eyebrow text-gold">
+                The Zencino idea
+              </p>
+              <span
+                aria-hidden
+                className="h-px flex-1 bg-linear-to-l from-transparent to-gold/60"
+              />
+            </div>
 
-            <h1 className="display mt-7 text-[2.75rem] text-foreground sm:text-6xl lg:text-[4.25rem]">
-              {headlineWords.map((word) => (
-                <Fragment key={word.id}>
-                  <span className="intro-word" style={wordStep(word.index, 90)}>
-                    {word.text}
-                  </span>{" "}
-                </Fragment>
-              ))}
-              <span className="mt-1 block italic text-primary-soft">
-                {headlineSubWords.map((word) => (
-                  <Fragment key={word.id}>
-                    <span
-                      className="intro-word"
-                      style={wordStep(word.index, subDelay)}
-                    >
-                      {word.text}
-                    </span>{" "}
-                  </Fragment>
-                ))}
-              </span>
-            </h1>
+            <h2 className="display mt-8 text-[2.5rem] text-primary-foreground sm:text-5xl lg:text-[4rem]">
+              Clarity meets <span className="italic text-gold">calm</span>
+            </h2>
 
-            <div
-              aria-hidden
-              className="intro-rule rule-gold mt-8 w-28"
-              style={delay(420)}
-            />
-
-            <p
-              className="intro mt-7 max-w-lg text-base leading-relaxed text-muted-foreground md:text-lg"
-              style={delay(480)}
-            >
-              {heroContent.description}
+            <p className="mx-auto mt-7 max-w-3xl text-base leading-relaxed text-primary-foreground/75 md:text-lg">
+              Every Zencino piece is cut, polished and measured for one purpose
+              — to make a shelf, a drawer or a countertop easier to live with.
+              Optical-grade acrylic, honest dimensions, and a finish that still
+              looks considered on the hundredth morning.
             </p>
 
-            <div
-              className="intro mt-9 flex flex-wrap items-center gap-x-8 gap-y-4"
-              style={delay(570)}
-            >
+            <div className="mt-11 flex flex-wrap items-center justify-center gap-4">
               <Link
-                className="group sheen inline-flex items-center gap-2.5 rounded-full bg-primary px-8 py-4 text-xs font-bold uppercase tracking-ui text-primary-foreground shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-xl"
-                href={heroContent.ctaPrimaryLink || "/products"}
+                className="sheen inline-flex items-center justify-center rounded-full bg-primary-foreground px-8 py-4 text-xs font-bold uppercase tracking-ui text-primary transition-all duration-300 hover:-translate-y-0.5 hover:bg-gold hover:text-gold-foreground"
+                href="/products"
               >
-                {heroContent.ctaPrimaryText || "Shop All Products"}
-                <ArrowRight
-                  className="transition-transform duration-300 group-hover:translate-x-1.5"
-                  size={14}
-                  weight="bold"
-                />
+                Discover Our Collection
               </Link>
               <Link
-                className="link-underline text-xs font-bold uppercase tracking-ui text-foreground/80 transition-colors hover:text-primary"
-                href={secondaryCtaLink}
+                className="inline-flex items-center justify-center rounded-full border border-primary-foreground/45 px-8 py-4 text-xs font-bold uppercase tracking-ui text-primary-foreground transition-all duration-300 hover:-translate-y-0.5 hover:border-gold hover:text-gold"
+                href="/about"
               >
-                {secondaryCtaText}
+                The Zencino Story
               </Link>
             </div>
           </div>
-
-          {/* Layered product composition */}
-          <div className="md:col-span-6 lg:col-span-5 lg:col-start-8">
-            {spotlight ? (
-              <div
-                className="intro-media relative mx-auto max-w-md md:mx-0"
-                style={delay(220)}
-              >
-                <div className="float-soft group relative">
-                  <div
-                    aria-hidden
-                    className="absolute -inset-2 translate-x-4 translate-y-4 rounded-[2rem] border border-gold/40 transition-transform duration-700 group-hover:translate-x-6 group-hover:translate-y-6"
-                  />
-                  <Link
-                    className="group sheen tilt relative block aspect-4/5 overflow-hidden rounded-[1.75rem] border border-border/70 bg-primary-wash shadow-2xl"
-                    href={`/products/${spotlight.slug}`}
-                  >
-                    {spotlight.primaryImage ? (
-                      <Image
-                        alt={spotlight.primaryImageAlt}
-                        className="object-cover transition-transform duration-[900ms] ease-out group-hover:scale-[1.07]"
-                        fill
-                        priority
-                        sizes="(max-width: 768px) 90vw, 40vw"
-                        src={spotlight.primaryImage}
-                      />
-                    ) : (
-                      <span className="grid size-full place-items-center text-primary/20">
-                        <Package size={64} />
-                      </span>
-                    )}
-
-                    <span className="absolute left-5 top-5 z-2 rounded-full bg-background/90 px-3 py-1 text-3xs font-bold uppercase tracking-ui text-primary shadow-xs backdrop-blur-xs">
-                      Spotlight
-                    </span>
-
-                    <div className="absolute inset-x-0 bottom-0 z-2 bg-linear-to-t from-black/75 via-black/35 to-transparent p-6 pt-14">
-                      <p className="display text-lg text-white">
-                        {spotlight.name}
-                      </p>
-                      <div className="mt-2 flex items-baseline justify-between gap-3">
-                        {spotlight.minPriceMinor ? (
-                          <span className="display text-shimmer text-xl">
-                            ₹
-                            {(spotlight.minPriceMinor / 100).toLocaleString(
-                              "en-IN"
-                            )}
-                          </span>
-                        ) : (
-                          <span className="text-xs text-white/70">
-                            Pricing on request
-                          </span>
-                        )}
-                        <span className="inline-flex items-center gap-1.5 text-2xs font-bold uppercase tracking-ui text-white/85">
-                          View details
-                          <ArrowRight
-                            className="transition-transform duration-300 group-hover:translate-x-1"
-                            size={12}
-                            weight="bold"
-                          />
-                        </span>
-                      </div>
-                    </div>
-                  </Link>
-                </div>
-
-                {companion && (
-                  /* The entrance animation lives on the wrapper; a filling
-                     animation on the card itself would out-rank its hover lift. */
-                  <div
-                    className="intro-media absolute -bottom-8 -left-6 hidden sm:block"
-                    style={delay(760)}
-                  >
-                    <Link
-                      className="group card-hover sheen sheen-gold block w-40 overflow-hidden rounded-2xl border border-border/70 bg-card shadow-xl"
-                      href={`/products/${companion.slug}`}
-                    >
-                      <span className="relative block aspect-square bg-primary-wash">
-                        {companion.primaryImage ? (
-                          <Image
-                            alt={companion.primaryImageAlt}
-                            className="object-cover transition-transform duration-700 ease-out group-hover:scale-110"
-                            fill
-                            sizes="160px"
-                            src={companion.primaryImage}
-                          />
-                        ) : (
-                          <span className="grid size-full place-items-center text-primary/20">
-                            <Package size={28} />
-                          </span>
-                        )}
-                      </span>
-                      <span className="block px-3 py-2.5">
-                        <span className="block truncate text-2xs font-semibold text-foreground transition-colors group-hover:text-primary">
-                          {companion.name}
-                        </span>
-                        {companion.minPriceMinor && (
-                          <span className="block text-2xs text-muted-foreground">
-                            ₹
-                            {(companion.minPriceMinor / 100).toLocaleString(
-                              "en-IN"
-                            )}
-                          </span>
-                        )}
-                      </span>
-                    </Link>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div
-                className="intro-media rounded-[1.75rem] border border-border/70 bg-card p-12 text-center shadow-sm"
-                style={delay(220)}
-              >
-                <Package className="mx-auto text-primary/25" size={40} />
-                <p className="display mt-4 text-xl text-foreground">
-                  Welcome to Zencino
-                </p>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  Our catalog is being prepared. Check back shortly.
-                </p>
-              </div>
-            )}
-          </div>
         </div>
 
-        {/* Quiet invitation to keep reading */}
-        <div
-          aria-hidden
-          className="intro relative hidden justify-center pb-10 md:flex"
-          style={delay(1100)}
-        >
-          <span className="scroll-cue flex flex-col items-center gap-1.5 text-3xs font-bold uppercase tracking-eyebrow text-muted-foreground">
-            Scroll
-            <CaretDown size={12} weight="bold" />
-          </span>
-        </div>
-
-        {/* Trust strip — editor-controlled, unboxed so it reads as metadata */}
-        {heroContent.highlights?.length > 0 && (
-          <div className="relative border-y border-border/70 bg-background/70">
-            <ul className="mx-auto grid max-w-7xl gap-y-5 px-6 py-6 sm:grid-cols-3 sm:divide-x sm:divide-border/70">
-              {heroContent.highlights.map((item, idx) => {
-                const HighlightIcon = HIGHLIGHT_ICONS[item.icon] ?? Sparkle;
-                return (
-                  <li
-                    className="intro group flex items-center gap-3 sm:justify-center sm:px-4"
-                    key={item.title}
-                    style={delay(900 + idx * 90)}
-                  >
-                    <HighlightIcon
-                      className="shrink-0 text-primary-soft transition-all duration-300 group-hover:-translate-y-0.5 group-hover:text-gold"
-                      size={20}
-                      weight="light"
-                    />
-                    <span>
-                      <span className="block text-xs font-bold uppercase tracking-ui text-foreground">
-                        {item.title}
-                      </span>
-                      <span className="block text-2xs text-muted-foreground">
-                        {item.subtitle}
-                      </span>
-                    </span>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        )}
+        <WaveEdge side="bottom" />
       </section>
 
-      {/* 2. Claim ticker — one continuous line, paused on hover */}
+      {/* 3. Claim ticker — one continuous line, paused on hover */}
       <div className="marquee border-b border-border/70 bg-primary-wash/60 py-3.5">
         <div className="marquee-track">
           {["primary", "mirror"].map((half) => (
@@ -435,7 +237,7 @@ export default async function HomePage() {
         </div>
       </div>
 
-      {/* 3. Categories */}
+      {/* 4. Categories */}
       {topLevelCategories.length > 0 && (
         <section className="mx-auto max-w-7xl px-6 py-20 md:py-28">
           <div className="reveal-soft mb-14 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
@@ -498,7 +300,10 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* 4. Signature collection — the page's dark anchor band */}
+      {/* 5. How the pieces are made */}
+      <CraftProcess />
+
+      {/* 6. Signature collection — the page's dark anchor band */}
       {primaryCollection && (
         <section className="grain relative overflow-hidden bg-primary text-primary-foreground">
           <div
@@ -572,44 +377,52 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* 5. Featured products */}
-      {featuredProducts.length > 0 && (
-        <section className="mx-auto max-w-7xl px-6 py-20 md:py-28">
-          <div className="reveal-soft mb-14 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <p className="eyebrow">Curated finds</p>
-              <h2 className="display mt-3 text-3xl text-foreground md:text-[2.75rem]">
-                Trending at Zencino
-              </h2>
-            </div>
-            <Link
-              className="group link-underline inline-flex shrink-0 items-center gap-2 text-xs font-bold uppercase tracking-ui text-primary"
-              href="/products"
-            >
-              View full catalog
-              <ArrowRight
-                className="transition-transform duration-300 group-hover:translate-x-1"
-                size={12}
-                weight="bold"
-              />
-            </Link>
-          </div>
+      {/* 7. The remaining published lines */}
+      <CollectionRail collections={otherCollections} />
 
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {featuredProducts.map((prod, idx) => (
-              <div
-                className="reveal-item h-full"
-                key={prod.id}
-                style={order(idx % 4)}
-              >
-                <ProductCard product={prod} />
+      {/* 8. Featured products */}
+      {featuredProducts.length > 0 && (
+        <section className="border-y border-border/70 bg-secondary/40">
+          <div className="mx-auto max-w-7xl px-6 py-20 md:py-28">
+            <div className="reveal-soft mb-14 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="eyebrow">Curated finds</p>
+                <h2 className="display mt-3 text-3xl text-foreground md:text-[2.75rem]">
+                  Trending at Zencino
+                </h2>
               </div>
-            ))}
+              <Link
+                className="group link-underline inline-flex shrink-0 items-center gap-2 text-xs font-bold uppercase tracking-ui text-primary"
+                href="/products"
+              >
+                View full catalog
+                <ArrowRight
+                  className="transition-transform duration-300 group-hover:translate-x-1"
+                  size={12}
+                  weight="bold"
+                />
+              </Link>
+            </div>
+
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              {featuredProducts.map((prod, idx) => (
+                <div
+                  className="reveal-item h-full"
+                  key={prod.id}
+                  style={order(idx % 4)}
+                >
+                  <ProductCard product={prod} />
+                </div>
+              ))}
+            </div>
           </div>
         </section>
       )}
 
-      {/* 6. The Zencino promise */}
+      {/* 9. Direct or Amazon */}
+      <ChannelChoice />
+
+      {/* 10. The Zencino promise */}
       <section className="border-t border-border/70 bg-secondary/60">
         <div className="mx-auto max-w-7xl px-6 py-20 md:py-28">
           <div className="reveal-soft max-w-2xl">
@@ -640,6 +453,12 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+
+      {/* 11. Questions people ask before ordering */}
+      <HomeFaq items={faqItems} />
+
+      {/* 12. Closing invitation, handing off to the footer */}
+      <ClosingInvitation />
     </StoreShell>
   );
 }
