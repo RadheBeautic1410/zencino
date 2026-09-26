@@ -146,14 +146,15 @@ export default async function AdminProductsPage({
                         )}
                       </div>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="max-w-xs">
                       <Link
-                        className="font-semibold text-sm hover:underline"
+                        className="block truncate font-semibold text-sm hover:underline"
                         href={`/admin/products/${p.id}`}
+                        title={p.name}
                       >
                         {p.name}
                       </Link>
-                      <p className="font-mono text-2xs text-muted-foreground">
+                      <p className="truncate font-mono text-2xs text-muted-foreground">
                         /{p.slug}
                       </p>
                     </TableCell>
