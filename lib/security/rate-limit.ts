@@ -110,6 +110,8 @@ export const RATE_LIMIT_POLICIES = {
   RETURN_PHOTO: { maxRequests: 10, windowMs: 10 * 60 * 1000 },
   /** Checkout quote: 30 quotes per 5 minutes */
   CHECKOUT_QUOTE: { maxRequests: 30, windowMs: 5 * 60 * 1000 },
+  /** Newsletter signup: 3 signups per 10 minutes */
+  NEWSLETTER_SIGNUP: { maxRequests: 3, windowMs: 10 * 60 * 1000 },
 } as const;
 
 /** Helper to clear rate limit state (useful in testing) */

@@ -1,23 +1,32 @@
 "use client";
 
+import type { Icon } from "@phosphor-icons/react";
 import {
   ArrowRight,
   ArrowsClockwise,
   Bag,
   CaretDown,
   Diamond,
+  FacebookLogo,
+  Globe,
+  InstagramLogo,
   List,
   MagnifyingGlass,
+  PinterestLogo,
   ShieldCheck,
   Truck,
   User,
   X,
+  XLogo,
+  YoutubeLogo,
 } from "@phosphor-icons/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type ReactNode, useEffect, useRef, useState } from "react";
 import { CampaignTracker } from "@/components/store/campaign-tracker";
-import { SELLER_INFO } from "@/config/platform";
+import { NewsletterSignup } from "@/components/store/newsletter-signup";
+import { WaveEdge } from "@/components/store/wave-edge";
+import { SELLER_INFO, SOCIAL_LINKS } from "@/config/platform";
 
 /** Shop destinations, shared by the desktop menu and the mobile drawer. */
 const SHOP_LINKS = [
@@ -73,6 +82,48 @@ const TRUST_POINTS = [
     title: "Secure checkout",
   },
 ];
+
+/** The two navigational footer columns, between brand and newsletter. */
+const FOOTER_COLUMNS = [
+  {
+    title: "Explore Catalog",
+    links: [
+      { href: "/products", label: "All Products" },
+      { href: "/categories/storage-organization", label: "Storage" },
+      { href: "/categories/home-kitchen", label: "Home & Kitchen" },
+      { href: "/collections/acrylic-essentials", label: "Acrylic Essentials" },
+    ],
+  },
+  {
+    title: "Support & Care",
+    links: [
+      { href: "/about", label: "About Zencino" },
+      { href: "/contact", label: "Contact Us" },
+      { href: "/faq", label: "FAQ" },
+      { href: "/track-order", label: "Track Your Order" },
+      { href: "/account", label: "Customer Account" },
+    ],
+  },
+] as const;
+
+/** Policies run along the base bar rather than taking a column of their own. */
+const LEGAL_LINKS = [
+  { href: "/policies/shipping", label: "Shipping" },
+  { href: "/policies/returns", label: "Returns & Refunds" },
+  { href: "/policies/privacy", label: "Privacy" },
+  { href: "/policies/terms", label: "Terms of Service" },
+] as const;
+
+const PAYMENT_METHODS = ["UPI / QR", "RuPay", "Visa / MC", "NetBanking"];
+
+/** Keyed by the label in `SOCIAL_LINKS`, so config drives what renders. */
+const SOCIAL_ICONS: Record<string, Icon> = {
+  Facebook: FacebookLogo,
+  Instagram: InstagramLogo,
+  Pinterest: PinterestLogo,
+  X: XLogo,
+  YouTube: YoutubeLogo,
+};
 
 /** Starting points in the search panel — plain terms, not promises. */
 const SEARCH_SUGGESTIONS = [
@@ -500,231 +551,202 @@ export function StoreShell({ children }: { children: ReactNode }) {
         {children}
       </main>
 
-      {/* Storefront Footer */}
-      <footer className="border-t border-border/70 bg-card text-card-foreground">
-        {/* Trust strip — four claims as a set, each led by its number */}
-        <div className="border-b border-border/60 bg-linear-to-b from-secondary/50 to-card">
-          <div className="mx-auto max-w-7xl px-6 pt-16 pb-14">
-            <div className="mb-8 flex items-center gap-4">
-              <p className="eyebrow shrink-0">Why Zencino</p>
-              <span aria-hidden className="rule-gold h-px flex-1" />
-            </div>
+      {/* Storefront Footer — two brand tones, each entered on a wave */}
+      <footer className="relative text-footer-top">
+        <WaveEdge side="top" />
 
-            <div className="grid gap-px overflow-hidden rounded-2xl border border-border/70 bg-border/70 sm:grid-cols-2 lg:grid-cols-4">
-              {TRUST_POINTS.map((point) => (
-                <div
-                  className="group relative bg-card p-7 transition-colors duration-500 hover:bg-primary-wash/40"
-                  key={point.title}
-                >
-                  <span
-                    aria-hidden
-                    className="absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-gold/60 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100"
-                  />
-                  <span className="inline-flex size-10 items-center justify-center rounded-xl bg-primary-wash text-primary-soft transition-all duration-500 group-hover:-translate-y-0.5 group-hover:bg-gold-subtle group-hover:text-gold-foreground">
-                    <point.icon size={18} weight="light" />
-                  </span>
-                  <p className="display mt-5 text-[1.75rem] text-foreground">
-                    {point.metric}
-                  </p>
-                  <p className="mt-1.5 text-2xs font-bold uppercase tracking-ui text-primary-soft">
-                    {point.title}
-                  </p>
-                  <p className="mt-2.5 text-xs leading-relaxed text-muted-foreground">
-                    {point.body}
-                  </p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
+        <div className="grain relative overflow-hidden text-primary-foreground">
+          {/* Trust strip — four claims as a set, each led by its number */}
+          <div className="bg-footer-top">
+            <div className="relative mx-auto max-w-7xl px-6 pt-10 pb-12">
+              <div className="mb-8 flex items-center gap-4">
+                <p className="shrink-0 text-xs font-bold uppercase tracking-eyebrow text-gold">
+                  Why Zencino
+                </p>
+                <span aria-hidden className="rule-gold h-px flex-1" />
+              </div>
 
-        <div className="mx-auto max-w-7xl px-6 py-16">
-          <div className="grid gap-10 sm:grid-cols-2 lg:grid-cols-5">
-            {/* Column 1 & 2: Brand */}
-            <div className="space-y-4 lg:col-span-2">
-              <Link className="group inline-flex items-center gap-2.5" href="/">
-                <div className="size-8 rounded-xl bg-primary text-primary-foreground flex items-center justify-center font-black text-base shadow-sm">
-                  Z
-                </div>
-                <span className="text-2xl font-extrabold tracking-tight text-foreground font-heading">
-                  zencino<span className="text-gold">.</span>
-                </span>
-              </Link>
-              <p className="text-sm leading-relaxed text-muted-foreground max-w-sm">
-                A little order. A lot of possibility. Thoughtfully engineered
-                crystal-clear acrylic organizers and home essentials designed
-                for serene, clutter-free spaces.
-              </p>
-              <div className="space-y-1 pt-2 text-2xs text-muted-foreground/80">
-                <p>
-                  <span className="font-semibold text-foreground">
-                    {SELLER_INFO.legalName}
-                  </span>
-                </p>
-                <p>
-                  GSTIN: {SELLER_INFO.gstin} · CIN: {SELLER_INFO.cin}
-                </p>
-                <p>
-                  Registered Office: {SELLER_INFO.addressLine1},{" "}
-                  {SELLER_INFO.addressLine2}, {SELLER_INFO.city},{" "}
-                  {SELLER_INFO.state} {SELLER_INFO.pincode}
-                </p>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                {TRUST_POINTS.map((point) => (
+                  <div
+                    className="group rounded-2xl border border-primary-foreground/15 bg-primary-foreground/[0.06] p-6 backdrop-blur-xs transition-colors duration-500 hover:border-gold/40 hover:bg-primary-foreground/[0.1]"
+                    key={point.title}
+                  >
+                    <span className="inline-flex size-10 items-center justify-center rounded-xl bg-primary-foreground/10 text-gold transition-transform duration-500 group-hover:-translate-y-0.5">
+                      <point.icon size={18} weight="light" />
+                    </span>
+                    <p className="display mt-5 text-[1.75rem] text-primary-foreground">
+                      {point.metric}
+                    </p>
+                    <p className="mt-1.5 text-2xs font-bold uppercase tracking-ui text-gold">
+                      {point.title}
+                    </p>
+                    <p className="mt-2.5 text-xs leading-relaxed text-primary-foreground/65">
+                      {point.body}
+                    </p>
+                  </div>
+                ))}
               </div>
             </div>
-
-            {/* Column 3: Shop */}
-            <div>
-              <h4 className="text-xs font-bold uppercase tracking-ui text-foreground mb-4">
-                Explore Catalog
-              </h4>
-              <ul className="space-y-2.5 text-sm text-muted-foreground">
-                <li>
-                  <Link
-                    className="hover:text-primary transition-colors"
-                    href="/products"
-                  >
-                    All Products
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    className="hover:text-primary transition-colors"
-                    href="/categories/storage-organization"
-                  >
-                    Storage & Organization
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    className="hover:text-primary transition-colors"
-                    href="/categories/home-kitchen"
-                  >
-                    Home & Kitchen
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    className="hover:text-primary transition-colors"
-                    href="/collections/acrylic-essentials"
-                  >
-                    Acrylic Essentials
-                  </Link>
-                </li>
-              </ul>
-            </div>
-
-            {/* Column 4: Customer Care */}
-            <div>
-              <h4 className="text-xs font-bold uppercase tracking-ui text-foreground mb-4">
-                Support & Care
-              </h4>
-              <ul className="space-y-2.5 text-sm text-muted-foreground">
-                <li>
-                  <Link
-                    className="hover:text-primary transition-colors"
-                    href="/about"
-                  >
-                    About Zencino
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    className="hover:text-primary transition-colors"
-                    href="/contact"
-                  >
-                    Contact Us
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    className="hover:text-primary transition-colors"
-                    href="/faq"
-                  >
-                    Frequently Asked Questions
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    className="hover:text-primary transition-colors"
-                    href="/track-order"
-                  >
-                    Track Your Order
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    className="hover:text-primary transition-colors"
-                    href="/account"
-                  >
-                    Customer Account
-                  </Link>
-                </li>
-              </ul>
-            </div>
-
-            {/* Column 5: Legal */}
-            <div>
-              <h4 className="text-xs font-bold uppercase tracking-ui text-foreground mb-4">
-                Legal & Trust
-              </h4>
-              <ul className="space-y-2.5 text-sm text-muted-foreground">
-                <li>
-                  <Link
-                    className="hover:text-primary transition-colors"
-                    href="/policies/shipping"
-                  >
-                    Shipping Policy
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    className="hover:text-primary transition-colors"
-                    href="/policies/returns"
-                  >
-                    Returns & Refund Policy
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    className="hover:text-primary transition-colors"
-                    href="/policies/privacy"
-                  >
-                    Privacy Policy
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    className="hover:text-primary transition-colors"
-                    href="/policies/terms"
-                  >
-                    Terms of Service
-                  </Link>
-                </li>
-              </ul>
-            </div>
           </div>
 
-          <div className="mt-14 border-t border-border/80 pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-muted-foreground">
-            <p>
-              © {new Date().getFullYear()} Zencino. All rights reserved.
-              Pan-India Delivery.
-            </p>
-            <div className="flex flex-wrap items-center gap-3 text-2xs uppercase tracking-ui font-semibold text-muted-foreground">
-              <span className="px-2.5 py-1 rounded-md bg-muted/60 border border-border/60">
-                UPI / QR
-              </span>
-              <span className="px-2.5 py-1 rounded-md bg-muted/60 border border-border/60">
-                RuPay
-              </span>
-              <span className="px-2.5 py-1 rounded-md bg-muted/60 border border-border/60">
-                Visa / MC
-              </span>
-              <span className="px-2.5 py-1 rounded-md bg-muted/60 border border-border/60">
-                NetBanking
-              </span>
-              <span className="rounded-md border border-gold/30 bg-gold-subtle px-2.5 py-1 font-bold text-gold-foreground">
-                Amazon Verified
-              </span>
+          {/* The deeper band breaking into the lighter one, same curve as the
+              cap above — transparent above the wave, so the strip shows through. */}
+          <WaveEdge className="bg-footer-top text-primary" side="top" />
+
+          <div className="relative bg-primary pb-16">
+            <div
+              aria-hidden
+              className="pointer-events-none absolute -left-32 top-0 size-[30rem] rounded-full bg-gold/10 blur-3xl"
+            />
+            <div
+              aria-hidden
+              className="pointer-events-none absolute -right-24 bottom-0 size-[26rem] rounded-full bg-primary-foreground/[0.06] blur-3xl"
+            />
+
+            <div className="relative mx-auto max-w-7xl px-6">
+              <div className="grid gap-x-8 gap-y-12 pt-6 sm:grid-cols-2 lg:grid-cols-12">
+                {/* Brand, region and the registered-entity detail */}
+                <div className="space-y-5 lg:col-span-4">
+                  <Link className="inline-flex items-center gap-2.5" href="/">
+                    <span className="flex size-9 items-center justify-center rounded-xl bg-primary-foreground text-base font-black text-primary">
+                      Z
+                    </span>
+                    <span className="font-heading text-2xl font-extrabold tracking-tight text-primary-foreground">
+                      zencino<span className="text-gold">.</span>
+                    </span>
+                  </Link>
+
+                  <p className="max-w-sm text-sm leading-relaxed text-primary-foreground/70">
+                    A little order. A lot of possibility. Thoughtfully
+                    engineered crystal-clear acrylic organizers and home
+                    essentials designed for serene, clutter-free spaces.
+                  </p>
+
+                  <div>
+                    <p className="text-2xs font-bold uppercase tracking-ui text-primary-foreground/50">
+                      Country / region
+                    </p>
+                    <span className="mt-2 inline-flex items-center gap-2 rounded-xl border border-primary-foreground/25 px-4 py-2.5 text-sm text-primary-foreground/85">
+                      <Globe size={16} weight="light" />
+                      India · INR ₹
+                    </span>
+                  </div>
+
+                  <div className="space-y-1 pt-1 text-2xs leading-relaxed text-primary-foreground/50">
+                    <p className="font-semibold text-primary-foreground/70">
+                      {SELLER_INFO.legalName}
+                    </p>
+                    <p>
+                      GSTIN: {SELLER_INFO.gstin} · CIN: {SELLER_INFO.cin}
+                    </p>
+                    <p>
+                      {SELLER_INFO.addressLine1}, {SELLER_INFO.addressLine2},{" "}
+                      {SELLER_INFO.city}, {SELLER_INFO.state}{" "}
+                      {SELLER_INFO.pincode}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Link columns */}
+                {FOOTER_COLUMNS.map((column) => (
+                  <div className="lg:col-span-2" key={column.title}>
+                    <h4 className="mb-4 text-xs font-bold uppercase tracking-ui text-gold">
+                      {column.title}
+                    </h4>
+                    <ul className="space-y-2.5 text-sm text-primary-foreground/70">
+                      {column.links.map((link) => (
+                        <li key={link.href}>
+                          <Link
+                            className="link-underline transition-colors hover:text-primary-foreground"
+                            href={link.href}
+                          >
+                            {link.label}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
+
+                {/* Newsletter */}
+                <div className="sm:col-span-2 lg:col-span-4">
+                  <h4 className="text-xs font-bold uppercase tracking-ui text-gold">
+                    Join the list
+                  </h4>
+                  <p className="mb-5 mt-3 text-sm leading-relaxed text-primary-foreground/70">
+                    One short note when a new piece joins the collection. No
+                    noise, and you can leave whenever you like.
+                  </p>
+                  <NewsletterSignup />
+                </div>
+              </div>
+
+              {/* Policies and the ways to pay */}
+              <div className="mt-14 flex flex-col gap-5 border-t border-primary-foreground/15 pt-8 md:flex-row md:items-center md:justify-between">
+                <ul className="flex flex-wrap items-center gap-x-6 gap-y-2 text-xs text-primary-foreground/65">
+                  {LEGAL_LINKS.map((link) => (
+                    <li key={link.href}>
+                      <Link
+                        className="link-underline transition-colors hover:text-gold"
+                        href={link.href}
+                      >
+                        {link.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+
+                <div className="flex flex-wrap items-center gap-2 text-2xs font-semibold uppercase tracking-ui">
+                  {PAYMENT_METHODS.map((method) => (
+                    <span
+                      className="rounded-md border border-primary-foreground/20 bg-primary-foreground/[0.07] px-2.5 py-1 text-primary-foreground/75"
+                      key={method}
+                    >
+                      {method}
+                    </span>
+                  ))}
+                  <span className="rounded-md border border-gold/40 bg-gold/15 px-2.5 py-1 font-bold text-gold">
+                    Amazon Verified
+                  </span>
+                </div>
+              </div>
+
+              <div className="mt-8 flex flex-col items-center gap-5 border-t border-primary-foreground/10 pt-8 md:flex-row md:justify-between">
+                <p className="text-xs text-primary-foreground/55">
+                  © {new Date().getFullYear()} Zencino. All rights reserved.
+                  Pan-India delivery.
+                </p>
+
+                <div className="flex items-center gap-4">
+                  <span className="text-2xs font-bold uppercase tracking-ui text-primary-foreground/60">
+                    Connect with us
+                  </span>
+                  <ul className="flex items-center gap-2">
+                    {SOCIAL_LINKS.map((social) => {
+                      const SocialIcon = SOCIAL_ICONS[social.label];
+                      // A label added to config without a matching icon is
+                      // skipped rather than crashing the whole footer.
+                      if (!SocialIcon) {
+                        return null;
+                      }
+                      return (
+                        <li key={social.href}>
+                          <a
+                            className="inline-flex size-9 items-center justify-center rounded-full border border-primary-foreground/20 text-primary-foreground/80 transition-all duration-300 hover:-translate-y-0.5 hover:border-gold/60 hover:text-gold"
+                            href={social.href}
+                            rel="noopener noreferrer"
+                            target="_blank"
+                          >
+                            <span className="sr-only">{social.label}</span>
+                            <SocialIcon size={16} weight="fill" />
+                          </a>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              </div>
             </div>
           </div>
         </div>
