@@ -421,3 +421,143 @@ export async function getStorefrontProductBySlug(slug: string) {
     redirectUrl: null,
   };
 }
+
+export interface StorefrontCategoryTile {
+  description: string;
+  id: string;
+  image: string | null;
+  imageAlt: string;
+  name: string;
+  productCount: number;
+  slug: string;
+}
+
+/** Deep enough for any realistic tree; the cap only exists to stop a cycle. */
+const MAX_CATEGORY_DEPTH = 8;
+
+/**
+ * Top-level categories carrying the two things a visual tile needs and the
+ * `categories` table does not store: how many published products sit under
+ * the branch, and a photograph to stand for it. The image is borrowed from
+ * the branch's newest published product, so a tile keeps itself current as
+ * the catalog grows instead of needing an upload of its own.
+ */
+export async function getStorefrontCategoryTiles(): Promise<
+  StorefrontCategoryTile[]
+> {
+  const allCategories = await db
+    .select({
+      id: categories.id,
+      name: categories.name,
+      slug: categories.slug,
+      description: categories.description,
+      parentId: categories.parentId,
+    })
+    .from(categories)
+    .where(eq(categories.status, "published"))
+    .orderBy(asc(categories.sortOrder), asc(categories.name));
+
+  const roots = allCategories.filter((cat) => cat.parentId === null);
+
+  if (roots.length === 0) {
+    return [];
+  }
+
+  const parentOf = new Map(allCategories.map((cat) => [cat.id, cat.parentId]));
+  const rootIds = new Set(roots.map((cat) => cat.id));
+
+  /** Walk up to the published top-level ancestor, if the whole branch is published. */
+  const rootOf = (categoryId: string): string | null => {
+    let current: string | null = categoryId;
+
+    for (let depth = 0; current !== null && depth <= MAX_CATEGORY_DEPTH; depth++) {
+      if (rootIds.has(current)) {
+        return current;
+      }
+      current = parentOf.get(current) ?? null;
+    }
+
+    return null;
+  };
+
+  // Newest first, so the first product that owns an image supplies the tile.
+  const links = await db
+    .select({
+      categoryId: productCategories.categoryId,
+      productId: productCategories.productId,
+    })
+    .from(productCategories)
+    .innerJoin(products, eq(productCategories.productId, products.id))
+    .where(eq(products.status, "published"))
+    .orderBy(desc(products.publishedAt), desc(products.createdAt));
+
+  // A product filed under both a child and its parent must only count once.
+  const productsByRoot = new Map<string, string[]>();
+  const counted = new Set<string>();
+
+  for (const link of links) {
+    const root = rootOf(link.categoryId);
+    const key = `${root}:${link.productId}`;
+
+    if (root !== null && !counted.has(key)) {
+      counted.add(key);
+      const bucket = productsByRoot.get(root) ?? [];
+      bucket.push(link.productId);
+      productsByRoot.set(root, bucket);
+    }
+  }
+
+  const productIds = [...new Set(links.map((link) => link.productId))];
+
+  const mediaRows =
+    productIds.length > 0
+      ? await db
+          .select({
+            productId: productMedia.productId,
+            storageKey: mediaAssets.storageKey,
+            altText: mediaAssets.altText,
+          })
+          .from(productMedia)
+          .innerJoin(mediaAssets, eq(productMedia.assetId, mediaAssets.id))
+          .where(inArray(productMedia.productId, productIds))
+          .orderBy(asc(productMedia.sortOrder))
+      : [];
+
+  const primaryMedia = new Map<
+    string,
+    { altText: string; storageKey: string }
+  >();
+
+  for (const row of mediaRows) {
+    if (!primaryMedia.has(row.productId)) {
+      primaryMedia.set(row.productId, row);
+    }
+  }
+
+  // A product filed under two branches would otherwise hand both the same
+  // photograph, so a tile takes an unclaimed one where the branch offers one.
+  const claimed = new Set<string>();
+
+  return roots.map((cat) => {
+    const branchProducts = productsByRoot.get(cat.id) ?? [];
+    const illustrated =
+      branchProducts.find(
+        (id) => primaryMedia.has(id) && !claimed.has(id)
+      ) ?? branchProducts.find((id) => primaryMedia.has(id));
+    const asset = illustrated ? primaryMedia.get(illustrated) : undefined;
+
+    if (illustrated) {
+      claimed.add(illustrated);
+    }
+
+    return {
+      id: cat.id,
+      name: cat.name,
+      slug: cat.slug,
+      description: cat.description,
+      productCount: branchProducts.length,
+      image: asset ? getMediaAssetUrl(asset.storageKey) : null,
+      imageAlt: asset?.altText || `${cat.name} by Zencino`,
+    };
+  });
+}
