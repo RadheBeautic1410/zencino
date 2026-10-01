@@ -1,8 +1,9 @@
 "use server";
 
-import { eq, inArray } from "drizzle-orm";
+import { and, eq, inArray } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import {
+  collectionProducts,
   productCategories,
   productMedia,
   products,
@@ -10,6 +11,13 @@ import {
   slugRedirects,
   variantChannels,
 } from "@/db/schema/catalog";
+import {
+  cartItems,
+  inventoryBalances,
+  inventoryMovements,
+  inventoryReservations,
+} from "@/db/schema/inventory";
+import { orderItems, orderReturns } from "@/db/schema/orders";
 import { audit } from "@/lib/audit";
 import { requireAdmin } from "@/lib/authz";
 import { revalidateStorefront } from "@/lib/catalog/revalidate";
@@ -19,6 +27,7 @@ import {
   variantInput,
 } from "@/lib/catalog/validation";
 import { db } from "@/lib/db";
+import { deleteUnusedMediaAssets } from "@/lib/media/storage";
 
 export interface ActionResult {
   error?: string;
@@ -464,14 +473,70 @@ export async function deleteVariantAction(
     .where(eq(productVariants.productId, productId));
 
   if (existing.length <= 1) {
-    return { error: "A product must have at least one variant." };
+    return {
+      error:
+        "A product must have at least one variant. Add a replacement variant first, or delete the whole product from the products list.",
+    };
+  }
+
+  const [ordered, returned, reserved] = await Promise.all([
+    db
+      .select({ id: orderItems.id })
+      .from(orderItems)
+      .where(eq(orderItems.variantId, variantId))
+      .limit(1),
+    db
+      .select({ id: orderReturns.id })
+      .from(orderReturns)
+      .where(eq(orderReturns.variantId, variantId))
+      .limit(1),
+    db
+      .select({ id: inventoryReservations.id })
+      .from(inventoryReservations)
+      .where(
+        and(
+          eq(inventoryReservations.variantId, variantId),
+          eq(inventoryReservations.status, "active")
+        )
+      )
+      .limit(1),
+  ]);
+  if (ordered.length > 0 || returned.length > 0) {
+    return {
+      error:
+        "This variant has order history and cannot be deleted. Mark it inactive instead.",
+    };
+  }
+  if (reserved.length > 0) {
+    return {
+      error:
+        "A customer checkout is currently holding stock for this variant. Try again once it expires.",
+    };
   }
 
   try {
-    await db
-      .delete(variantChannels)
-      .where(eq(variantChannels.variantId, variantId));
-    await db.delete(productVariants).where(eq(productVariants.id, variantId));
+    const deletedMedia = await db.transaction(async (tx) => {
+      await tx.delete(cartItems).where(eq(cartItems.variantId, variantId));
+      await tx
+        .delete(inventoryReservations)
+        .where(eq(inventoryReservations.variantId, variantId));
+      await tx
+        .delete(inventoryMovements)
+        .where(eq(inventoryMovements.variantId, variantId));
+      await tx
+        .delete(inventoryBalances)
+        .where(eq(inventoryBalances.variantId, variantId));
+      const media = await tx
+        .delete(productMedia)
+        .where(eq(productMedia.variantId, variantId))
+        .returning({ assetId: productMedia.assetId });
+      await tx
+        .delete(variantChannels)
+        .where(eq(variantChannels.variantId, variantId));
+      await tx.delete(productVariants).where(eq(productVariants.id, variantId));
+      return media;
+    });
+    await deleteUnusedMediaAssets(deletedMedia.map((m) => m.assetId));
 
     await audit({
       action: "catalog.variant_deleted",
@@ -592,6 +657,125 @@ export async function updateProductStatusAction(
   }
 }
 
+export async function deleteProductAction(
+  productId: string
+): Promise<ActionResult> {
+  const admin = await requireAdmin();
+
+  const [product] = await db
+    .select()
+    .from(products)
+    .where(eq(products.id, productId))
+    .limit(1);
+  if (!product) {
+    return { error: "Product not found" };
+  }
+  if (product.status !== "draft") {
+    return { error: "Only draft products can be deleted. Archive it instead." };
+  }
+
+  const variantIds = (
+    await db
+      .select({ id: productVariants.id })
+      .from(productVariants)
+      .where(eq(productVariants.productId, productId))
+  ).map((v) => v.id);
+
+  if (variantIds.length > 0) {
+    // Only real sales history or an in-flight checkout blocks deletion. Stock
+    // adjustments made on a never-sold draft are removed with it.
+    const [ordered, returned, reserved] = await Promise.all([
+      db
+        .select({ id: orderItems.id })
+        .from(orderItems)
+        .where(inArray(orderItems.variantId, variantIds))
+        .limit(1),
+      db
+        .select({ id: orderReturns.id })
+        .from(orderReturns)
+        .where(inArray(orderReturns.variantId, variantIds))
+        .limit(1),
+      db
+        .select({ id: inventoryReservations.id })
+        .from(inventoryReservations)
+        .where(
+          and(
+            inArray(inventoryReservations.variantId, variantIds),
+            eq(inventoryReservations.status, "active")
+          )
+        )
+        .limit(1),
+    ]);
+    if (ordered.length > 0 || returned.length > 0) {
+      return {
+        error:
+          "This product has order history and cannot be deleted. Archive it instead.",
+      };
+    }
+    if (reserved.length > 0) {
+      return {
+        error:
+          "A customer checkout is currently holding stock for this product. Try again once it expires.",
+      };
+    }
+  }
+
+  try {
+    const deletedMedia = await db.transaction(async (tx) => {
+      await tx
+        .delete(collectionProducts)
+        .where(eq(collectionProducts.productId, productId));
+      const media = await tx
+        .delete(productMedia)
+        .where(eq(productMedia.productId, productId))
+        .returning({ assetId: productMedia.assetId });
+      if (variantIds.length > 0) {
+        await tx
+          .delete(cartItems)
+          .where(inArray(cartItems.variantId, variantIds));
+        await tx
+          .delete(inventoryReservations)
+          .where(inArray(inventoryReservations.variantId, variantIds));
+        await tx
+          .delete(inventoryMovements)
+          .where(inArray(inventoryMovements.variantId, variantIds));
+        await tx
+          .delete(inventoryBalances)
+          .where(inArray(inventoryBalances.variantId, variantIds));
+        await tx
+          .delete(variantChannels)
+          .where(inArray(variantChannels.variantId, variantIds));
+        await tx
+          .delete(productVariants)
+          .where(eq(productVariants.productId, productId));
+      }
+      await tx
+        .delete(productCategories)
+        .where(eq(productCategories.productId, productId));
+      await tx.delete(products).where(eq(products.id, productId));
+      return media;
+    });
+    await deleteUnusedMediaAssets(deletedMedia.map((m) => m.assetId));
+
+    await audit({
+      action: "catalog.product_deleted",
+      actorEmail: admin.user.email,
+      actorId: admin.user.id,
+      description: `Deleted draft product "${product.name}"`,
+      entityId: productId,
+      entityType: "product",
+    });
+
+    revalidatePath("/admin/products");
+    revalidateStorefront();
+    return { success: true };
+  } catch (error: unknown) {
+    const msg =
+      error instanceof Error ? error.message : "Failed to delete product";
+    return { error: msg };
+  }
+}
+
 export async function attachProductMediaAction(
   productId: string,
   assetId: string,
@@ -640,7 +824,11 @@ export async function detachProductMediaAction(
   const admin = await requireAdmin();
 
   try {
-    await db.delete(productMedia).where(eq(productMedia.id, productMediaId));
+    const deletedMedia = await db
+      .delete(productMedia)
+      .where(eq(productMedia.id, productMediaId))
+      .returning({ assetId: productMedia.assetId });
+    await deleteUnusedMediaAssets(deletedMedia.map((m) => m.assetId));
 
     await audit({
       action: "catalog.media_detached",

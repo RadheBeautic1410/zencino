@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { Toaster } from "sonner";
 import { AdminSidebar } from "@/components/admin/admin-sidebar";
 import { requireAdmin } from "@/lib/authz";
 
@@ -18,6 +19,7 @@ export default async function AdminLayout({
       <main className="min-w-0 flex-1 overflow-y-auto p-4 md:p-8">
         {children}
       </main>
+      <Toaster closeButton position="top-right" richColors />
     </div>
   );
 }
