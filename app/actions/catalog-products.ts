@@ -12,6 +12,7 @@ import {
 } from "@/db/schema/catalog";
 import { audit } from "@/lib/audit";
 import { requireAdmin } from "@/lib/authz";
+import { revalidateStorefront } from "@/lib/catalog/revalidate";
 import {
   isAmazonProductUrl,
   optionSignature,
@@ -134,6 +135,7 @@ export async function upsertProductAction(
 
       revalidatePath("/admin/products");
       revalidatePath(`/admin/products/${id}`);
+      revalidateStorefront();
       return { success: true, id };
     }
     // Create new product
@@ -204,6 +206,7 @@ export async function upsertProductAction(
     });
 
     revalidatePath("/admin/products");
+    revalidateStorefront();
     return { success: true, id: newProduct.id };
   } catch (error: unknown) {
     const msg =
@@ -439,6 +442,7 @@ export async function upsertVariantAction(
     }
 
     revalidatePath(`/admin/products/${productId}`);
+    revalidateStorefront();
     return { success: true };
   } catch (error: unknown) {
     const msg =
@@ -479,6 +483,7 @@ export async function deleteVariantAction(
     });
 
     revalidatePath(`/admin/products/${productId}`);
+    revalidateStorefront();
     return { success: true };
   } catch (error: unknown) {
     const msg =
@@ -576,6 +581,7 @@ export async function updateProductStatusAction(
 
     revalidatePath("/admin/products");
     revalidatePath(`/admin/products/${productId}`);
+    revalidateStorefront();
     return { success: true };
   } catch (error: unknown) {
     const msg =
@@ -618,6 +624,7 @@ export async function attachProductMediaAction(
     });
 
     revalidatePath(`/admin/products/${productId}`);
+    revalidateStorefront();
     return { success: true };
   } catch (error: unknown) {
     const msg =
@@ -645,6 +652,7 @@ export async function detachProductMediaAction(
     });
 
     revalidatePath(`/admin/products/${productId}`);
+    revalidateStorefront();
     return { success: true };
   } catch (error: unknown) {
     const msg =

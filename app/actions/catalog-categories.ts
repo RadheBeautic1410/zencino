@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { categories } from "@/db/schema/catalog";
 import { audit } from "@/lib/audit";
 import { requireAdmin } from "@/lib/authz";
+import { revalidateStorefront } from "@/lib/catalog/revalidate";
 import { categoryInput } from "@/lib/catalog/validation";
 import { db } from "@/lib/db";
 
@@ -154,6 +155,7 @@ export async function upsertCategoryAction(
     }
 
     revalidatePath("/admin/categories");
+    revalidateStorefront();
     return { success: true };
   } catch (error: unknown) {
     const msg =
@@ -194,6 +196,7 @@ export async function deleteCategoryAction(
     });
 
     revalidatePath("/admin/categories");
+    revalidateStorefront();
     return { success: true };
   } catch (error: unknown) {
     const msg =

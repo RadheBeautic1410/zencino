@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { collectionProducts, collections } from "@/db/schema/catalog";
 import { audit } from "@/lib/audit";
 import { requireAdmin } from "@/lib/authz";
+import { revalidateStorefront } from "@/lib/catalog/revalidate";
 import { db } from "@/lib/db";
 
 export interface CollectionFormState {
@@ -102,6 +103,7 @@ export async function upsertCollectionAction(
     }
 
     revalidatePath("/admin/collections");
+    revalidateStorefront();
     return { success: true };
   } catch (error: unknown) {
     const msg =
@@ -132,6 +134,7 @@ export async function addProductToCollectionAction(
       .onConflictDoNothing();
 
     revalidatePath("/admin/collections");
+    revalidateStorefront();
     return { success: true };
   } catch (error: unknown) {
     const msg =
@@ -159,6 +162,7 @@ export async function removeProductFromCollectionAction(
       );
 
     revalidatePath("/admin/collections");
+    revalidateStorefront();
     return { success: true };
   } catch (error: unknown) {
     const msg =
