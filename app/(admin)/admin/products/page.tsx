@@ -1,8 +1,9 @@
-import { ArrowSquareOut, Package, Plus } from "@phosphor-icons/react/dist/ssr";
+import { Package, Plus } from "@phosphor-icons/react/dist/ssr";
 import Image from "next/image";
 import Link from "next/link";
 import { AdminFilterBar } from "@/components/admin/admin-filter-bar";
 import { OrbitPageHeader } from "@/components/admin/orbit-page-header";
+import { ProductRowActions } from "@/components/admin/product-row-actions";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -154,7 +155,10 @@ export default async function AdminProductsPage({
                       >
                         {p.name}
                       </Link>
-                      <p className="truncate font-mono text-2xs text-muted-foreground">
+                      <p
+                        className="truncate font-mono text-2xs text-muted-foreground"
+                        title={`/${p.slug}`}
+                      >
                         /{p.slug}
                       </p>
                     </TableCell>
@@ -210,11 +214,11 @@ export default async function AdminProductsPage({
                       {formatDateTime(p.updatedAt)}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button asChild size="sm" variant="ghost">
-                        <Link href={`/admin/products/${p.id}`}>
-                          Edit <ArrowSquareOut className="ml-1" size={13} />
-                        </Link>
-                      </Button>
+                      <ProductRowActions
+                        productId={p.id}
+                        productName={p.name}
+                        status={p.status}
+                      />
                     </TableCell>
                   </TableRow>
                 ))}

@@ -1,9 +1,9 @@
 import { createHash, randomUUID } from "node:crypto";
 import { existsSync } from "node:fs";
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { eq } from "drizzle-orm";
-import { mediaAssets } from "@/db/schema/catalog";
+import { eq, inArray } from "drizzle-orm";
+import { mediaAssets, productMedia } from "@/db/schema/catalog";
 import { db } from "@/lib/db";
 import { env } from "@/lib/env";
 
@@ -175,4 +175,62 @@ export async function saveMediaAsset(options: SaveMediaOptions) {
     .returning();
 
   return asset;
+}
+
+/**
+ * Removes the given assets' DB rows and stored files, skipping any asset that
+ * is still attached to a product. Call after the product_media links are gone.
+ * Cleanup is best-effort: failures are logged, never thrown, so they cannot
+ * undo or misreport the catalog delete that triggered it.
+ */
+export async function deleteUnusedMediaAssets(assetIds: string[]) {
+  try {
+    await removeUnusedMediaAssets([...new Set(assetIds)]);
+  } catch (error) {
+    console.error("Failed to clean up media assets", assetIds, error);
+  }
+}
+
+async function removeUnusedMediaAssets(ids: string[]) {
+  if (ids.length === 0) {
+    return;
+  }
+
+  const stillUsed = new Set(
+    (
+      await db
+        .select({ assetId: productMedia.assetId })
+        .from(productMedia)
+        .where(inArray(productMedia.assetId, ids))
+    ).map((row) => row.assetId)
+  );
+  const unusedIds = ids.filter((id) => !stillUsed.has(id));
+  if (unusedIds.length === 0) {
+    return;
+  }
+
+  const removed = await db
+    .delete(mediaAssets)
+    .where(inArray(mediaAssets.id, unusedIds))
+    .returning({ storageKey: mediaAssets.storageKey });
+
+  await Promise.all(
+    removed.map(async ({ storageKey }) => {
+      try {
+        if (
+          storageKey.startsWith("http://") ||
+          storageKey.startsWith("https://")
+        ) {
+          const { deleteFirebaseImage } = await import("./firebase");
+          await deleteFirebaseImage(storageKey);
+        } else {
+          await rm(path.join(process.cwd(), "public", "uploads", storageKey), {
+            force: true,
+          });
+        }
+      } catch (error) {
+        console.error(`Failed to delete media file ${storageKey}`, error);
+      }
+    })
+  );
 }

@@ -8,11 +8,7 @@ import {
 import { getDownloadURL, getStorage } from "firebase-admin/storage";
 import { env } from "@/lib/env";
 
-export async function uploadFirebaseImage(
-  key: string,
-  buffer: Buffer,
-  mimeType: string
-) {
+function getMediaBucket() {
   const appName = "zencino-media";
   const app =
     getApps().find((candidate) => candidate.name === appName) ??
@@ -30,7 +26,15 @@ export async function uploadFirebaseImage(
       },
       appName
     );
-  const file = getStorage(app).bucket().file(`uploads/${key}`);
+  return getStorage(app).bucket();
+}
+
+export async function uploadFirebaseImage(
+  key: string,
+  buffer: Buffer,
+  mimeType: string
+) {
+  const file = getMediaBucket().file(`uploads/${key}`);
   await file.save(buffer, {
     resumable: false,
     metadata: {
@@ -39,4 +43,17 @@ export async function uploadFirebaseImage(
     },
   });
   return getDownloadURL(file);
+}
+
+/**
+ * Deletes an object given the download URL stored as the asset's storageKey,
+ * e.g. https://firebasestorage.googleapis.com/v0/b/<bucket>/o/uploads%2F<key>?alt=media&token=...
+ */
+export async function deleteFirebaseImage(downloadUrl: string) {
+  const match = new URL(downloadUrl).pathname.match(/\/o\/(.+)$/);
+  if (!match) {
+    throw new Error(`Unrecognised Firebase download URL: ${downloadUrl}`);
+  }
+  const objectPath = decodeURIComponent(match[1]);
+  await getMediaBucket().file(objectPath).delete({ ignoreNotFound: true });
 }
