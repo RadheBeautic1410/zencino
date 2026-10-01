@@ -16,6 +16,7 @@ import {
 } from "@/app/actions/addresses";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useConfirm } from "@/components/ui/confirm-dialog";
 import { Input } from "@/components/ui/input";
 
 export interface SavedAddress {
@@ -43,6 +44,7 @@ export function AddressManager({
     null
   );
   const [isPending, startTransition] = useTransition();
+  const [confirm, confirmDialog] = useConfirm();
   const [error, setError] = useState<string | null>(null);
 
   // Form fields
@@ -127,9 +129,14 @@ export function AddressManager({
     });
   };
 
-  const handleDelete = (addressId: string) => {
-    // biome-ignore lint/suspicious/noAlert: native confirmation kept until a shared dialog component exists.
-    if (!confirm("Are you sure you want to remove this delivery address?")) {
+  const handleDelete = async (addressId: string) => {
+    const confirmed = await confirm({
+      title: "Remove address?",
+      description: "Are you sure you want to remove this delivery address?",
+      confirmLabel: "Remove",
+      destructive: true,
+    });
+    if (!confirmed) {
       return;
     }
 
@@ -161,6 +168,7 @@ export function AddressManager({
 
   return (
     <div className="space-y-6">
+      {confirmDialog}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold tracking-tight">
