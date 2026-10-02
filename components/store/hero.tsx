@@ -8,11 +8,24 @@ import {
   Sparkle,
   Truck,
 } from "@phosphor-icons/react/dist/ssr";
+import Image from "next/image";
 import Link from "next/link";
 import { Fragment } from "react";
 import { AcrylicScene } from "@/components/store/acrylic-scene";
 import { delay, wordStep } from "@/components/store/motion";
 import type { HomepageContentData } from "@/lib/commerce/content";
+
+/**
+ * The band lays its claims out in as many columns as there are claims, so a
+ * row of three sits centred instead of hanging off an unused fourth column.
+ * Tailwind only sees whole class names, hence the lookup.
+ */
+const HIGHLIGHT_COLUMNS: Record<number, string> = {
+  1: "lg:grid-cols-1",
+  2: "lg:grid-cols-2",
+  3: "lg:grid-cols-3",
+  4: "lg:grid-cols-4",
+};
 
 /** Icons the homepage content editor can reference by name in `highlights`. */
 const HIGHLIGHT_ICONS: Record<string, Icon> = {
@@ -34,22 +47,52 @@ const toWords = (line: string) =>
     .filter(Boolean)
     .map((text, index) => ({ id: `${index}-${text}`, index, text }));
 
+/**
+ * Social proof beside the calls to action. No stock portraits ship with the
+ * site, so the row is drawn from the brand palette — a tinted disc per initial
+ * — rather than borrowing faces the shop does not own.
+ */
+const PROOF_INITIALS = ["A", "M", "R", "S"];
+
 interface HeroProps {
   content: HomepageContentData;
   secondaryCtaLink: string;
   secondaryCtaText: string;
 }
 
+/** Overlapping discs plus the customer count, closing the copy column. */
+function ProofRow() {
+  return (
+    <div className="intro mt-10 flex items-center gap-4" style={delay(660)}>
+      <ul className="-space-x-2.5 flex items-center">
+        {PROOF_INITIALS.map((initial, idx) => (
+          <li
+            className="grid size-9 place-items-center rounded-full border-2 border-page font-heading text-xs font-semibold text-primary-soft"
+            key={initial}
+            style={{
+              // Each disc a shade deeper, so the row reads as one group.
+              background: `color-mix(in oklch, var(--primary) ${
+                8 + idx * 5
+              }%, var(--page))`,
+            }}
+          >
+            {initial}
+          </li>
+        ))}
+      </ul>
+      <p className="text-xs text-muted-foreground">
+        <span className="font-bold text-foreground">20,000+</span> happy
+        customers
+      </p>
+    </div>
+  );
+}
+
 /**
- * Badge, headline, rule, description and the two calls to action. Shared by
- * both hero treatments so the copy never drifts between them.
+ * Eyebrow, headline, description and the two calls to action — the whole left
+ * column of the split.
  */
-function HeroCopy({
-  content,
-  onVideo,
-  secondaryCtaLink,
-  secondaryCtaText,
-}: HeroProps & { onVideo: boolean }) {
+function HeroCopy({ content, secondaryCtaLink, secondaryCtaText }: HeroProps) {
   const headlineWords = toWords(content.headline);
   const headlineSubWords = toWords(content.headlineSub);
   // The second line continues the first, so its stagger picks up where that ended.
@@ -57,16 +100,11 @@ function HeroCopy({
 
   return (
     <>
-      <span className="intro inline-flex items-center gap-2 rounded-full border border-gold/45 bg-gold-subtle px-4 py-1.5 text-2xs font-bold uppercase tracking-eyebrow text-gold-foreground">
-        <Sparkle className="glow-breathe text-gold" size={12} weight="fill" />
+      <p className="intro text-2xs font-bold uppercase tracking-eyebrow text-primary-soft">
         {content.eyebrowBadge}
-      </span>
+      </p>
 
-      <h1
-        className={`display mt-8 text-[2.5rem] text-foreground sm:text-5xl md:text-6xl ${
-          onVideo ? "lg:text-[3.75rem]" : "lg:text-[4.25rem]"
-        }`}
-      >
+      <h1 className="display mt-6 text-[2.75rem] text-foreground sm:text-5xl lg:text-[3.75rem]">
         {headlineWords.map((word) => (
           <Fragment key={word.id}>
             <span className="intro-word" style={wordStep(word.index, 90)}>
@@ -74,7 +112,7 @@ function HeroCopy({
             </span>{" "}
           </Fragment>
         ))}
-        <span className="mt-2 block italic text-primary-soft">
+        <span className="mt-1 block italic text-primary-soft">
           {headlineSubWords.map((word) => (
             <Fragment key={word.id}>
               <span
@@ -88,82 +126,154 @@ function HeroCopy({
         </span>
       </h1>
 
-      <div
-        aria-hidden
-        className={`intro mt-9 h-px w-28 bg-linear-to-r from-transparent via-gold to-transparent ${
-          onVideo ? "md:from-gold md:via-gold/40 md:to-transparent" : ""
-        }`}
-        style={delay(420)}
-      />
-
       <p
-        className={`intro mt-8 text-base leading-relaxed text-muted-foreground md:text-lg ${
-          onVideo ? "max-w-lg" : "max-w-2xl"
-        }`}
+        className="intro mt-7 max-w-md text-sm leading-relaxed text-muted-foreground md:text-base"
         style={delay(480)}
       >
         {content.description}
       </p>
 
       <div
-        className={`intro mt-10 flex flex-wrap items-center gap-x-8 gap-y-4 ${
-          onVideo ? "justify-center md:justify-start" : "justify-center"
-        }`}
+        className="intro mt-9 flex flex-wrap items-center gap-3"
         style={delay(570)}
       >
         <Link
-          className="group sheen inline-flex items-center gap-2.5 rounded-full bg-primary px-8 py-4 text-xs font-bold uppercase tracking-ui text-primary-foreground shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-xl"
+          className="group sheen inline-flex items-center gap-2.5 rounded-full bg-primary px-7 py-3.5 text-xs font-bold uppercase tracking-ui text-primary-foreground shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl"
           href={content.ctaPrimaryLink || "/products"}
         >
-          {content.ctaPrimaryText || "Shop All Products"}
+          {content.ctaPrimaryText || "Shop Collection"}
           <ArrowRight
             className="transition-transform duration-300 group-hover:translate-x-1.5"
-            size={14}
+            size={13}
             weight="bold"
           />
         </Link>
         <Link
-          className="link-underline text-xs font-bold uppercase tracking-ui text-foreground/80 transition-colors hover:text-primary"
+          className="group inline-flex items-center gap-2.5 rounded-full border border-border bg-background px-7 py-3.5 text-xs font-bold uppercase tracking-ui text-foreground transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/40 hover:text-primary"
           href={secondaryCtaLink}
         >
           {secondaryCtaText}
+          <ArrowRight
+            className="transition-transform duration-300 group-hover:translate-x-1.5"
+            size={13}
+            weight="bold"
+          />
         </Link>
       </div>
+
+      <ProofRow />
     </>
   );
 }
 
-/** Editor-controlled claims, closing the section as quiet metadata. */
+/** The caption card floating over the bottom-right corner of the picture. */
+function CaptionCard() {
+  return (
+    <div className="absolute right-6 bottom-6 hidden items-center gap-4 rounded-2xl bg-background/92 px-5 py-3.5 shadow-lg backdrop-blur-sm md:flex">
+      <span>
+        <span className="display block text-sm text-foreground">
+          Clear. Durable. Timeless.
+        </span>
+        <span className="mt-0.5 block text-2xs text-muted-foreground">
+          Optical-grade cast acrylic
+        </span>
+      </span>
+      <Link
+        aria-label="Shop the collection"
+        className="grid size-9 shrink-0 place-items-center rounded-full border border-border text-foreground transition-all duration-300 hover:border-primary hover:bg-primary hover:text-primary-foreground"
+        href="/products"
+      >
+        <ArrowRight size={14} weight="bold" />
+      </Link>
+    </div>
+  );
+}
+
+/** The backdrop — the clip when one is configured, else the still, else 3D. */
+function HeroMedia({ content }: { content: HomepageContentData }) {
+  const video = content.heroVideoUrl?.trim();
+  const poster = content.heroVideoPoster?.trim();
+
+  if (video) {
+    return (
+      <>
+        <video
+          autoPlay
+          className="hero-video size-full object-cover"
+          loop
+          muted
+          playsInline
+          poster={poster || undefined}
+          preload="metadata"
+        >
+          <source src={video} />
+          <track kind="captions" />
+        </video>
+
+        {/* Takes over from the clip under reduced motion, so the section
+            keeps its picture without moving. */}
+        {poster && (
+          <div
+            className="hero-still absolute inset-0 bg-cover bg-center"
+            style={{ backgroundImage: `url(${poster})` }}
+          />
+        )}
+      </>
+    );
+  }
+
+  if (poster) {
+    return (
+      <Image
+        alt=""
+        className="object-cover"
+        fill
+        priority
+        sizes="100vw"
+        src={poster}
+      />
+    );
+  }
+
+  return (
+    <div className="grid size-full place-items-center bg-primary-wash/60 lg:justify-items-end lg:pr-[12%]">
+      <AcrylicScene />
+    </div>
+  );
+}
+
+/** Editor-controlled claims — the band that closes the hero. */
 function TrustStrip({ content }: { content: HomepageContentData }) {
   if (!content.highlights?.length) {
     return null;
   }
 
+  const columns =
+    HIGHLIGHT_COLUMNS[content.highlights.length] ?? "lg:grid-cols-4";
+
   return (
-    <div className="relative border-y border-border/70 bg-background/70">
-      <span
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-gold/45 to-transparent"
-      />
-      <ul className="mx-auto grid max-w-7xl gap-y-6 px-6 py-7 sm:grid-cols-3 sm:divide-x sm:divide-border/60">
+    <div className="grain relative overflow-hidden bg-primary text-primary-foreground">
+      <ul
+        className={`mx-auto grid max-w-7xl gap-y-6 px-6 py-6 sm:grid-cols-2 ${columns}`}
+      >
         {content.highlights.map((item, idx) => {
           const HighlightIcon = HIGHLIGHT_ICONS[item.icon] ?? Sparkle;
           return (
             <li
-              className="intro group flex items-center gap-3.5 sm:justify-center sm:px-4"
+              className="intro group flex items-center gap-3.5 lg:justify-center"
               key={item.title}
-              style={delay(900 + idx * 90)}
+              style={delay(820 + idx * 80)}
             >
-              {/* The icon sits in a champagne ring, so the row reads as three
-                  deliberate marks rather than loose text. */}
-              <span className="inline-flex size-11 shrink-0 items-center justify-center rounded-full border border-gold/35 bg-gold-subtle/40 text-primary-soft transition-all duration-300 group-hover:-translate-y-0.5 group-hover:border-gold/70 group-hover:bg-gold-subtle group-hover:text-gold-foreground">
-                <HighlightIcon size={18} weight="light" />
-              </span>
+              <HighlightIcon
+                className="shrink-0 text-gold transition-transform duration-300 group-hover:-translate-y-0.5"
+                size={24}
+                weight="light"
+              />
               <span>
-                <span className="block text-xs font-bold uppercase tracking-ui text-foreground">
+                <span className="block text-xs font-bold text-primary-foreground">
                   {item.title}
                 </span>
-                <span className="block text-2xs text-muted-foreground">
+                <span className="block text-2xs text-primary-foreground/70">
                   {item.subtitle}
                 </span>
               </span>
@@ -176,113 +286,46 @@ function TrustStrip({ content }: { content: HomepageContentData }) {
 }
 
 /**
- * The homepage opening. With a clip configured the footage carries the whole
- * section; without one the acrylic organizer is rendered in 3D instead, so the
- * page never waits on an asset.
+ * The homepage opening: the product footage filling the screen, the copy over
+ * it on the left where a cream scrim keeps the words readable.
  */
 export function Hero({
   content,
   secondaryCtaLink,
   secondaryCtaText,
 }: HeroProps) {
-  const video = content.heroVideoUrl?.trim();
-  const poster = content.heroVideoPoster?.trim();
-
-  if (video) {
-    return (
-      <section className="relative overflow-hidden bg-background">
-        <div aria-hidden className="absolute inset-0">
-          <video
-            autoPlay
-            className="hero-video size-full object-cover"
-            loop
-            muted
-            playsInline
-            poster={poster || undefined}
-            preload="metadata"
-          >
-            <source src={video} />
-            <track kind="captions" />
-          </video>
-
-          {/* Shown in place of the clip when the viewer prefers reduced
-              motion, so the section keeps its picture without moving. */}
-          {poster && (
-            <div
-              className="hero-still absolute inset-0 bg-cover bg-center"
-              style={{ backgroundImage: `url(${poster})` }}
-            />
-          )}
-
-          {/* Scrims. The footage is bright, so the type is kept legible by
-              lifting the page colour back over it rather than darkening it —
-              and the white is pooled behind the copy rather than spread over
-              the whole frame, so the clip still reads as a clip. */}
-          <div
-            className="absolute inset-0 md:hidden"
-            style={{
-              background:
-                "radial-gradient(120% 44% at 50% 26%, var(--background) 0%, color-mix(in oklch, var(--background) 86%, transparent) 55%, transparent 88%), linear-gradient(180deg, color-mix(in oklch, var(--background) 72%, transparent) 0%, color-mix(in oklch, var(--background) 40%, transparent) 62%, color-mix(in oklch, var(--background) 18%, transparent) 100%)",
-            }}
-          />
-          <div
-            className="absolute inset-0 hidden md:block"
-            style={{
-              background:
-                "radial-gradient(56% 74% at 18% 50%, var(--background) 0%, color-mix(in oklch, var(--background) 84%, transparent) 44%, transparent 74%), linear-gradient(90deg, color-mix(in oklch, var(--background) 58%, transparent) 0%, color-mix(in oklch, var(--background) 26%, transparent) 46%, transparent 74%)",
-            }}
-          />
-          <div className="absolute inset-x-0 top-0 h-24 bg-linear-to-b from-background to-transparent" />
-          <div className="absolute inset-x-0 bottom-0 h-24 bg-linear-to-t from-background to-transparent" />
-          <span className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-gold/50 to-transparent" />
-        </div>
-
-        <div className="relative mx-auto flex min-h-[min(86vh,42rem)] max-w-7xl flex-col justify-center px-6 py-20 text-center md:items-start md:py-28 md:text-left">
-          <HeroCopy
-            content={content}
-            onVideo
-            secondaryCtaLink={secondaryCtaLink}
-            secondaryCtaText={secondaryCtaText}
-          />
-        </div>
-
-        <TrustStrip content={content} />
-      </section>
-    );
-  }
-
   return (
-    <section className="grain relative overflow-hidden bg-background">
-      {/* One champagne bloom instead of a colour wash — the section opens on
-          white, which is the point of the product. A gradient rather than a
-          blurred circle, so it has no visible edge. */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background:
-            "radial-gradient(62% 52% at 50% -8%, color-mix(in oklch, var(--gold) 20%, transparent), transparent 68%)",
-        }}
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 h-px bg-linear-to-r from-transparent via-gold/50 to-transparent"
-      />
-
-      <div className="relative mx-auto flex max-w-5xl flex-col items-center px-6 pt-16 pb-10 text-center md:pt-24 md:pb-12 lg:pt-28">
-        <HeroCopy
-          content={content}
-          onVideo={false}
-          secondaryCtaLink={secondaryCtaLink}
-          secondaryCtaText={secondaryCtaText}
-        />
+    <section className="screen-below-chrome relative flex flex-col overflow-hidden bg-page">
+      {/* The footage is the ground the whole section stands on, not a panel
+          beside the words. */}
+      <div className="intro-backdrop absolute inset-0">
+        <HeroMedia content={content} />
       </div>
 
+      {/* The copy has to hold up against whatever frame is playing. Stacked,
+          that takes a wash over the whole picture; side by side the cream only
+          has to cover the half the words sit on, and the rest plays clear. */}
       <div
-        className="intro-media relative px-6 pb-14 md:pb-16"
-        style={delay(700)}
-      >
-        <AcrylicScene />
+        aria-hidden
+        className="pointer-events-none absolute inset-0 bg-page/85 lg:hidden"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 hidden bg-linear-to-r from-page from-38% via-page/55 via-64% to-transparent lg:block"
+      />
+
+      <div className="relative flex flex-1 items-center">
+        <div className="mx-auto w-full max-w-7xl px-6 py-12 sm:px-10 md:py-16 lg:py-20">
+          <div className="max-w-xl">
+            <HeroCopy
+              content={content}
+              secondaryCtaLink={secondaryCtaLink}
+              secondaryCtaText={secondaryCtaText}
+            />
+          </div>
+        </div>
+
+        <CaptionCard />
       </div>
 
       <TrustStrip content={content} />

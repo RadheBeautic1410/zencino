@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600" role="presentation">
+  <defs>
+    <linearGradient id="s2-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f1f7f4"/>
+      <stop offset=".55" stop-color="#fbfaf6"/>
+      <stop offset="1" stop-color="#f8eedc"/>
+    </linearGradient>
+    <radialGradient id="s2-glow" cx=".18" cy=".1" r=".6">
+      <stop offset="0" stop-color="#e8c47d" stop-opacity=".35"/>
+      <stop offset="1" stop-color="#e8c47d" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="s2-pane" x1="0" y1="0" x2=".7" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity=".97"/>
+      <stop offset=".55" stop-color="#dcebe4" stop-opacity=".85"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity=".95"/>
+    </linearGradient>
+    <filter id="s2-soft" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="12"/>
+    </filter>
+    <marker id="s2-ar" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto">
+      <path d="M0 0.5 8 4.5 0 8.5z" fill="#2f6b61"/>
+    </marker>
+    <marker id="s2-al" markerWidth="9" markerHeight="9" refX="1" refY="4.5" orient="auto">
+      <path d="M9 0.5 1 4.5 9 8.5z" fill="#2f6b61"/>
+    </marker>
+  </defs>
+
+  <rect width="800" height="600" fill="url(#s2-bg)"/>
+  <rect width="800" height="600" fill="url(#s2-glow)"/>
+
+  <!-- raw stock outline -->
+  <rect x="96" y="96" width="560" height="372" rx="6" fill="#ffffff" opacity=".45"/>
+  <rect x="96" y="96" width="560" height="372" rx="6" fill="none" stroke="#9fb6ae" stroke-width="2.5" stroke-dasharray="12 10"/>
+
+  <!-- offcut hatching -->
+  <g stroke="#b9cbc4" stroke-width="2" opacity=".65">
+    <path d="M560 110 650 200"/><path d="M590 110 650 170"/><path d="M620 110 650 140"/>
+    <path d="M530 110 650 230"/><path d="M110 420 170 460"/><path d="M110 390 210 460"/>
+  </g>
+
+  <!-- finished blank -->
+  <g>
+    <rect x="166" y="150" width="372" height="236" rx="10" fill="#1b4740" opacity=".14" filter="url(#s2-soft)"/>
+    <rect x="160" y="142" width="372" height="236" rx="10" fill="url(#s2-pane)" stroke="#1b4740" stroke-width="3.5"/>
+    <path d="M186 356 206 336" stroke="#ffffff" stroke-width="5" stroke-linecap="round" opacity=".85"/>
+    <path d="M186 320 240 266" stroke="#ffffff" stroke-width="5" stroke-linecap="round" opacity=".6"/>
+  </g>
+
+  <!-- score line + blade travelling it -->
+  <path d="M140 126 140 400" stroke="#c59338" stroke-width="3" stroke-dasharray="9 8"/>
+  <g transform="translate(140 106)">
+    <path d="M0 34 -17 -2 17 -2z" fill="#1b4740"/>
+    <rect x="-13" y="-30" width="26" height="30" rx="5" fill="#2f6b61"/>
+  </g>
+
+  <!-- width dimension -->
+  <g stroke="#2f6b61" stroke-width="2.5">
+    <path d="M160 440 160 400" opacity=".7"/>
+    <path d="M532 440 532 400" opacity=".7"/>
+    <path d="M166 424 526 424" marker-start="url(#s2-al)" marker-end="url(#s2-ar)"/>
+  </g>
+  <text x="346" y="412" text-anchor="middle" font-family="Helvetica Neue, Arial, sans-serif" font-size="30" font-weight="600" letter-spacing="2" fill="#1b4740">240</text>
+
+  <!-- height dimension -->
+  <g stroke="#2f6b61" stroke-width="2.5">
+    <path d="M592 142 552 142" opacity=".7"/>
+    <path d="M592 378 552 378" opacity=".7"/>
+    <path d="M576 148 576 372" marker-start="url(#s2-al)" marker-end="url(#s2-ar)"/>
+  </g>
+  <text x="620" y="270" font-family="Helvetica Neue, Arial, sans-serif" font-size="30" font-weight="600" letter-spacing="2" fill="#1b4740">160</text>
+
+  <!-- rule along the foot -->
+  <g stroke="#2f6b61" stroke-width="2.5" opacity=".55">
+    <path d="M96 506 656 506"/>
+    <path d="M136 506 136 486"/><path d="M216 506 216 492"/><path d="M296 506 296 486"/>
+    <path d="M376 506 376 492"/><path d="M456 506 456 486"/><path d="M536 506 536 492"/><path d="M616 506 616 486"/>
+  </g>
+</svg>

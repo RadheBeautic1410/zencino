@@ -2,31 +2,20 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 export function ProductCardSkeleton() {
   return (
-    <div className="flex flex-col rounded-2xl border border-border/80 bg-card overflow-hidden">
-      {/* Aspect square image placeholder */}
-      <div className="relative aspect-square w-full bg-muted/30">
+    <div className="flex flex-col overflow-hidden rounded-2xl border border-border/70 bg-card">
+      {/* Matches the card's 4:3 picture */}
+      <div className="relative aspect-4/3 w-full bg-muted/25">
         <Skeleton className="size-full rounded-none" />
       </div>
 
-      {/* Info placeholder */}
-      <div className="flex flex-1 flex-col p-5 space-y-3">
-        {/* Category tag */}
-        <Skeleton className="h-3 w-1/3 rounded-full" />
+      <div className="flex flex-1 flex-col gap-2 p-4 pt-5">
+        {/* Name, over two lines */}
+        <Skeleton className="h-4 w-4/5 rounded-full" />
+        <Skeleton className="h-4 w-3/5 rounded-full" />
 
-        {/* Title */}
-        <div className="space-y-1.5">
-          <Skeleton className="h-4 w-4/5 rounded-full" />
-          <Skeleton className="h-4 w-3/5 rounded-full" />
-        </div>
-
-        {/* Price & button row */}
-        <div className="mt-auto pt-4 flex items-end justify-between gap-2 border-t border-border/60">
-          <div className="space-y-1">
-            <Skeleton className="h-5 w-20 rounded-full" />
-            <Skeleton className="h-3 w-12 rounded-full" />
-          </div>
-          <Skeleton className="h-7 w-16 rounded-full" />
-        </div>
+        {/* Rating or category, then the price */}
+        <Skeleton className="mt-1 h-3 w-1/3 rounded-full" />
+        <Skeleton className="mt-auto h-5 w-24 rounded-full" />
       </div>
     </div>
   );
@@ -34,7 +23,7 @@ export function ProductCardSkeleton() {
 
 export function ProductGridSkeleton({ count = 8 }: { count?: number }) {
   return (
-    <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+    <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
       {Array.from({ length: count }, (_, i) => `product-skeleton-${i}`).map(
         (key) => (
           <ProductCardSkeleton key={key} />
@@ -46,15 +35,16 @@ export function ProductGridSkeleton({ count = 8 }: { count?: number }) {
 
 export function CategoryCardSkeleton() {
   return (
-    <div className="flex flex-col justify-between rounded-2xl border border-border/80 bg-card p-8 min-h-[220px]">
-      <div className="space-y-3">
-        <Skeleton className="h-5 w-10 rounded-md" />
-        <Skeleton className="h-7 w-3/4 rounded-full" />
-        <Skeleton className="h-4 w-full rounded-full" />
-        <Skeleton className="h-4 w-2/3 rounded-full" />
+    <div className="flex flex-col overflow-hidden rounded-2xl border border-border/70 bg-card">
+      <div className="relative aspect-4/3 w-full bg-muted/25">
+        <Skeleton className="size-full rounded-none" />
       </div>
-      <div className="mt-8 flex items-center gap-2">
-        <Skeleton className="h-4 w-28 rounded-full" />
+
+      <div className="flex flex-1 flex-col gap-2 p-5">
+        <Skeleton className="h-5 w-3/5 rounded-full" />
+        <Skeleton className="h-3 w-full rounded-full" />
+        <Skeleton className="h-3 w-2/3 rounded-full" />
+        <Skeleton className="mt-4 h-3 w-24 rounded-full" />
       </div>
     </div>
   );
@@ -62,55 +52,39 @@ export function CategoryCardSkeleton() {
 
 export function HeroSkeleton() {
   return (
-    <section className="relative overflow-hidden border-b border-border/80 bg-gradient-to-b from-primary/5 via-background to-page">
-      <div className="mx-auto grid max-w-7xl gap-12 px-6 py-20 md:grid-cols-12 md:items-center md:py-28">
-        <div className="md:col-span-7 space-y-6">
-          {/* Eyebrow badge */}
-          <Skeleton className="h-7 w-52 rounded-full" />
+    <section className="bg-page">
+      {/* The same split the hero settles into: copy left, picture right. */}
+      <div className="grid items-stretch lg:grid-cols-[minmax(0,1fr)_minmax(0,1.08fr)]">
+        <div className="flex flex-col justify-center gap-6 px-6 py-16 sm:px-10 md:py-20 lg:py-24 lg:pr-14 lg:pl-[max(1.5rem,calc((100vw-80rem)/2+1.5rem))]">
+          <Skeleton className="h-3 w-52 rounded-full" />
 
-          {/* Heading lines */}
           <div className="space-y-3">
             <Skeleton className="h-12 w-4/5 rounded-2xl" />
             <Skeleton className="h-12 w-3/5 rounded-2xl" />
           </div>
 
-          {/* Subtitle */}
-          <div className="space-y-2 pt-2">
-            <Skeleton className="h-4 w-full max-w-lg rounded-full" />
-            <Skeleton className="h-4 w-4/5 max-w-lg rounded-full" />
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-full max-w-md rounded-full" />
+            <Skeleton className="h-4 w-4/5 max-w-md rounded-full" />
           </div>
 
-          {/* Buttons */}
-          <div className="flex flex-wrap items-center gap-4 pt-4">
+          <div className="flex flex-wrap items-center gap-3 pt-2">
             <Skeleton className="h-12 w-44 rounded-full" />
-            <Skeleton className="h-12 w-40 rounded-full" />
+            <Skeleton className="h-12 w-44 rounded-full" />
           </div>
 
-          {/* Value highlights */}
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 pt-8 border-t border-border/60">
-            <Skeleton className="h-10 rounded-xl" />
-            <Skeleton className="h-10 rounded-xl" />
-            <Skeleton className="h-10 rounded-xl" />
-          </div>
+          <Skeleton className="mt-2 h-9 w-56 rounded-full" />
         </div>
 
-        {/* Feature showcase */}
-        <div className="md:col-span-5">
-          <div className="rounded-3xl border border-border/80 bg-card p-6 shadow-xl space-y-4">
-            <div className="flex items-center justify-between">
-              <Skeleton className="h-5 w-28 rounded-full" />
-              <Skeleton className="h-4 w-16 rounded-full" />
-            </div>
-            <Skeleton className="aspect-square w-full rounded-2xl" />
-            <div className="space-y-2 pt-2">
-              <Skeleton className="h-6 w-3/4 rounded-full" />
-              <Skeleton className="h-7 w-28 rounded-full" />
-            </div>
-            <div className="flex items-center justify-between border-t border-border/70 pt-4">
-              <Skeleton className="h-4 w-32 rounded-full" />
-              <Skeleton className="h-4 w-24 rounded-full" />
-            </div>
-          </div>
+        <Skeleton className="min-h-88 rounded-none lg:min-h-136" />
+      </div>
+
+      {/* The four-claim strip that closes the section */}
+      <div className="border-y border-border/60 bg-primary-wash/50">
+        <div className="mx-auto grid max-w-7xl gap-6 px-6 py-6 sm:grid-cols-2 lg:grid-cols-4">
+          {["a", "b", "c", "d"].map((key) => (
+            <Skeleton className="h-10 rounded-xl" key={key} />
+          ))}
         </div>
       </div>
     </section>

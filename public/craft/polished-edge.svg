@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600" role="presentation">
+  <defs>
+    <linearGradient id="s3-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f1f7f4"/>
+      <stop offset=".55" stop-color="#fbfaf6"/>
+      <stop offset="1" stop-color="#f8eedc"/>
+    </linearGradient>
+    <radialGradient id="s3-glow" cx=".78" cy=".22" r=".6">
+      <stop offset="0" stop-color="#e8c47d" stop-opacity=".42"/>
+      <stop offset="1" stop-color="#e8c47d" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="s3-top" x1="0" y1="0" x2=".4" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity=".97"/>
+      <stop offset="1" stop-color="#d7e8e1" stop-opacity=".85"/>
+    </linearGradient>
+    <linearGradient id="s3-face" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#e4f0eb"/>
+      <stop offset="1" stop-color="#bcd2ca"/>
+    </linearGradient>
+    <linearGradient id="s3-bevel" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ffffff"/>
+      <stop offset=".5" stop-color="#f6e7c6"/>
+      <stop offset="1" stop-color="#ffffff"/>
+    </linearGradient>
+    <filter id="s3-soft" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="13"/>
+    </filter>
+  </defs>
+
+  <rect width="800" height="600" fill="url(#s3-bg)"/>
+  <rect width="800" height="600" fill="url(#s3-glow)"/>
+
+  <ellipse cx="400" cy="486" rx="252" ry="24" fill="#1b4740" opacity=".16" filter="url(#s3-soft)"/>
+
+  <!-- acrylic bar, three-quarter view with a chamfered front edge -->
+  <g stroke="#1b4740" stroke-linejoin="round">
+    <polygon points="146,300 578,300 666,238 234,238" fill="url(#s3-top)" stroke-width="3.5"/>
+    <polygon points="146,314 578,314 578,452 146,452" fill="url(#s3-face)" stroke-width="3.5"/>
+    <polygon points="578,314 666,252 666,392 578,452" fill="#a9c2ba" stroke-width="3.5"/>
+    <!-- chamfer band between top and front -->
+    <polygon points="146,300 578,300 578,314 146,314" fill="url(#s3-bevel)" stroke-width="2.5"/>
+    <polygon points="578,300 666,238 666,252 578,314" fill="url(#s3-bevel)" stroke-width="2.5"/>
+  </g>
+  <path d="M152 307 572 307" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>
+  <path d="M170 436 170 330" stroke="#ffffff" stroke-width="5" stroke-linecap="round" opacity=".6"/>
+
+  <!-- loupe over the polished edge -->
+  <g>
+    <path d="M544 224 462 306" stroke="#1b4740" stroke-width="17" stroke-linecap="round"/>
+    <circle cx="456" cy="312" r="13" fill="#1b4740"/>
+    <circle cx="612" cy="152" r="104" fill="#ffffff" opacity=".97"/>
+    <g>
+      <clipPath id="s3-clip"><circle cx="612" cy="152" r="104"/></clipPath>
+      <g clip-path="url(#s3-clip)">
+        <rect x="498" y="38" width="228" height="228" fill="#eef6f2"/>
+        <polygon points="498,86 726,20 726,74 498,140" fill="#d7e8e1"/>
+        <polygon points="498,140 726,74 726,104 498,170" fill="#f6e7c6"/>
+        <polygon points="498,170 726,104 726,134 498,200" fill="#ffffff"/>
+        <polygon points="498,200 726,134 726,268 498,268" fill="#c6dad2"/>
+        <g stroke="#1b4740" stroke-width="3">
+          <path d="M498 140 726 74"/><path d="M498 170 726 104"/><path d="M498 200 726 134"/><path d="M498 86 726 20"/>
+        </g>
+        <path d="M512 196 726 134" stroke="#ffffff" stroke-width="7" stroke-linecap="round" opacity=".9"/>
+      </g>
+    </g>
+    <circle cx="612" cy="152" r="104" fill="none" stroke="#1b4740" stroke-width="9"/>
+    <circle cx="612" cy="152" r="92" fill="none" stroke="#ffffff" stroke-width="3" opacity=".8"/>
+  </g>
+
+  <!-- polish sparkles along the edge -->
+  <g fill="#c59338">
+    <path d="M250 307c3-16 4-17 7-30 3 13 4 14 7 30-3 13-4 14-7 28-3-14-4-15-7-28z" opacity=".9"/>
+    <path d="M250 307c-16-3-17-4-30-7 13-3 14-4 30-7 13 3 14 4 28 7-14 3-15 4-28 7z" opacity=".9"/>
+    <path d="M410 309c2-11 3-12 5-21 2 9 3 10 5 21-2 9-3 10-5 20-2-10-3-11-5-20z"/>
+    <path d="M410 309c-11-2-12-3-21-5 9-2 10-3 21-5 9 2 10 3 20 5-10 2-11 3-20 5z"/>
+  </g>
+</svg>

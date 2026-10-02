@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600" role="presentation">
+  <defs>
+    <linearGradient id="s1-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f1f7f4"/>
+      <stop offset=".55" stop-color="#fbfaf6"/>
+      <stop offset="1" stop-color="#f8eedc"/>
+    </linearGradient>
+    <radialGradient id="s1-glow" cx=".7" cy=".1" r=".65">
+      <stop offset="0" stop-color="#e8c47d" stop-opacity=".45"/>
+      <stop offset="1" stop-color="#e8c47d" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="s1-pane" x1="0" y1="0" x2=".8" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity=".96"/>
+      <stop offset=".5" stop-color="#d9e9e2" stop-opacity=".78"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity=".92"/>
+    </linearGradient>
+    <linearGradient id="s1-beam" x1="0" y1="0" x2=".35" y2="1">
+      <stop offset="0" stop-color="#f0cf8d" stop-opacity=".4"/>
+      <stop offset="1" stop-color="#f0cf8d" stop-opacity=".04"/>
+    </linearGradient>
+    <filter id="s1-soft" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="14"/>
+    </filter>
+  </defs>
+
+  <rect width="800" height="600" fill="url(#s1-bg)"/>
+  <rect width="800" height="600" fill="url(#s1-glow)"/>
+
+  <!-- light shaft falling through the stack -->
+  <polygon points="248,0 432,0 566,600 362,600" fill="url(#s1-beam)"/>
+
+  <!-- ground shadow -->
+  <ellipse cx="400" cy="524" rx="246" ry="26" fill="#1b4740" opacity=".16" filter="url(#s1-soft)"/>
+
+  <!-- sheet 1 (bottom) -->
+  <g>
+    <polygon points="170,438 400,453 630,438 400,453" fill="none"/>
+    <polygon points="170,438 400,496 400,511 170,453" fill="#cfe1da"/>
+    <polygon points="400,496 630,438 630,453 400,511" fill="#aec7bf"/>
+    <polygon points="400,380 630,438 400,496 170,438" fill="url(#s1-pane)" stroke="#1b4740" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M170 438 400 380" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round" opacity=".9"/>
+  </g>
+
+  <!-- sheet 2 (middle) -->
+  <g>
+    <polygon points="156,346 386,404 386,419 156,361" fill="#cfe1da"/>
+    <polygon points="386,404 616,346 616,361 386,419" fill="#aec7bf"/>
+    <polygon points="386,288 616,346 386,404 156,346" fill="url(#s1-pane)" stroke="#1b4740" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M156 346 386 288" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round" opacity=".9"/>
+  </g>
+
+  <!-- sheet 3 (top) -->
+  <g>
+    <polygon points="184,254 414,312 414,327 184,269" fill="#cfe1da"/>
+    <polygon points="414,312 644,254 644,269 414,327" fill="#aec7bf"/>
+    <polygon points="414,196 644,254 414,312 184,254" fill="url(#s1-pane)" stroke="#1b4740" stroke-width="3" stroke-linejoin="round"/>
+    <path d="M184 254 414 196" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round" opacity=".9"/>
+  </g>
+
+  <!-- transmitted light below the stack -->
+  <ellipse cx="404" cy="548" rx="150" ry="20" fill="#f0cf8d" opacity=".4" filter="url(#s1-soft)"/>
+
+</svg>

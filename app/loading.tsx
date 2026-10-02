@@ -13,25 +13,29 @@ export default function Loading() {
       <HeroSkeleton />
 
       {/* 2. Categories Skeleton */}
-      <section className="mx-auto max-w-7xl px-6 py-20 md:py-28">
-        <div className="mb-12 space-y-2">
-          <Skeleton className="h-4 w-32 rounded-full" />
+      <section className="mx-auto max-w-7xl px-6 py-16 md:py-20">
+        <div className="space-y-2">
+          <Skeleton className="h-3 w-32 rounded-full" />
           <Skeleton className="h-9 w-64 rounded-2xl" />
         </div>
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          <CategoryCardSkeleton />
-          <CategoryCardSkeleton />
-          <CategoryCardSkeleton />
+        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          {["a", "b", "c", "d"].map((key) => (
+            <CategoryCardSkeleton key={key} />
+          ))}
         </div>
       </section>
 
-      {/* 3. Featured Products Skeleton */}
-      <section className="mx-auto max-w-7xl px-6 py-16 md:py-24 border-t border-border/80">
-        <div className="mb-12 space-y-2">
-          <Skeleton className="h-4 w-28 rounded-full" />
-          <Skeleton className="h-9 w-56 rounded-2xl" />
+      {/* 3. Best sellers Skeleton */}
+      <section className="bg-secondary/40">
+        <div className="mx-auto max-w-7xl px-6 py-16 md:py-20">
+          <div className="space-y-2">
+            <Skeleton className="h-3 w-28 rounded-full" />
+            <Skeleton className="h-9 w-56 rounded-2xl" />
+          </div>
+          <div className="mt-10">
+            <ProductGridSkeleton count={4} />
+          </div>
         </div>
-        <ProductGridSkeleton count={4} />
       </section>
     </StoreShell>
   );
