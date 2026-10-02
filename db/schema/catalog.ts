@@ -1,6 +1,6 @@
 import { createId } from "@paralleldrive/cuid2";
 import { sql } from "drizzle-orm";
-import { type AnyPgColumn, boolean, check, index, integer, jsonb, pgEnum, pgTable, primaryKey, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
+import { type AnyPgColumn, boolean, check, index, integer, jsonb, numeric, pgEnum, pgTable, primaryKey, text, timestamp, uniqueIndex } from "drizzle-orm/pg-core";
 
 const dates = () => ({
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
@@ -42,7 +42,10 @@ export const productVariants = pgTable("product_variants", {
   optionSignature: text("option_signature").notNull().default("[]"),
   priceMinor: integer("price_minor"), mrpMinor: integer("mrp_minor"),
   currency: text("currency").notNull().default("INR"),
-  weightG: integer("weight_g"), lengthMm: integer("length_mm"), widthMm: integer("width_mm"), heightMm: integer("height_mm"),
+  weightG: integer("weight_g"),
+  lengthMm: numeric("length_mm", { precision: 10, scale: 2, mode: "number" }),
+  widthMm: numeric("width_mm", { precision: 10, scale: 2, mode: "number" }),
+  heightMm: numeric("height_mm", { precision: 10, scale: 2, mode: "number" }),
   active: boolean("active").notNull().default(true), ...dates(),
 }, (t) => [uniqueIndex("variant_product_options_unq").on(t.productId, t.optionSignature),
   check("variant_nonnegative_price", sql`${t.priceMinor} >= 0`),

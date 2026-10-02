@@ -14,7 +14,7 @@ import {
 import Image from "next/image";
 import { useState, useTransition } from "react";
 import {
-  attachProductMediaAction,
+  attachProductMediaBatchAction,
   deleteVariantAction,
   detachProductMediaAction,
   updateProductStatusAction,
@@ -112,6 +112,10 @@ export function ProductEditorTabs({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<{
+    done: number;
+    total: number;
+  } | null>(null);
 
   // Status transitions
   const handleStatusChange = (
@@ -175,51 +179,85 @@ export function ProductEditorTabs({
     });
   };
 
-  // Media upload
+  // Media upload (supports selecting multiple images at once)
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) {
+    const input = e.target;
+    const files = Array.from(input.files ?? []);
+    if (files.length === 0) {
       return;
     }
 
+    // Allow re-selecting the same files later.
+    input.value = "";
+
     setIsUploading(true);
+    setUploadProgress({ done: 0, total: files.length });
     setError(null);
     setSuccess(null);
 
-    try {
-      const formData = new FormData();
-      formData.set("file", file);
-      formData.set("altText", `${product.name} - ${file.name}`);
+    const uploadedAssetIds: string[] = [];
+    const failures: string[] = [];
 
-      const uploadRes = await fetch("/api/admin/media/upload", {
-        method: "POST",
-        body: formData,
-      });
+    for (const file of files) {
+      try {
+        const formData = new FormData();
+        formData.set("file", file);
+        formData.set("altText", `${product.name} - ${file.name}`);
 
-      const data = await uploadRes.json();
-      if (!uploadRes.ok || data.error) {
-        setError(data.error || "Failed to upload image");
-        setIsUploading(false);
-        return;
+        const uploadRes = await fetch("/api/admin/media/upload", {
+          method: "POST",
+          body: formData,
+        });
+
+        const data = await uploadRes.json();
+        if (uploadRes.ok && !data.error) {
+          uploadedAssetIds.push(data.asset.id);
+        } else {
+          failures.push(`${file.name}: ${data.error || "upload failed"}`);
+        }
+      } catch {
+        failures.push(`${file.name}: upload failed`);
       }
 
-      // Attach to product
-      startTransition(async () => {
-        const attachRes = await attachProductMediaAction(
-          product.id,
-          data.asset.id
-        );
-        if (attachRes.error) {
-          setError(attachRes.error);
-        } else {
-          setSuccess("Image uploaded and attached to product gallery.");
-        }
-        setIsUploading(false);
-      });
-    } catch {
-      setError("Error uploading image");
-      setIsUploading(false);
+      setUploadProgress((prev) =>
+        prev ? { ...prev, done: prev.done + 1 } : prev
+      );
     }
+
+    if (uploadedAssetIds.length === 0) {
+      setError(
+        failures.length > 0
+          ? `No images uploaded. ${failures.join("; ")}`
+          : "No images uploaded."
+      );
+      setIsUploading(false);
+      setUploadProgress(null);
+      return;
+    }
+
+    // Attach in one call so gallery sort order stays consistent.
+    startTransition(async () => {
+      const attachRes = await attachProductMediaBatchAction(
+        product.id,
+        uploadedAssetIds
+      );
+      if (attachRes.error) {
+        setError(attachRes.error);
+      } else {
+        setSuccess(
+          `${uploadedAssetIds.length} image${
+            uploadedAssetIds.length === 1 ? "" : "s"
+          } uploaded and attached to product gallery.`
+        );
+        if (failures.length > 0) {
+          setError(
+            `${failures.length} file(s) failed. ${failures.join("; ")}`
+          );
+        }
+      }
+      setIsUploading(false);
+      setUploadProgress(null);
+    });
   };
 
   // Media detach
@@ -532,20 +570,29 @@ export function ProductEditorTabs({
                         <Input
                           defaultValue={editingVariant?.lengthMm ?? ""}
                           id="product-editor-tabs-dimensions-l-w-h"
+                          inputMode="decimal"
+                          min="0"
                           name="lengthMm"
                           placeholder="L"
+                          step="0.01"
                           type="number"
                         />
                         <Input
                           defaultValue={editingVariant?.widthMm ?? ""}
+                          inputMode="decimal"
+                          min="0"
                           name="widthMm"
                           placeholder="W"
+                          step="0.01"
                           type="number"
                         />
                         <Input
                           defaultValue={editingVariant?.heightMm ?? ""}
+                          inputMode="decimal"
+                          min="0"
                           name="heightMm"
                           placeholder="H"
+                          step="0.01"
                           type="number"
                         />
                       </div>
@@ -786,13 +833,16 @@ export function ProductEditorTabs({
                   accept="image/png,image/jpeg,image/webp,image/avif"
                   className="hidden"
                   disabled={isUploading}
+                  multiple
                   onChange={handleFileUpload}
                   type="file"
                 />
                 <Button asChild disabled={isUploading} size="sm">
                   <span>
                     <UploadSimple className="mr-1.5" size={14} />
-                    {isUploading ? "Uploading..." : "Upload Image"}
+                    {isUploading
+                      ? `Uploading${uploadProgress ? ` ${uploadProgress.done}/${uploadProgress.total}` : ""}...`
+                      : "Upload Images"}
                   </span>
                 </Button>
               </label>
@@ -809,7 +859,7 @@ export function ProductEditorTabs({
                   </p>
                   <p className="mt-1 text-muted-foreground text-xs">
                     Upload PNG, JPG, or WebP images to display on product detail
-                    pages.
+                    pages. You can select multiple files at once.
                   </p>
                 </div>
               ) : (

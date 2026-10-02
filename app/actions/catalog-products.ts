@@ -274,16 +274,17 @@ export async function upsertVariantAction(
     weightInput && !Number.isNaN(Number(weightInput))
       ? Number(weightInput)
       : null;
-  const lengthMm =
-    lengthInput && !Number.isNaN(Number(lengthInput))
-      ? Number(lengthInput)
-      : null;
-  const widthMm =
-    widthInput && !Number.isNaN(Number(widthInput)) ? Number(widthInput) : null;
-  const heightMm =
-    heightInput && !Number.isNaN(Number(heightInput))
-      ? Number(heightInput)
-      : null;
+  // Dimensions accept decimals (e.g. 20.2 mm); store at 2 decimal places
+  const toMillimetres = (input: FormDataEntryValue | null) => {
+    if (input === null || String(input).trim() === "") {
+      return null;
+    }
+    const parsed = Number(input);
+    return Number.isFinite(parsed) ? Math.round(parsed * 100) / 100 : null;
+  };
+  const lengthMm = toMillimetres(lengthInput);
+  const widthMm = toMillimetres(widthInput);
+  const heightMm = toMillimetres(heightInput);
 
   const validation = variantInput.safeParse({
     id,
@@ -803,6 +804,53 @@ export async function attachProductMediaAction(
       actorEmail: admin.user.email,
       actorId: admin.user.id,
       description: `Attached media asset ${assetId} to product ${productId}`,
+      entityId: productId,
+      entityType: "product_media",
+    });
+
+    revalidatePath(`/admin/products/${productId}`);
+    revalidateStorefront();
+    return { success: true };
+  } catch (error: unknown) {
+    const msg =
+      error instanceof Error ? error.message : "Failed to attach media";
+    return { error: msg };
+  }
+}
+
+export async function attachProductMediaBatchAction(
+  productId: string,
+  assetIds: string[],
+  variantId?: string
+): Promise<ActionResult> {
+  const admin = await requireAdmin();
+
+  if (assetIds.length === 0) {
+    return { error: "No media assets provided" };
+  }
+
+  try {
+    const existingMedia = await db
+      .select({ sortOrder: productMedia.sortOrder })
+      .from(productMedia)
+      .where(eq(productMedia.productId, productId));
+
+    const nextOrder = existingMedia.length;
+
+    await db.insert(productMedia).values(
+      assetIds.map((assetId, index) => ({
+        productId,
+        assetId,
+        variantId: variantId || null,
+        sortOrder: nextOrder + index,
+      }))
+    );
+
+    await audit({
+      action: "catalog.media_attached",
+      actorEmail: admin.user.email,
+      actorId: admin.user.id,
+      description: `Attached ${assetIds.length} media asset(s) to product ${productId}`,
       entityId: productId,
       entityType: "product_media",
     });
