@@ -20,6 +20,15 @@ const positiveInteger = z
   .max(2_000_000_000)
   .nullable();
 const money = z.number().int().nonnegative().max(2_000_000_000).nullable();
+const positiveMillimetre = z
+  .number()
+  .positive()
+  .max(1_000_000)
+  .refine(
+    (value) => Math.abs(value * 100 - Math.round(value * 100)) < 1e-6,
+    "Dimensions allow at most 2 decimal places"
+  )
+  .nullable();
 
 export function isAmazonProductUrl(value: string) {
   try {
@@ -73,9 +82,9 @@ export const variantInput = z
     priceMinor: money,
     mrpMinor: money,
     weightG: positiveInteger,
-    lengthMm: positiveInteger,
-    widthMm: positiveInteger,
-    heightMm: positiveInteger,
+    lengthMm: positiveMillimetre,
+    widthMm: positiveMillimetre,
+    heightMm: positiveMillimetre,
     active: z.boolean(),
     websiteEnabled: z.boolean(),
     amazonEnabled: z.boolean(),

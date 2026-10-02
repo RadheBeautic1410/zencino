@@ -8,6 +8,23 @@ import {
 import { getDownloadURL, getStorage } from "firebase-admin/storage";
 import { env } from "@/lib/env";
 
+/**
+ * Service account JSON holds both `private_key_id` (a short hex fingerprint)
+ * and `private_key` (the PEM block). Pasting the former is an easy mistake, and
+ * surfaces deep inside firebase-admin as an opaque "Failed to parse private
+ * key", so check the shape here and say what is actually wrong.
+ */
+function toPrivateKey(value: string): string {
+  const key = value.replace(/\\n/g, "\n").trim();
+  if (!key.startsWith("-----BEGIN")) {
+    throw new Error(
+      "FIREBASE_PRIVATE_KEY is not a PEM private key (missing the -----BEGIN----- header). " +
+        "Copy the service account JSON's `private_key` field, not `private_key_id`."
+    );
+  }
+  return key;
+}
+
 function getMediaBucket() {
   const appName = "zencino-media";
   const app =
@@ -19,7 +36,7 @@ function getMediaBucket() {
             ? cert({
                 projectId: env.FIREBASE_PROJECT_ID,
                 clientEmail: env.FIREBASE_CLIENT_EMAIL,
-                privateKey: env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n"),
+                privateKey: toPrivateKey(env.FIREBASE_PRIVATE_KEY),
               })
             : applicationDefault(),
         storageBucket: env.FIREBASE_STORAGE_BUCKET,

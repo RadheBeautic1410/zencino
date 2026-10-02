@@ -133,6 +133,47 @@ test("variantInput enforces pricing and delivery rules", () => {
   assert.equal(invalidAmazon.success, false);
 });
 
+test("variantInput accepts fractional millimetre dimensions", () => {
+  const base = {
+    sku: "ZNC-CLR-05",
+    title: "Fractional Dims",
+    options: {},
+    priceMinor: 21_200,
+    mrpMinor: 44_900,
+    weightG: 250,
+    active: true,
+    websiteEnabled: true,
+    amazonEnabled: false,
+    amazonUrl: "",
+  };
+
+  const fractional = variantInput.safeParse({
+    ...base,
+    lengthMm: 20.2,
+    widthMm: 3.6,
+    heightMm: 0.5,
+  });
+  assert.equal(fractional.success, true);
+
+  // More than 2 decimal places is rejected (column stores numeric(10, 2))
+  const tooPrecise = variantInput.safeParse({
+    ...base,
+    lengthMm: 20.255,
+    widthMm: null,
+    heightMm: null,
+  });
+  assert.equal(tooPrecise.success, false);
+
+  // Zero and negative dimensions stay invalid
+  const nonPositive = variantInput.safeParse({
+    ...base,
+    lengthMm: 0,
+    widthMm: -2.5,
+    heightMm: null,
+  });
+  assert.equal(nonPositive.success, false);
+});
+
 test("productInput rejects duplicate SKUs or duplicate option signatures", () => {
   const duplicateSku = productInput.safeParse({
     name: "Acrylic Pencil Holder",
