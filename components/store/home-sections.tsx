@@ -394,43 +394,55 @@ const REASONS = [
 
 export function WhyZencino() {
   return (
-    <section className="border-y border-border/60 bg-secondary/40">
-      <div className="mx-auto grid max-w-7xl gap-10 px-6 py-16 md:py-20 lg:grid-cols-[20rem_minmax(0,1fr)] lg:gap-14">
-        <div className="reveal-soft lg:pt-4">
-          <p className="text-2xs font-bold uppercase tracking-eyebrow text-primary-soft">
-            Why choose Zencino
-          </p>
-          <h2 className="display mt-3 text-3xl text-foreground md:text-[2.5rem]">
-            More than just organizers
-          </h2>
-          <p className="mt-5 text-sm leading-relaxed text-muted-foreground">
-            Thoughtful design, premium materials and a commitment to quality —
-            in every piece.
-          </p>
-        </div>
+    <section className="relative text-primary">
+      <WaveEdge side="top" />
 
-        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {REASONS.map((reason, idx) => (
-            <li
-              className="reveal-item group card-hover rounded-2xl border border-border/70 bg-card p-6 hover:border-primary/25"
-              key={reason.title}
-              style={order(idx)}
-            >
-              <reason.icon
-                className="text-primary-soft transition-transform duration-500 group-hover:-translate-y-0.5"
-                size={22}
-                weight="light"
-              />
-              <h3 className="mt-5 font-heading text-sm font-semibold leading-snug text-foreground">
-                {reason.title}
-              </h3>
-              <p className="mt-2 text-2xs leading-relaxed text-muted-foreground">
-                {reason.body}
-              </p>
-            </li>
-          ))}
-        </ul>
+      <div className="grain relative overflow-hidden bg-primary text-primary-foreground">
+        <div
+          aria-hidden
+          className="parallax pointer-events-none absolute -right-28 top-0 size-112 rounded-full bg-gold/10 blur-3xl"
+          style={travel("2.5rem", "-2.5rem")}
+        />
+
+        <div className="relative mx-auto grid max-w-7xl gap-10 px-6 py-16 md:py-20 lg:grid-cols-[20rem_minmax(0,1fr)] lg:gap-14">
+          <div className="reveal-soft lg:pt-4">
+            <p className="text-2xs font-bold uppercase tracking-eyebrow text-gold">
+              Why choose Zencino
+            </p>
+            <h2 className="display mt-3 text-3xl text-primary-foreground md:text-[2.5rem]">
+              More than just organizers
+            </h2>
+            <p className="mt-5 text-sm leading-relaxed text-primary-foreground/75">
+              Thoughtful design, premium materials and a commitment to quality —
+              in every piece.
+            </p>
+          </div>
+
+          <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {REASONS.map((reason, idx) => (
+              <li
+                className="reveal-item group card-hover rounded-2xl border border-primary-foreground/15 bg-primary-foreground/5 p-6 backdrop-blur-sm hover:border-gold/45"
+                key={reason.title}
+                style={order(idx)}
+              >
+                <reason.icon
+                  className="text-gold transition-transform duration-500 group-hover:-translate-y-0.5"
+                  size={22}
+                  weight="light"
+                />
+                <h3 className="mt-5 font-heading text-sm font-semibold leading-snug text-primary-foreground">
+                  {reason.title}
+                </h3>
+                <p className="mt-2 text-2xs leading-relaxed text-primary-foreground/70">
+                  {reason.body}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
+
+      <WaveEdge side="bottom" />
     </section>
   );
 }
@@ -468,51 +480,67 @@ export function HomeFaq({ items }: { items: Array<{ a: string; q: string }> }) {
   }
 
   return (
-    <section className="border-t border-border/60 bg-secondary/40">
-      <div className="mx-auto grid max-w-7xl gap-10 px-6 py-16 md:py-20 lg:grid-cols-[22rem_minmax(0,1fr)] lg:gap-14">
-        <div className="reveal-soft lg:pt-4">
-          <p className="text-2xs font-bold uppercase tracking-eyebrow text-primary-soft">
-            Questions, answered
-          </p>
-          <h2 className="display mt-3 text-3xl text-foreground md:text-[2.5rem]">
-            Frequently asked questions
-          </h2>
-          <p className="mt-5 text-sm leading-relaxed text-muted-foreground">
-            Everything you need to know about our products, shipping and
-            returns.
-          </p>
-          <Link
-            className="group sheen mt-8 inline-flex items-center gap-2.5 rounded-full bg-primary px-6 py-3.5 text-xs font-bold uppercase tracking-ui text-primary-foreground transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
-            href="/faq"
-          >
-            View all FAQs
-            <ArrowRight
-              className="transition-transform duration-300 group-hover:translate-x-1.5"
-              size={13}
-              weight="bold"
-            />
-          </Link>
-        </div>
+    <section className="relative text-primary">
+      <WaveEdge side="top" />
 
-        {/* `details` keeps the accordion working without a line of JavaScript. */}
-        <div className="reveal-soft divide-y divide-border/70 overflow-hidden rounded-2xl border border-border/70 bg-card">
-          {items.map((item) => (
-            <details className="group px-5 py-4 sm:px-6" key={item.q}>
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-6 text-sm font-medium text-foreground transition-colors hover:text-primary">
-                {item.q}
-                <Plus
-                  className="shrink-0 text-muted-foreground transition-transform duration-300 group-open:rotate-45"
-                  size={15}
-                  weight="bold"
-                />
-              </summary>
-              <p className="mt-3 max-w-2xl text-xs leading-relaxed text-muted-foreground">
-                {item.a}
-              </p>
-            </details>
-          ))}
+      <div className="grain relative overflow-hidden bg-primary text-primary-foreground">
+        {/* Light from above, the way it falls through the material. */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(52% 56% at 50% 0%, color-mix(in oklch, var(--gold) 14%, transparent), transparent 72%)",
+          }}
+        />
+
+        <div className="relative mx-auto grid max-w-7xl gap-10 px-6 py-16 md:py-20 lg:grid-cols-[22rem_minmax(0,1fr)] lg:gap-14">
+          <div className="reveal-soft lg:pt-4">
+            <p className="text-2xs font-bold uppercase tracking-eyebrow text-gold">
+              Questions, answered
+            </p>
+            <h2 className="display mt-3 text-3xl text-primary-foreground md:text-[2.5rem]">
+              Frequently asked questions
+            </h2>
+            <p className="mt-5 text-sm leading-relaxed text-primary-foreground/75">
+              Everything you need to know about our products, shipping and
+              returns.
+            </p>
+            <Link
+              className="group sheen sheen-gold mt-8 inline-flex items-center gap-2.5 rounded-full bg-primary-foreground px-6 py-3.5 text-xs font-bold uppercase tracking-ui text-primary transition-all duration-300 hover:-translate-y-0.5 hover:bg-gold hover:text-gold-foreground"
+              href="/faq"
+            >
+              View all FAQs
+              <ArrowRight
+                className="transition-transform duration-300 group-hover:translate-x-1.5"
+                size={13}
+                weight="bold"
+              />
+            </Link>
+          </div>
+
+          {/* `details` keeps the accordion working without a line of JavaScript. */}
+          <div className="reveal-soft divide-y divide-primary-foreground/12 overflow-hidden rounded-2xl border border-primary-foreground/15 bg-primary-foreground/5 backdrop-blur-sm">
+            {items.map((item) => (
+              <details className="group px-5 py-4 sm:px-6" key={item.q}>
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-6 text-sm font-medium text-primary-foreground transition-colors hover:text-gold">
+                  {item.q}
+                  <Plus
+                    className="shrink-0 text-primary-foreground/55 transition-transform duration-300 group-open:rotate-45 group-hover:text-gold"
+                    size={15}
+                    weight="bold"
+                  />
+                </summary>
+                <p className="mt-3 max-w-2xl text-xs leading-relaxed text-primary-foreground/70">
+                  {item.a}
+                </p>
+              </details>
+            ))}
+          </div>
         </div>
       </div>
+
+      <WaveEdge side="bottom" />
     </section>
   );
 }

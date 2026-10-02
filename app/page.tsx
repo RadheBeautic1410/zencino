@@ -15,6 +15,7 @@ import { order } from "@/components/store/motion";
 import { ProductCard } from "@/components/store/product-card";
 import { SectionHeading } from "@/components/store/section-heading";
 import { StoreShell } from "@/components/store/store-shell";
+import { WaveEdge } from "@/components/store/wave-edge";
 import {
   getStorefrontCategoryTiles,
   getStorefrontProducts,
@@ -105,32 +106,47 @@ export default async function HomePage() {
         secondaryCtaText={secondaryCtaText}
       />
 
+      {/* The hero closes on a green claim band, so it leaves on the same curve
+          the bands further down use. Shorter than the default — the strip it
+          hangs off is thin. */}
+      <WaveEdge
+        className="h-[clamp(1.75rem,4vw,4rem)] text-primary"
+        side="bottom"
+      />
+
       {/* 2. Shelves to browse */}
       <CategoryGrid categories={categoryTiles} />
 
       {/* 3. What people are actually buying */}
       {featuredProducts.length > 0 && (
-        <section className="bg-secondary/40">
-          <div className="mx-auto max-w-7xl px-6 py-16 md:py-20">
-            <SectionHeading
-              eyebrow="Customers' favourites"
-              linkHref="/products"
-              linkLabel="View all products"
-              title="Best selling products"
-            />
+        <section className="relative text-primary">
+          <WaveEdge side="top" />
 
-            <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-              {featuredProducts.slice(0, 4).map((prod, idx) => (
-                <div
-                  className="reveal-item h-full"
-                  key={prod.id}
-                  style={order(idx % 4)}
-                >
-                  <ProductCard product={prod} />
-                </div>
-              ))}
+          <div className="grain relative overflow-hidden bg-primary text-primary-foreground">
+            <div className="relative mx-auto max-w-7xl px-6 py-16 md:py-20">
+              <SectionHeading
+                eyebrow="Customers' favourites"
+                linkHref="/products"
+                linkLabel="View all products"
+                title="Best selling products"
+                tone="dark"
+              />
+
+              <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                {featuredProducts.slice(0, 4).map((prod, idx) => (
+                  <div
+                    className="reveal-item h-full"
+                    key={prod.id}
+                    style={order(idx % 4)}
+                  >
+                    <ProductCard product={prod} />
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
+
+          <WaveEdge side="bottom" />
         </section>
       )}
 

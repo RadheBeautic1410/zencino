@@ -15,6 +15,18 @@ import { AcrylicScene } from "@/components/store/acrylic-scene";
 import { delay, wordStep } from "@/components/store/motion";
 import type { HomepageContentData } from "@/lib/commerce/content";
 
+/**
+ * The band lays its claims out in as many columns as there are claims, so a
+ * row of three sits centred instead of hanging off an unused fourth column.
+ * Tailwind only sees whole class names, hence the lookup.
+ */
+const HIGHLIGHT_COLUMNS: Record<number, string> = {
+  1: "lg:grid-cols-1",
+  2: "lg:grid-cols-2",
+  3: "lg:grid-cols-3",
+  4: "lg:grid-cols-4",
+};
+
 /** Icons the homepage content editor can reference by name in `highlights`. */
 const HIGHLIGHT_ICONS: Record<string, Icon> = {
   ShieldCheck,
@@ -236,9 +248,14 @@ function TrustStrip({ content }: { content: HomepageContentData }) {
     return null;
   }
 
+  const columns =
+    HIGHLIGHT_COLUMNS[content.highlights.length] ?? "lg:grid-cols-4";
+
   return (
-    <div className="relative border-border/50 border-t bg-page/82 backdrop-blur-md">
-      <ul className="mx-auto grid max-w-7xl gap-y-6 px-6 py-6 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="grain relative overflow-hidden bg-primary text-primary-foreground">
+      <ul
+        className={`mx-auto grid max-w-7xl gap-y-6 px-6 py-6 sm:grid-cols-2 ${columns}`}
+      >
         {content.highlights.map((item, idx) => {
           const HighlightIcon = HIGHLIGHT_ICONS[item.icon] ?? Sparkle;
           return (
@@ -248,15 +265,15 @@ function TrustStrip({ content }: { content: HomepageContentData }) {
               style={delay(820 + idx * 80)}
             >
               <HighlightIcon
-                className="shrink-0 text-primary-soft transition-transform duration-300 group-hover:-translate-y-0.5"
+                className="shrink-0 text-gold transition-transform duration-300 group-hover:-translate-y-0.5"
                 size={24}
                 weight="light"
               />
               <span>
-                <span className="block text-xs font-bold text-foreground">
+                <span className="block text-xs font-bold text-primary-foreground">
                   {item.title}
                 </span>
-                <span className="block text-2xs text-muted-foreground">
+                <span className="block text-2xs text-primary-foreground/70">
                   {item.subtitle}
                 </span>
               </span>
