@@ -27,6 +27,7 @@ import {
 } from "react";
 import { CampaignTracker } from "@/components/store/campaign-tracker";
 import { NewsletterSignup } from "@/components/store/newsletter-signup";
+import { WaveEdge } from "@/components/store/wave-edge";
 import { SELLER_INFO, SOCIAL_LINKS } from "@/config/platform";
 
 /** Shop destinations, shared by the desktop menu and the mobile drawer. */
@@ -546,6 +547,10 @@ export function StoreShell({ children }: { children: ReactNode }) {
       <main className="flex-1" id="main-content">
         {children}
       </main>
+
+      {/* The last page section hands off to the footer on the same curve the
+          dark bands above use, rather than a ruled line. */}
+      <WaveEdge className="text-primary" side="top" />
 
       {/* One deep evergreen band: brand, three link columns, the newsletter,
           and a base bar that carries the legal line. */}

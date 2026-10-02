@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" width="800" height="600" role="presentation">
+  <defs>
+    <linearGradient id="s4-bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f1f7f4"/>
+      <stop offset=".55" stop-color="#fbfaf6"/>
+      <stop offset="1" stop-color="#f8eedc"/>
+    </linearGradient>
+    <radialGradient id="s4-glow" cx=".25" cy=".12" r=".6">
+      <stop offset="0" stop-color="#e8c47d" stop-opacity=".38"/>
+      <stop offset="1" stop-color="#e8c47d" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="s4-tray" x1="0" y1="0" x2=".6" y2="1">
+      <stop offset="0" stop-color="#ffffff" stop-opacity=".97"/>
+      <stop offset=".55" stop-color="#d9eae3" stop-opacity=".88"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity=".95"/>
+    </linearGradient>
+    <linearGradient id="s4-foam" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f3ece0"/>
+      <stop offset="1" stop-color="#e2d8c6"/>
+    </linearGradient>
+    <filter id="s4-soft" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="13"/>
+    </filter>
+  </defs>
+
+  <rect width="800" height="600" fill="url(#s4-bg)"/>
+  <rect width="800" height="600" fill="url(#s4-glow)"/>
+
+  <ellipse cx="398" cy="516" rx="250" ry="24" fill="#1b4740" opacity=".16" filter="url(#s4-soft)"/>
+
+  <!-- open carton flaps -->
+  <g stroke="#1b4740" stroke-width="3.5" stroke-linejoin="round">
+    <polygon points="150,276 274,196 206,152 82,232" fill="#e9dcc6"/>
+    <polygon points="646,276 522,196 590,152 714,232" fill="#e2d2b8"/>
+  </g>
+
+  <!-- carton body -->
+  <g stroke="#1b4740" stroke-width="3.5" stroke-linejoin="round">
+    <polygon points="150,276 398,352 646,276 398,200" fill="#efe3cf"/>
+    <polygon points="150,276 398,352 398,500 150,424" fill="#e4d6bd"/>
+    <polygon points="398,352 646,276 646,424 398,500" fill="#d6c5a8"/>
+  </g>
+
+  <!-- foam insert + cavity -->
+  <polygon points="214,282 398,338 582,282 398,226" fill="url(#s4-foam)" stroke="#c7b79c" stroke-width="2.5"/>
+  <polygon points="282,284 398,320 514,284 398,248" fill="#cfc0a6" stroke="#b9a88c" stroke-width="2"/>
+
+  <!-- the finished tray seated in the foam -->
+  <g>
+    <polygon points="286,268 398,302 398,330 286,296" fill="#c4dcd3"/>
+    <polygon points="398,302 510,268 510,296 398,330" fill="#a7c5bb"/>
+    <polygon points="398,234 510,268 398,302 286,268" fill="url(#s4-tray)" stroke="#1b4740" stroke-width="3"/>
+    <path d="M286 268 398 234" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round" opacity=".9"/>
+    <path d="M330 288 330 312" stroke="#ffffff" stroke-width="3" stroke-linecap="round" opacity=".55"/>
+  </g>
+
+  <!-- verified seal -->
+  <g transform="translate(628 436)">
+    <circle r="72" fill="#1b4740"/>
+    <circle r="60" fill="none" stroke="#c59338" stroke-width="3.5"/>
+    <path d="M-26 2 -8 22 28 -18" fill="none" stroke="#e8c47d" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <!-- measurement callout above the tray -->
+  <g stroke="#2f6b61" stroke-width="2.5">
+    <path d="M286 196 398 162" opacity=".7" stroke-dasharray="8 7"/>
+    <path d="M510 196 398 162" opacity=".7" stroke-dasharray="8 7"/>
+  </g>
+  <g transform="translate(398 134)">
+    <rect x="-56" y="-26" width="112" height="46" rx="23" fill="#ffffff" stroke="#1b4740" stroke-width="3"/>
+    <path d="M-24 -3 -8 13 24 -16" fill="none" stroke="#1b4740" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>

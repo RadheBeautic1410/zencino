@@ -13,6 +13,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { order, travel } from "@/components/store/motion";
 import { TestimonialRail } from "@/components/store/testimonial-rail";
+import { WaveEdge } from "@/components/store/wave-edge";
 
 /* ══ 1. How it is made ══════════════════════════════════════════
    Four factual stages. The copy restates what the specifications
@@ -33,25 +34,25 @@ interface CraftStep {
 const CRAFT_STEPS: CraftStep[] = [
   {
     icon: Stack,
-    image: null,
+    image: "/craft/optical-sheet.svg",
     title: "Optical-grade sheet",
     body: "Premium cast acrylic rated for up to 99% light transmission — it will not cloud or yellow within a season.",
   },
   {
     icon: Ruler,
-    image: null,
+    image: "/craft/cut-to-size.svg",
     title: "Cut to the listed size",
     body: "Blanks are cut to the exact dimensions published on the product page, so a drawer measured at home fits.",
   },
   {
     icon: Diamond,
-    image: null,
+    image: "/craft/polished-edge.svg",
     title: "Diamond-polished edges",
     body: "Edges are diamond-polished and buffed for a smooth, premium finish that needs no warning label.",
   },
   {
     icon: SealCheck,
-    image: null,
+    image: "/craft/measured-packed.svg",
     title: "Measured, then packed",
     body: "Each unit is checked against its specification, then protected and foam-cased before dispatch.",
   },
@@ -142,6 +143,10 @@ export function CraftProcess() {
                     fill
                     sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 22vw"
                     src={step.image}
+                    /* The optimizer rejects SVG unless `dangerouslyAllowSVG`
+                       is on, and these drawn stages are vector. A photograph
+                       dropped in later is optimized as usual. */
+                    unoptimized={step.image.endsWith(".svg")}
                   />
                 ) : (
                   <CraftPanel step={step} />
@@ -178,80 +183,86 @@ const CALM_STATS = [
 
 export function CalmBand({ image }: { image?: string | null }) {
   return (
-    <section className="grain relative overflow-hidden bg-primary text-primary-foreground">
-      <div
-        aria-hidden
-        className="parallax pointer-events-none absolute -left-32 bottom-0 size-128 rounded-full bg-gold/10 blur-3xl"
-        style={travel("3rem", "-3rem")}
-      />
+    <section className="relative text-primary">
+      <WaveEdge side="top" />
 
-      <div className="relative grid items-stretch lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-        <div className="reveal-soft flex flex-col justify-center px-6 py-16 sm:px-10 md:py-20 lg:pr-14 lg:pl-[max(1.5rem,calc((100vw-80rem)/2+1.5rem))]">
-          <p className="text-2xs font-bold uppercase tracking-eyebrow text-gold">
-            A calmer space
-          </p>
-          <h2 className="display mt-4 text-3xl text-primary-foreground md:text-[2.5rem]">
-            Clarity meets calm
-          </h2>
-          <p className="mt-5 max-w-md text-sm leading-relaxed text-primary-foreground/75 md:text-base">
-            A clean space does more than look good — it helps you think clearer,
-            feel lighter and focus on what matters.
-          </p>
+      <div className="grain relative overflow-hidden bg-primary text-primary-foreground">
+        <div
+          aria-hidden
+          className="parallax pointer-events-none absolute -left-32 bottom-0 size-128 rounded-full bg-gold/10 blur-3xl"
+          style={travel("3rem", "-3rem")}
+        />
 
-          <Link
-            className="group sheen sheen-gold mt-8 inline-flex w-fit items-center gap-2.5 rounded-full bg-primary-foreground px-6 py-3.5 text-xs font-bold uppercase tracking-ui text-primary transition-all duration-300 hover:-translate-y-0.5 hover:bg-gold hover:text-gold-foreground"
-            href="/about"
-          >
-            Our story
-            <ArrowRight
-              className="transition-transform duration-300 group-hover:translate-x-1.5"
-              size={13}
-              weight="bold"
-            />
-          </Link>
+        <div className="relative grid items-stretch lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+          <div className="reveal-soft flex flex-col justify-center px-6 py-16 sm:px-10 md:py-20 lg:pr-14 lg:pl-[max(1.5rem,calc((100vw-80rem)/2+1.5rem))]">
+            <p className="text-2xs font-bold uppercase tracking-eyebrow text-gold">
+              A calmer space
+            </p>
+            <h2 className="display mt-4 text-3xl text-primary-foreground md:text-[2.5rem]">
+              Clarity meets calm
+            </h2>
+            <p className="mt-5 max-w-md text-sm leading-relaxed text-primary-foreground/75 md:text-base">
+              A clean space does more than look good — it helps you think
+              clearer, feel lighter and focus on what matters.
+            </p>
 
-          <dl className="mt-12 flex flex-wrap items-start gap-x-10 gap-y-6 border-t border-primary-foreground/15 pt-8">
-            {CALM_STATS.map((stat) => (
-              <div key={stat.label}>
-                <dt className="sr-only">{stat.label}</dt>
-                <dd>
-                  <span className="display block text-2xl text-primary-foreground">
-                    {stat.value}
-                  </span>
-                  <span className="mt-1.5 block text-2xs text-primary-foreground/60">
-                    {stat.label}
-                  </span>
-                </dd>
-              </div>
-            ))}
-          </dl>
-        </div>
+            <Link
+              className="group sheen sheen-gold mt-8 inline-flex w-fit items-center gap-2.5 rounded-full bg-primary-foreground px-6 py-3.5 text-xs font-bold uppercase tracking-ui text-primary transition-all duration-300 hover:-translate-y-0.5 hover:bg-gold hover:text-gold-foreground"
+              href="/about"
+            >
+              Our story
+              <ArrowRight
+                className="transition-transform duration-300 group-hover:translate-x-1.5"
+                size={13}
+                weight="bold"
+              />
+            </Link>
 
-        <div className="relative min-h-72 overflow-hidden lg:min-h-112">
-          {image ? (
-            <Image
-              alt=""
-              className="object-cover"
-              fill
-              sizes="(max-width: 1024px) 100vw, 50vw"
-              src={image}
-            />
-          ) : (
-            <span
-              aria-hidden
-              className="absolute inset-0 bg-linear-to-br from-primary-foreground/10 via-gold/10 to-transparent"
-            />
-          )}
+            <dl className="mt-12 flex flex-wrap items-start gap-x-10 gap-y-6 border-t border-primary-foreground/15 pt-8">
+              {CALM_STATS.map((stat) => (
+                <div key={stat.label}>
+                  <dt className="sr-only">{stat.label}</dt>
+                  <dd>
+                    <span className="display block text-2xl text-primary-foreground">
+                      {stat.value}
+                    </span>
+                    <span className="mt-1.5 block text-2xs text-primary-foreground/60">
+                      {stat.label}
+                    </span>
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </div>
 
-          {/* The seal in the corner, the way a maker's mark sits on a print. */}
-          <span className="absolute top-8 right-8 hidden size-28 flex-col items-center justify-center gap-1.5 rounded-full bg-primary/70 p-4 text-center backdrop-blur-sm md:flex">
-            <span className="text-3xs font-semibold leading-tight text-primary-foreground/85">
-              Designed for everyday beauty
+          <div className="relative min-h-72 overflow-hidden lg:min-h-112">
+            {image ? (
+              <Image
+                alt=""
+                className="object-cover"
+                fill
+                sizes="(max-width: 1024px) 100vw, 50vw"
+                src={image}
+              />
+            ) : (
+              <span
+                aria-hidden
+                className="absolute inset-0 bg-linear-to-br from-primary-foreground/10 via-gold/10 to-transparent"
+              />
+            )}
+
+            {/* The seal in the corner, the way a maker's mark sits on a print. */}
+            <span className="absolute top-8 right-8 hidden size-28 flex-col items-center justify-center gap-1.5 rounded-full bg-primary/70 p-4 text-center backdrop-blur-sm md:flex">
+              <span className="text-3xs font-semibold leading-tight text-primary-foreground/85">
+                Designed for everyday beauty
+              </span>
+              <ArrowRight className="text-gold" size={13} weight="bold" />
             </span>
-            <ArrowRight className="text-gold" size={13} weight="bold" />
-          </span>
+          </div>
         </div>
       </div>
+
+      <WaveEdge side="bottom" />
     </section>
   );
 }
@@ -529,7 +540,7 @@ export function ClosingInvitation({ image }: { image?: string | null }) {
         {/* The type has to hold over whatever photograph is dropped in. */}
         <span
           aria-hidden
-          className="absolute inset-0 bg-page/72 backdrop-blur-[1px]"
+          className="absolute inset-0 bg-linear-to-b from-page/72 via-page/72 via-72% to-page backdrop-blur-[1px]"
         />
       </div>
 

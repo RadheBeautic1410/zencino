@@ -38,8 +38,8 @@ export const metadata: Metadata = {
  * they ship with the build — `public/uploads/` is the runtime upload directory
  * and is untracked, so site assets cannot live there.
  */
-const BEFORE_IMAGE: string | null = "/home/before.png";
-const AFTER_IMAGE: string | null = "/home/after.png";
+const BEFORE_IMAGE: string | null = "/home/before-1.png";
+const AFTER_IMAGE: string | null = "/home/after-1.png";
 
 /**
  * PLACEHOLDER REVIEWS — replace every entry with a real, attributable customer
