@@ -16,7 +16,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { removeItemAction, updateQuantityAction } from "@/app/actions/cart";
+import { CouponBox } from "@/components/store/coupon-box";
 import { Button } from "@/components/ui/button";
+import type { CartPricing } from "@/lib/commerce/coupons";
 
 export interface CartLineItem {
   id: string;
@@ -44,14 +46,15 @@ export interface CartViewProps {
     subtotalMinor: number;
     items: CartLineItem[];
   };
+  pricing: CartPricing;
 }
 
-export function CartView({ cart }: CartViewProps) {
+export function CartView({ cart, pricing }: CartViewProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
 
-  const subtotal = cart.subtotalMinor / 100;
+  const subtotal = (cart.subtotalMinor - pricing.discountMinor) / 100;
   const freeShippingThreshold = 999;
   const amountNeededForFreeShipping = Math.max(
     0,
@@ -286,17 +289,31 @@ export function CartView({ cart }: CartViewProps) {
             Order Summary
           </h2>
 
+          <CouponBox
+            appliedCode={pricing.couponCode}
+            couponError={pricing.couponError}
+            discountMinor={pricing.discountMinor}
+          />
+
           <div className="space-y-3 text-sm border-b border-border/80 pb-4">
             <div className="flex justify-between text-muted-foreground">
               <span>Items Subtotal</span>
               <span className="font-semibold text-foreground">
-                ₹{subtotal.toLocaleString("en-IN")}
+                ₹{(cart.subtotalMinor / 100).toLocaleString("en-IN")}
               </span>
             </div>
+            {pricing.discountMinor > 0 && (
+              <div className="flex justify-between text-emerald-700">
+                <span>Coupon ({pricing.couponCode})</span>
+                <span className="font-semibold">
+                  -₹{(pricing.discountMinor / 100).toLocaleString("en-IN")}
+                </span>
+              </div>
+            )}
             <div className="flex justify-between text-muted-foreground">
               <span>Shipping</span>
               <span className="font-semibold text-foreground">
-                {subtotal >= freeShippingThreshold ? (
+                {pricing.shippingMinor === 0 ? (
                   <span className="text-emerald-700 font-bold uppercase tracking-ui text-xs">
                     FREE
                   </span>
@@ -316,10 +333,7 @@ export function CartView({ cart }: CartViewProps) {
               Estimated Total
             </span>
             <span className="font-heading text-2xl font-black text-foreground">
-              ₹
-              {(
-                subtotal + (subtotal >= freeShippingThreshold ? 0 : 79)
-              ).toLocaleString("en-IN")}
+              ₹{(pricing.totalMinor / 100).toLocaleString("en-IN")}
             </span>
           </div>
 

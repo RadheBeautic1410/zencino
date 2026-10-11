@@ -371,3 +371,121 @@ export function buildCampaignUtmUrl(input: {
 
   return url.toString();
 }
+
+// ---------------------------------------------------------------------------
+// Coupons
+// ---------------------------------------------------------------------------
+
+export interface CouponRule {
+  active: boolean;
+  discountType: "percent" | "fixed";
+  discountValue: number;
+  expiresAt: Date | null;
+  maxDiscountMinor: number | null;
+  minOrderMinor: number;
+  startsAt: Date | null;
+}
+
+export function normalizeCouponCode(code: string): string {
+  return code
+    .trim()
+    .toUpperCase()
+    .replace(/[^A-Z0-9_-]/g, "");
+}
+
+/**
+ * Evaluates a coupon against a cart subtotal. Returns the discount in paise
+ * (never more than the subtotal) or a customer-facing rejection reason.
+ */
+export function evaluateCoupon(
+  coupon: CouponRule,
+  subtotalMinor: number,
+  now: Date = new Date()
+): { ok: true; discountMinor: number } | { ok: false; reason: string } {
+  if (!coupon.active) {
+    return { ok: false, reason: "This coupon is no longer active." };
+  }
+  if (coupon.startsAt && now < coupon.startsAt) {
+    return { ok: false, reason: "This coupon is not valid yet." };
+  }
+  if (coupon.expiresAt && now > coupon.expiresAt) {
+    return { ok: false, reason: "This coupon has expired." };
+  }
+  if (subtotalMinor < coupon.minOrderMinor) {
+    return {
+      ok: false,
+      reason: `Add items worth ₹${(coupon.minOrderMinor / 100).toLocaleString("en-IN")} or more to use this coupon.`,
+    };
+  }
+
+  let discountMinor =
+    coupon.discountType === "percent"
+      ? Math.floor((subtotalMinor * coupon.discountValue) / 100)
+      : coupon.discountValue;
+
+  if (coupon.maxDiscountMinor !== null) {
+    discountMinor = Math.min(discountMinor, coupon.maxDiscountMinor);
+  }
+  discountMinor = Math.max(0, Math.min(discountMinor, subtotalMinor));
+
+  if (discountMinor === 0) {
+    return { ok: false, reason: "This coupon gives no discount on your bag." };
+  }
+  return { ok: true, discountMinor };
+}
+
+/**
+ * Splits an order discount across the eligible lines proportionally to their
+ * value (floored). The last eligible line absorbs the remainder. Returns one
+ * share (paise) per input line; ineligible lines get 0.
+ */
+export function allocateDiscount(
+  lines: { eligible: boolean; lineTotalMinor: number }[],
+  discountMinor: number
+): number[] {
+  const eligibleTotal = lines.reduce(
+    (sum, l) => (l.eligible ? sum + l.lineTotalMinor : sum),
+    0
+  );
+  const lastEligible = lines.map((l) => l.eligible).lastIndexOf(true);
+  if (discountMinor <= 0 || eligibleTotal <= 0 || lastEligible === -1) {
+    return lines.map(() => 0);
+  }
+
+  let allocated = 0;
+  return lines.map((line, index) => {
+    if (!line.eligible) {
+      return 0;
+    }
+    const share =
+      index === lastEligible
+        ? discountMinor - allocated
+        : Math.floor((line.lineTotalMinor * discountMinor) / eligibleTotal);
+    allocated += share;
+    return share;
+  });
+}
+
+export interface OrderTotals {
+  discountMinor: number;
+  shippingMinor: number;
+  subtotalMinor: number;
+  taxMinor: number;
+  totalMinor: number;
+}
+
+/** Coupon applies to the subtotal; shipping and GST are computed on what remains. */
+export function calculateOrderTotals(
+  subtotalMinor: number,
+  discountMinor = 0
+): OrderTotals {
+  const discounted = Math.max(0, subtotalMinor - discountMinor);
+  const shippingMinor = calculateShippingFee(discounted);
+  return {
+    subtotalMinor,
+    discountMinor,
+    shippingMinor,
+    taxMinor: calculateInclusiveGst(discounted),
+    totalMinor: discounted + shippingMinor,
+  };
+}

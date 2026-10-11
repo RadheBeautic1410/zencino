@@ -24,9 +24,11 @@ import {
   createOrderAction,
   submitPaymentProofAction,
 } from "@/app/actions/orders";
+import { CouponBox } from "@/components/store/coupon-box";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import type { CartPricing } from "@/lib/commerce/coupons";
 
 export interface CheckoutCartItem {
   id: string;
@@ -60,6 +62,7 @@ export interface CheckoutViewProps {
     subtotalMinor: number;
     items: CheckoutCartItem[];
   };
+  pricing: CartPricing;
   initialEmail?: string;
   initialName?: string;
   isLoggedIn?: boolean;
@@ -78,6 +81,7 @@ interface OrderPaymentState {
 
 export function CheckoutView({
   cart,
+  pricing,
   initialEmail = "",
   initialName = "",
   savedAddresses = [],
@@ -142,8 +146,7 @@ export function CheckoutView({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const subtotal = cart.subtotalMinor / 100;
-  const standardShipping = subtotal >= 999 ? 0 : 79;
-  const estimatedTotal = subtotal + standardShipping;
+  const estimatedTotal = pricing.totalMinor / 100;
 
   const handleCopy = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
@@ -604,6 +607,13 @@ export function CheckoutView({
             ))}
           </div>
 
+          <CouponBox
+            appliedCode={pricing.couponCode}
+            couponError={pricing.couponError}
+            discountMinor={pricing.discountMinor}
+            email={customerEmail}
+          />
+
           <div className="border-t border-border pt-4 space-y-2 text-xs">
             <div className="flex justify-between text-muted-foreground">
               <span>Subtotal</span>
@@ -611,10 +621,18 @@ export function CheckoutView({
                 ₹{subtotal.toLocaleString("en-IN")}
               </span>
             </div>
+            {pricing.discountMinor > 0 && (
+              <div className="flex justify-between text-emerald-700 dark:text-emerald-400">
+                <span>Coupon ({pricing.couponCode})</span>
+                <span className="font-semibold">
+                  -₹{(pricing.discountMinor / 100).toLocaleString("en-IN")}
+                </span>
+              </div>
+            )}
             <div className="flex justify-between text-muted-foreground">
               <span>Standard Delivery</span>
               <span className="font-semibold text-foreground">
-                {subtotal >= 999 ? (
+                {pricing.shippingMinor === 0 ? (
                   <span className="text-emerald-600 dark:text-emerald-400 font-bold">
                     FREE
                   </span>
@@ -626,7 +644,7 @@ export function CheckoutView({
             <div className="flex justify-between text-2xs text-muted-foreground">
               <span>Inclusive 18% GST</span>
               <span>
-                ₹{Math.round(subtotal * (0.18 / 1.18)).toLocaleString("en-IN")}
+                ₹{(pricing.taxMinor / 100).toLocaleString("en-IN")}
               </span>
             </div>
             <div className="flex justify-between font-bold text-sm pt-2 border-t border-border">

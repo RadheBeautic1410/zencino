@@ -64,6 +64,20 @@
       "when": 1790908397067,
       "tag": "0008_variant_decimal_dimensions",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1791707856413,
+      "tag": "0009_coupons",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1791708790097,
+      "tag": "0010_coupon_scope",
+      "breakpoints": true
     }
   ]
 }
