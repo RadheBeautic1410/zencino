@@ -38,6 +38,11 @@ const STANDARD_PAGES = [
     title: "Terms of Service",
     type: "policy" as const,
   },
+  {
+    slug: "policies-zencino-challenge",
+    title: "Zencino Challenge Official Rules",
+    type: "policy" as const,
+  },
 ];
 
 export default async function AdminContentPage() {
@@ -60,7 +65,7 @@ export default async function AdminContentPage() {
   // Load current content data for each page
   const initialContents: Record<string, EditableContentData> = {};
 
-  const [home, faq, about, shipping, returns, privacy, terms] =
+  const [home, faq, about, shipping, returns, privacy, terms, challenge] =
     await Promise.all([
       getPublishedContent<EditableContentData>("home", "homepage"),
       getPublishedContent<EditableContentData>("faq", "faq"),
@@ -69,6 +74,10 @@ export default async function AdminContentPage() {
       getPublishedContent<EditableContentData>("policies-returns", "policy"),
       getPublishedContent<EditableContentData>("policies-privacy", "policy"),
       getPublishedContent<EditableContentData>("policies-terms", "policy"),
+      getPublishedContent<EditableContentData>(
+        "policies-zencino-challenge",
+        "policy"
+      ),
     ]);
 
   initialContents.home = home.data;
@@ -78,6 +87,7 @@ export default async function AdminContentPage() {
   initialContents["policies-returns"] = returns.data;
   initialContents["policies-privacy"] = privacy.data;
   initialContents["policies-terms"] = terms.data;
+  initialContents["policies-zencino-challenge"] = challenge.data;
 
   return (
     <div className="space-y-8">

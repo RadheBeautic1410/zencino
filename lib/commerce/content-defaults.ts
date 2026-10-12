@@ -204,6 +204,10 @@ export const DEFAULT_POLICIES: Record<string, PolicyContentData> = {
         heading: "4. Data Retention & Deletion",
         body: "You can request an export of your account data or request account deletion at any time from your Account Settings page.",
       },
+      {
+        heading: "5. Arrow Shift Game & Zencino Challenge Coupons",
+        body: "Zencino Challenge coupons are unlocked in the Arrow Shift: Logic Puzzle mobile game. The game does not send your gameplay data, device details or the country you select in the game to zencino.com, and links from the game to our website carry no personal information. If you redeem a Zencino Challenge coupon, we receive only the coupon code as part of your order, and process it like any other order under this policy. The game's own data practices are described in its Google Play listing and privacy policy.",
+      },
     ],
   },
   terms: {
@@ -226,6 +230,57 @@ export const DEFAULT_POLICIES: Record<string, PolicyContentData> = {
       {
         heading: "4. Intellectual Property",
         body: "All text, design, photography, and brand assets on Zencino are the property of Zencino and protected under intellectual property laws.",
+      },
+      {
+        heading: "5. Coupon Codes & Promotions",
+        body: "Coupon codes can be applied at checkout on zencino.com only and cannot be used on Amazon or any other store. A coupon applies only to the products, minimum order value, maximum discount and dates set for it, has no cash value and cannot be exchanged for cash. Promotions with their own rules, such as the Zencino Challenge, are also governed by those rules.",
+      },
+    ],
+  },
+  "zencino-challenge": {
+    title: "Zencino Challenge Official Rules",
+    subtitle:
+      "How the Zencino Challenge in the Arrow Shift: Logic Puzzle game works, who can take part, and how to redeem your offer.",
+    content: [
+      {
+        heading: "1. Promoter",
+        body: "The Zencino Challenge (the \"Challenge\") is run by Zencino (\"we\", \"us\"). Questions about the Challenge can be sent through our Contact page. Google and Amazon are not sponsors of, and are not responsible for, this Challenge.",
+      },
+      {
+        heading: "2. Free to Take Part — No Purchase Necessary",
+        body: "The Challenge is free. You do not need to buy anything, watch an ad or spend in-game coins to take part or to unlock an offer. Redeeming an unlocked offer is optional; it only applies if you choose to place an order.",
+      },
+      {
+        heading: "3. Who Can Take Part",
+        body: "The Challenge is available to players of the Arrow Shift: Logic Puzzle Android game who select India as their country in the game and are shown the Challenge in the app. It may be offered to some players and not others while we test it. Orders on zencino.com must be placed by a person aged 18 or over, or by a parent or guardian, and delivered to an address in India that we serve.",
+      },
+      {
+        heading: "4. How the Challenge Works",
+        body: "A day counts as a qualifying day when you genuinely solve the required number of new levels that calendar day (currently 5). A level counts only the first time you solve it yourself; levels skipped using an ad, coins or a skip token, and levels you replay, do not count. The first Daily Challenge you solve each day also counts. Using a hint or an extra life does not stop a solved level from counting. Solving more levels than required on the same day still counts as one qualifying day.",
+      },
+      {
+        heading: "5. Qualifying Days Do Not Need to Be in a Row",
+        body: "Qualifying days are counted as separate calendar days, not as a streak. Missing a day does not reset your progress. You have 30 days to complete the Challenge, starting from the first level that counts. Progress can build up while you play offline.",
+      },
+      {
+        heading: "6. Milestones and Offers",
+        body: "Reaching each milestone (for example 3, 7 and 10 qualifying days) unlocks a fixed offer. Every player who reaches the same milestone gets the same offer — there are no random draws, prizes or rankings, and the offer does not depend on your score, speed or skill. The discount percentage, maximum discount, minimum order value (if any), eligible products, coupon code and validity date are shown in the app when the milestone unlocks. Discounts never exceed 25%. An internet connection is needed to unlock a milestone.",
+      },
+      {
+        heading: "7. How to Redeem",
+        body: "Copy the coupon code shown in the app, tap the Shop button to open zencino.com, add eligible products to your bag, and enter the code at checkout. Coupons are valid only on zencino.com. They cannot be used on Amazon or any other store, even for Zencino products sold there. The discount is calculated and applied at checkout according to the coupon's terms. Coupons have no cash value, cannot be exchanged for cash, and apply only until the validity date shown.",
+      },
+      {
+        heading: "8. Your Progress and Data",
+        body: "Challenge progress is saved on your device only. Uninstalling the game, clearing its data or switching devices resets it, and progress on different devices is not combined. The game records anonymous usage statistics (including the country you select) through Google Analytics for Firebase to run and improve the Challenge. No gameplay data is sent to zencino.com. See our Privacy Policy for how we handle orders.",
+      },
+      {
+        heading: "9. Fair Play",
+        body: "Progress must come from normal play. Changing your device's date or time, modifying the app, or other attempts to unlock offers without genuinely playing may mean progress is not counted and offers are not honoured.",
+      },
+      {
+        heading: "10. Changes and Ending the Challenge",
+        body: "We may change, pause or end the Challenge, or change future offers, at any time. Changes will be reflected in the app and on this page. Coupons already unlocked will be honoured according to their terms and validity date. Orders placed with a coupon are subject to our Terms of Service, Shipping Policy and Returns policy.",
       },
     ],
   },
