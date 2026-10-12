@@ -84,6 +84,7 @@ export const carts = pgTable(
     userId: text("user_id").references(() => user.id, { onDelete: "set null" }),
     guestTokenHash: text("guest_token_hash").unique(),
     currency: text("currency").notNull().default("INR"),
+    couponCode: text("coupon_code"),
     expiresAt: timestamp("expires_at", { withTimezone: true }),
     ...dates(),
   },

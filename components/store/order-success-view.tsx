@@ -40,6 +40,8 @@ export interface OrderSuccessProps {
     shippingMinor: number;
     taxMinor: number;
     totalMinor: number;
+    discountMinor?: number | null;
+    couponCode?: string | null;
     status: string;
     paymentStatus: string;
     paymentMethod: string;
@@ -144,6 +146,14 @@ export function OrderSuccessView({
                   ₹{(order.subtotalMinor / 100).toLocaleString("en-IN")}
                 </span>
               </div>
+              {(order.discountMinor ?? 0) > 0 && (
+                <div className="flex justify-between text-emerald-700 dark:text-emerald-400">
+                  <span>Coupon{order.couponCode ? ` (${order.couponCode})` : ""}</span>
+                  <span className="font-semibold">
+                    -₹{((order.discountMinor ?? 0) / 100).toLocaleString("en-IN")}
+                  </span>
+                </div>
+              )}
               <div className="flex justify-between text-muted-foreground">
                 <span>Standard Delivery</span>
                 <span className="font-semibold text-foreground">

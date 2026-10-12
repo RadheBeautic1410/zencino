@@ -10,6 +10,7 @@ import {
   Gear,
   Headset,
   Megaphone,
+  Tag,
   Package,
   Receipt,
   SignOut,
@@ -57,6 +58,7 @@ const operationsNavItems = [
     icon: Megaphone,
     exact: false,
   },
+  { href: "/admin/coupons", label: "Coupons", icon: Tag, exact: false },
 ];
 
 const systemNavItems = [

@@ -73,6 +73,8 @@ export interface AdminOrderDetailProps {
     shippingMinor: number;
     taxMinor: number;
     totalMinor: number;
+    discountMinor?: number | null;
+    couponCode?: string | null;
     status: string;
     paymentStatus: string;
     paymentMethod: string;
@@ -378,6 +380,8 @@ export function OrderDetailView({
           <p className="text-2xs text-muted-foreground mt-0.5">
             Placed on {formatDateTime(order.createdAt)} · Total: ₹
             {(order.totalMinor / 100).toLocaleString("en-IN")}
+            {(order.discountMinor ?? 0) > 0 &&
+              ` · Coupon ${order.couponCode ?? ""} (-₹${((order.discountMinor ?? 0) / 100).toLocaleString("en-IN")})`}
           </p>
         </div>
 

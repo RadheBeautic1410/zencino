@@ -12,6 +12,7 @@ import { formatDateTime } from "@/lib/utils";
 
 interface InvoiceItem {
   id: string;
+  discountMinor?: number | null;
   lineTotalMinor: number;
   productName: string;
   quantity: number;
@@ -44,6 +45,8 @@ interface TaxInvoiceViewProps {
     paymentStatus: string;
     paymentMethod: string;
     totalMinor: number;
+    discountMinor?: number | null;
+    couponCode?: string | null;
     trackingCourier?: string | null;
     trackingNumber?: string | null;
   };
@@ -68,15 +71,20 @@ export function TaxInvoiceView({
   const totalRupees = Math.round(order.totalMinor / 100);
   const amountInWords = numberToWordsRupees(totalRupees);
 
+  // GST is charged on each line's value net of its share of the coupon
+  const discountMinor = order.discountMinor ?? 0;
+
   // Calculate item taxable breakdown
   const itemsTaxSummary = items.map((it) => {
+    const netLineMinor = it.lineTotalMinor - (it.discountMinor ?? 0);
     const taxInfo = calculateGstBreakdown(
-      it.lineTotalMinor,
+      netLineMinor,
       buyerState,
       SELLER_INFO.state
     );
     return {
       ...it,
+      netLineMinor,
       taxInfo,
     };
   });
@@ -343,7 +351,7 @@ export function TaxInvoiceView({
                     </>
                   )}
                   <td className="py-3 px-2 text-right font-mono font-bold text-neutral-900">
-                    {(it.lineTotalMinor / 100).toFixed(2)}
+                    {(it.netLineMinor / 100).toFixed(2)}
                   </td>
                 </tr>
               ))}
@@ -388,6 +396,17 @@ export function TaxInvoiceView({
 
           {/* Right: Calculations breakdown */}
           <div className="sm:col-span-5 space-y-2 text-2xs">
+            {discountMinor > 0 && (
+              <div className="flex justify-between text-neutral-600">
+                <span>
+                  Coupon discount{order.couponCode ? ` (${order.couponCode})` : ""}{" "}
+                  (included in line values):
+                </span>
+                <span className="font-mono">
+                  -₹{(discountMinor / 100).toFixed(2)}
+                </span>
+              </div>
+            )}
             <div className="flex justify-between text-neutral-600">
               <span>Total Taxable Value:</span>
               <span className="font-mono">

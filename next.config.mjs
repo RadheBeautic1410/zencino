@@ -26,6 +26,13 @@ const nextConfig = {
         destination: "/account/:path*",
         permanent: true,
       },
+      {
+        // Official-rules link used by the Arrow Shift app's Zencino Challenge.
+        // Not permanent, so the target can move without stale browser caches.
+        source: "/zencino-challenge",
+        destination: "/policies/zencino-challenge",
+        permanent: false,
+      },
     ];
   },
   turbopack: {

@@ -416,7 +416,11 @@ export async function requestItemReturn(params: RequestItemReturnParams) {
     );
   }
 
-  const refundAmountMinor = item.unitPriceMinor * quantity;
+  // Refund what was actually paid: net of this line's share of the coupon
+  const grossMinor = item.unitPriceMinor * quantity;
+  const refundAmountMinor =
+    grossMinor -
+    Math.round((item.discountMinor * quantity) / (item.quantity || 1));
   const returnNumber = generateReturnNumber();
 
   const [inserted] = await db

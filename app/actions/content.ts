@@ -71,6 +71,7 @@ export async function publishContentAction(formData: FormData) {
     revalidatePath("/policies/returns");
     revalidatePath("/policies/privacy");
     revalidatePath("/policies/terms");
+    revalidatePath("/policies/zencino-challenge");
     revalidatePath("/admin/content");
 
     return {

@@ -1,5 +1,8 @@
 import { and, desc, eq, ilike, or, type SQL, sql } from "drizzle-orm";
 import {
+  carts,
+  couponRedemptions,
+  coupons,
   inventoryBalances,
   inventoryMovements,
   inventoryReservations,
@@ -10,13 +13,13 @@ import {
 } from "@/db/schema";
 import { audit } from "@/lib/audit";
 import { clearCart, getCartDetails } from "@/lib/commerce/cart";
+import { getCouponByCode, validateCoupon } from "@/lib/commerce/coupons";
 import {
   getOrCreateDefaultLocation,
   getVariantStock,
 } from "@/lib/commerce/inventory";
 import {
-  calculateInclusiveGst,
-  calculateShippingFee,
+  calculateOrderTotals,
   generateOrderNumber,
   isOrderStatus,
   isPincodeServiceable,
@@ -81,17 +84,56 @@ export async function createOrderFromCart(params: CreateOrderParams) {
     }
   }
 
-  // Calculate order money breakdown
   const subtotalMinor = cart.subtotalMinor;
-  const shippingMinor = calculateShippingFee(subtotalMinor);
-  const taxMinor = calculateInclusiveGst(subtotalMinor);
-  const totalMinor = subtotalMinor + shippingMinor;
+  const customerEmailNormalized = customerEmail.trim().toLowerCase();
 
   const orderNumber = generateOrderNumber();
   const reservationExpiry = new Date(Date.now() + 15 * 60 * 1000); // 15 min lock
 
   // Execute order creation in a database transaction
   return await db.transaction(async (tx) => {
+    // 0. Re-validate the cart coupon under a row lock so usage limits hold
+    let couponId: string | null = null;
+    let couponCode: string | null = null;
+    let discountMinor = 0;
+    let lineDiscounts: number[] = [];
+
+    const [cartRow] = await tx
+      .select({ couponCode: carts.couponCode })
+      .from(carts)
+      .where(eq(carts.id, cart.cartId as string))
+      .limit(1);
+
+    if (cartRow?.couponCode) {
+      const coupon = await getCouponByCode(cartRow.couponCode, tx);
+      if (!coupon) {
+        throw new Error("The coupon on your bag is no longer available.");
+      }
+      await tx
+        .select({ id: coupons.id })
+        .from(coupons)
+        .where(eq(coupons.id, coupon.id))
+        .for("update");
+
+      const check = await validateCoupon(tx, coupon, cart.items, {
+        userId,
+        email: customerEmailNormalized,
+      });
+      if (!check.ok) {
+        throw new Error(check.reason);
+      }
+      couponId = coupon.id;
+      couponCode = coupon.code;
+      discountMinor = check.discountMinor;
+      lineDiscounts = check.lineDiscounts;
+    }
+
+    // Calculate order money breakdown (coupon applies to the subtotal)
+    const { shippingMinor, taxMinor, totalMinor } = calculateOrderTotals(
+      subtotalMinor,
+      discountMinor
+    );
+
     // 1. Insert order record
     const [order] = await tx
       .insert(orders)
@@ -100,13 +142,15 @@ export async function createOrderFromCart(params: CreateOrderParams) {
         userId: userId || null,
         guestTokenHash: cart.cartId ? `cart_${cart.cartId}` : null,
         customerName: customerName.trim(),
-        customerEmail: customerEmail.trim().toLowerCase(),
+        customerEmail: customerEmailNormalized,
         customerPhone: customerPhone.trim(),
         currency: "INR",
         subtotalMinor,
         shippingMinor,
         taxMinor,
         totalMinor,
+        discountMinor,
+        couponCode,
         status: "pending_payment",
         paymentStatus: "pending",
         paymentMethod,
@@ -115,7 +159,7 @@ export async function createOrderFromCart(params: CreateOrderParams) {
       .returning();
 
     // 2. Insert line items snapshot
-    for (const item of cart.items) {
+    for (const [index, item] of cart.items.entries()) {
       await tx.insert(orderItems).values({
         orderId: order.id,
         variantId: item.variantId,
@@ -126,6 +170,7 @@ export async function createOrderFromCart(params: CreateOrderParams) {
         unitPriceMinor: item.unitPriceMinor || 0,
         quantity: item.quantity,
         lineTotalMinor: item.lineTotalMinor || 0,
+        discountMinor: lineDiscounts[index] ?? 0,
         weightG: item.weightG || 300,
       });
 
@@ -154,6 +199,16 @@ export async function createOrderFromCart(params: CreateOrderParams) {
         );
     }
 
+    if (couponId) {
+      await tx.insert(couponRedemptions).values({
+        couponId,
+        orderId: order.id,
+        userId: userId || null,
+        customerEmail: customerEmailNormalized,
+        discountMinor,
+      });
+    }
+
     // 4. Insert address snapshot
     await tx.insert(orderAddresses).values({
       orderId: order.id,
@@ -177,6 +232,8 @@ export async function createOrderFromCart(params: CreateOrderParams) {
       metadata: {
         orderNumber,
         totalMinor,
+        discountMinor,
+        couponCode,
         paymentMethod,
         itemCount: cart.items.length,
       },

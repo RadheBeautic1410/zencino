@@ -33,6 +33,8 @@ export const orders = pgTable(
     shippingMinor: integer("shipping_minor").notNull(),
     taxMinor: integer("tax_minor").notNull(),
     totalMinor: integer("total_minor").notNull(),
+    discountMinor: integer("discount_minor").notNull().default(0),
+    couponCode: text("coupon_code"),
     status: text("status", {
       enum: [
         "pending_payment",
@@ -91,6 +93,8 @@ export const orderItems = pgTable(
     unitPriceMinor: integer("unit_price_minor").notNull(),
     quantity: integer("quantity").notNull(),
     lineTotalMinor: integer("line_total_minor").notNull(),
+    // share of the order coupon discount allocated to this line
+    discountMinor: integer("discount_minor").notNull().default(0),
     weightG: integer("weight_g").notNull().default(300),
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
