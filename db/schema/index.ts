@@ -11,3 +11,4 @@ export * from "@/db/schema/support";
 export * from "@/db/schema/campaigns";
 export * from "@/db/schema/settings";
 export * from "@/db/schema/coupons";
+export * from "@/db/schema/shipping";

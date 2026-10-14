@@ -18,8 +18,9 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { saveAddressAction } from "@/app/actions/addresses";
+import { getCheckoutPricingAction } from "@/app/actions/shipping";
 import {
   createOrderAction,
   submitPaymentProofAction,
@@ -81,7 +82,7 @@ interface OrderPaymentState {
 
 export function CheckoutView({
   cart,
-  pricing,
+  pricing: initialPricing,
   initialEmail = "",
   initialName = "",
   savedAddresses = [],
@@ -109,6 +110,25 @@ export function CheckoutView({
   const [city, setCity] = useState(defaultAddress?.city || "");
   const [state, setState] = useState(defaultAddress?.state || "");
   const [postcode, setPostcode] = useState(defaultAddress?.postcode || "");
+
+  // Shipping is charged per kg by delivery PIN code, so re-price when it changes.
+  const [pricing, setPricing] = useState(initialPricing);
+  useEffect(() => {
+    const pin = postcode.replace(/D/g, "");
+    if (pin.length !== 6) {
+      setPricing(initialPricing);
+      return;
+    }
+    let cancelled = false;
+    getCheckoutPricingAction(pin).then((res) => {
+      if (!cancelled && res.pricing) {
+        setPricing(res.pricing);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [postcode, initialPricing]);
 
   const handleSelectAddress = (addr: SavedCustomerAddress) => {
     setSelectedAddressId(addr.id);
@@ -637,7 +657,14 @@ export function CheckoutView({
                     FREE
                   </span>
                 ) : (
-                  "₹79"
+                  <>
+                    ₹{(pricing.shippingMinor / 100).toLocaleString("en-IN")}
+                    {pricing.shippingEstimated && (
+                      <span className="ml-1 text-2xs font-normal text-muted-foreground">
+                        (enter PIN code for exact)
+                      </span>
+                    )}
+                  </>
                 )}
               </span>
             </div>

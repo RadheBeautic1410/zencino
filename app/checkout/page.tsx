@@ -24,14 +24,20 @@ export default async function CheckoutPage() {
     redirect("/cart");
   }
 
-  const pricing = await getCartPricing(cart, {
-    userId: session?.user?.id,
-    email: session?.user?.email,
-  });
-
   const savedAddresses = session?.user?.id
     ? await getCustomerAddresses(session.user.id)
     : [];
+  const defaultAddress =
+    savedAddresses.find((a) => a.isDefault) || savedAddresses[0] || null;
+
+  const pricing = await getCartPricing(
+    cart,
+    {
+      userId: session?.user?.id,
+      email: session?.user?.email,
+    },
+    defaultAddress?.postcode
+  );
 
   return (
     <StoreShell>
