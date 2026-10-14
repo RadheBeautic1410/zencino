@@ -48,7 +48,9 @@ test("pincode pattern validation", () => {
   assert.equal(validateShippingPincodePattern("36****").ok, true);
   assert.equal(validateShippingPincodePattern("364001-364005").ok, true);
   assert.equal(validateShippingPincodePattern("364005-364001").ok, false);
-  assert.equal(validateShippingPincodePattern("36*").ok, false);
+  assert.equal(validateShippingPincodePattern("36*").ok, true);
+  assert.equal(validateShippingPincodePattern("*").ok, false);
+  assert.equal(validateShippingPincodePattern("1234567*").ok, false);
   assert.equal(validateShippingPincodePattern("12345").ok, false);
 });
 
