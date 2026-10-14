@@ -78,6 +78,13 @@
       "when": 1791708790097,
       "tag": "0010_coupon_scope",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1791944839368,
+      "tag": "0011_shipping_pincode_rates",
+      "breakpoints": true
     }
   ]
 }

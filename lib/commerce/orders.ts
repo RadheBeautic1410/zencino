@@ -23,7 +23,9 @@ import {
   generateOrderNumber,
   isOrderStatus,
   isPincodeServiceable,
+  totalCartWeightG,
 } from "@/lib/commerce/rules";
+import { quoteShipping } from "@/lib/commerce/shipping";
 import { db } from "@/lib/db";
 
 export { generateOrderNumber };
@@ -85,6 +87,10 @@ export async function createOrderFromCart(params: CreateOrderParams) {
   }
 
   const subtotalMinor = cart.subtotalMinor;
+  const shippingQuote = await quoteShipping(
+    shippingAddress.postcode,
+    totalCartWeightG(cart.items)
+  );
   const customerEmailNormalized = customerEmail.trim().toLowerCase();
 
   const orderNumber = generateOrderNumber();
@@ -131,7 +137,8 @@ export async function createOrderFromCart(params: CreateOrderParams) {
     // Calculate order money breakdown (coupon applies to the subtotal)
     const { shippingMinor, taxMinor, totalMinor } = calculateOrderTotals(
       subtotalMinor,
-      discountMinor
+      discountMinor,
+      shippingQuote.chargeMinor
     );
 
     // 1. Insert order record

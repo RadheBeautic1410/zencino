@@ -3,6 +3,10 @@ import { createHash, randomBytes } from "node:crypto";
 export const FREE_SHIPPING_THRESHOLD_PAISE = 99_900; // ₹999
 export const STANDARD_SHIPPING_PAISE = 7900; // ₹79
 export const GST_RATE = 0.18; // 18% inclusive
+/** Per-kg charge used when no active shipping rate matches the PIN code. */
+export const DEFAULT_SHIPPING_RATE_PER_KG_PAISE = 6000; // ₹60 / kg
+/** Weight assumed for a variant that has no weight recorded. */
+export const DEFAULT_ITEM_WEIGHT_G = 300;
 
 /**
  * Validates Indian 6-digit postal PIN codes:
@@ -22,6 +26,134 @@ export function calculateShippingFee(subtotalMinor: number): number {
   return subtotalMinor >= FREE_SHIPPING_THRESHOLD_PAISE
     ? 0
     : STANDARD_SHIPPING_PAISE;
+}
+
+export type ShippingPincodeType = "exact" | "range" | "wildcard";
+
+export interface ShippingRateRule {
+  pincode: string;
+  /** Charge per started kilogram, in paise. */
+  rateMinor: number;
+  type: ShippingPincodeType;
+}
+
+/** Keeps digits only and trims to 6 characters. */
+export function normalizePincode(pincode: string): string {
+  return pincode.replace(/\D/g, "").slice(0, 6);
+}
+
+export function determineShippingPincodeType(
+  pattern: string
+): ShippingPincodeType {
+  if (pattern.includes("*")) {
+    return "wildcard";
+  }
+  if (pattern.includes("-")) {
+    return "range";
+  }
+  return "exact";
+}
+
+/** Validates an admin-entered pattern: `364001`, `364001-364005` or `36****`. */
+export function validateShippingPincodePattern(
+  pattern: string
+): { ok: true; type: ShippingPincodeType } | { ok: false; error: string } {
+  const value = pattern.trim();
+  const type = determineShippingPincodeType(value);
+
+  if (type === "wildcard") {
+    if (!/^\d{1,5}\*{1,5}$/.test(value) || value.length !== 6) {
+      return {
+        ok: false,
+        error: "Wildcard must be 6 characters, e.g. 36**** or 3640**.",
+      };
+    }
+  } else if (type === "range") {
+    const parts = value.split("-");
+    if (
+      parts.length !== 2 ||
+      !/^\d{6}$/.test(parts[0]) ||
+      !/^\d{6}$/.test(parts[1])
+    ) {
+      return {
+        ok: false,
+        error: "Range must be two 6-digit PIN codes, e.g. 364001-364005.",
+      };
+    }
+    if (Number(parts[0]) >= Number(parts[1])) {
+      return { ok: false, error: "Range start must be less than range end." };
+    }
+  } else if (!/^\d{6}$/.test(value)) {
+    return { ok: false, error: "PIN code must be exactly 6 digits." };
+  }
+
+  return { ok: true, type };
+}
+
+export function matchesShippingPincode(
+  pincode: string,
+  rule: Pick<ShippingRateRule, "pincode" | "type">
+): boolean {
+  if (rule.type === "exact") {
+    return pincode === rule.pincode;
+  }
+  if (rule.type === "wildcard") {
+    return pincode.startsWith(rule.pincode.replace(/\*/g, ""));
+  }
+  const [start, end] = rule.pincode.split("-").map(Number);
+  const value = Number(pincode);
+  return value >= start && value <= end;
+}
+
+/** Best matching rate: exact, then range, then the longest wildcard prefix. */
+export function findShippingRate<T extends ShippingRateRule>(
+  rates: T[],
+  pincode: string
+): T | null {
+  const normalized = normalizePincode(pincode);
+  if (normalized.length !== 6) {
+    return null;
+  }
+  const exact = rates.find(
+    (r) => r.type === "exact" && matchesShippingPincode(normalized, r)
+  );
+  if (exact) {
+    return exact;
+  }
+  const range = rates.find(
+    (r) => r.type === "range" && matchesShippingPincode(normalized, r)
+  );
+  if (range) {
+    return range;
+  }
+  const prefixLength = (r: T) => r.pincode.replace(/\*/g, "").length;
+  const wildcards = rates
+    .filter(
+      (r) => r.type === "wildcard" && matchesShippingPincode(normalized, r)
+    )
+    .sort((a, b) => prefixLength(b) - prefixLength(a));
+  return wildcards[0] ?? null;
+}
+
+/** Weight is billed in whole kilograms, rounded up, minimum 1 kg. */
+export function billableWeightKg(totalWeightG: number): number {
+  return Math.max(1, Math.ceil(totalWeightG / 1000));
+}
+
+export function totalCartWeightG(
+  items: { quantity: number; weightG?: number | null }[]
+): number {
+  return items.reduce(
+    (sum, item) => sum + (item.weightG || DEFAULT_ITEM_WEIGHT_G) * item.quantity,
+    0
+  );
+}
+
+export function calculateWeightShipping(
+  totalWeightG: number,
+  ratePerKgMinor: number
+): number {
+  return ratePerKgMinor * billableWeightKg(totalWeightG);
 }
 
 /**
@@ -477,10 +609,18 @@ export interface OrderTotals {
 /** Coupon applies to the subtotal; shipping and GST are computed on what remains. */
 export function calculateOrderTotals(
   subtotalMinor: number,
-  discountMinor = 0
+  discountMinor = 0,
+  /** Weight/PIN based charge; the free-shipping threshold still applies. */
+  shippingChargeMinor?: number
 ): OrderTotals {
   const discounted = Math.max(0, subtotalMinor - discountMinor);
-  const shippingMinor = calculateShippingFee(discounted);
+  let shippingMinor: number;
+  if (shippingChargeMinor === undefined) {
+    shippingMinor = calculateShippingFee(discounted);
+  } else {
+    shippingMinor =
+      discounted >= FREE_SHIPPING_THRESHOLD_PAISE ? 0 : shippingChargeMinor;
+  }
   return {
     subtotalMinor,
     discountMinor,

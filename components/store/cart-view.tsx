@@ -318,7 +318,14 @@ export function CartView({ cart, pricing }: CartViewProps) {
                     FREE
                   </span>
                 ) : (
-                  "₹79 (Standard)"
+                  <>
+                    ₹{(pricing.shippingMinor / 100).toLocaleString("en-IN")}
+                    {pricing.shippingEstimated && (
+                      <span className="ml-1 text-2xs font-normal text-muted-foreground">
+                        (estimate, exact at checkout)
+                      </span>
+                    )}
+                  </>
                 )}
               </span>
             </div>

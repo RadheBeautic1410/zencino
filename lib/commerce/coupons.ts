@@ -20,8 +20,11 @@ import {
   calculateOrderTotals,
   evaluateCoupon,
   normalizeCouponCode,
+  normalizePincode,
   type OrderTotals,
+  totalCartWeightG,
 } from "@/lib/commerce/rules";
+import { quoteShipping } from "@/lib/commerce/shipping";
 import { db } from "@/lib/db";
 
 type Executor = Pick<typeof db, "select">;
@@ -249,6 +252,8 @@ export async function getCouponByCode(
 // ---------------------------------------------------------------------------
 
 export interface CartPricing extends OrderTotals {
+  /** True until a valid delivery PIN code is known (default rate used). */
+  shippingEstimated: boolean;
   couponCode: string | null;
   couponDescription: string | null;
   couponError: string | null;
@@ -261,14 +266,20 @@ export interface CartPricing extends OrderTotals {
 export async function getCartPricing(
   cart: {
     cartId: string | null;
-    items: CouponCartLine[];
+    items: (CouponCartLine & { quantity: number; weightG?: number | null })[];
     subtotalMinor: number;
   },
-  customer: CouponCustomer = {}
+  customer: CouponCustomer = {},
+  /** Delivery PIN code; shipping is charged per kg by PIN code rate. */
+  postcode?: string
 ): Promise<CartPricing> {
   const { cartId, subtotalMinor } = cart;
+  const pin = normalizePincode(postcode ?? "");
+  const shipping = await quoteShipping(pin, totalCartWeightG(cart.items));
+  const shippingEstimated = pin.length !== 6;
   const empty: CartPricing = {
-    ...calculateOrderTotals(subtotalMinor, 0),
+    ...calculateOrderTotals(subtotalMinor, 0, shipping.chargeMinor),
+    shippingEstimated,
     couponCode: null,
     couponError: null,
     couponDescription: null,
@@ -299,7 +310,12 @@ export async function getCartPricing(
   }
 
   return {
-    ...calculateOrderTotals(subtotalMinor, result.discountMinor),
+    ...calculateOrderTotals(
+      subtotalMinor,
+      result.discountMinor,
+      shipping.chargeMinor
+    ),
+    shippingEstimated,
     couponCode: coupon.code,
     couponError: null,
     couponDescription: coupon.description,
