@@ -187,7 +187,7 @@ export function ShippingManager({ rates }: { rates: ShippingPincodeRate[] }) {
           <h3 className="font-bold text-base">No shipping rates yet</h3>
           <p className="text-xs text-muted-foreground max-w-md mx-auto">
             Every order currently uses the default ₹60/kg rate. Add a rate such
-            as 364001, 364001-364005 or 36**** to override it.
+            as 364001, 364001-364005 or 36* to override it.
           </p>
         </Card>
       ) : (
@@ -284,7 +284,7 @@ export function ShippingManager({ rates }: { rates: ShippingPincodeRate[] }) {
                 id="ship-pincode"
                 maxLength={13}
                 name="pincode"
-                placeholder="364001, 364001-364005 or 36****"
+                placeholder="364001, 364001-364005 or 36*"
                 required
               />
             </div>

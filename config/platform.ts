@@ -29,6 +29,9 @@ export const SELLER_INFO = {
  * claimed — the footer renders only the entries listed here, so drop any row
  * that will not exist at launch.
  */
+/** Customer chat line; the storefront's floating button opens wa.me with it. */
+export const WHATSAPP_NUMBER = "919499673369";
+
 export const SOCIAL_LINKS = [
   { href: "https://instagram.com/zencino", label: "Instagram" },
   { href: "https://facebook.com/zencino", label: "Facebook" },

@@ -54,7 +54,7 @@ export function determineShippingPincodeType(
   return "exact";
 }
 
-/** Validates an admin-entered pattern: `364001`, `364001-364005` or `36****`. */
+/** Validates an admin-entered pattern: `364001`, `364001-364005` or `36*`. */
 export function validateShippingPincodePattern(
   pattern: string
 ): { ok: true; type: ShippingPincodeType } | { ok: false; error: string } {
@@ -62,10 +62,10 @@ export function validateShippingPincodePattern(
   const type = determineShippingPincodeType(value);
 
   if (type === "wildcard") {
-    if (!/^\d{1,5}\*{1,5}$/.test(value) || value.length !== 6) {
+    if (!/^\d{1,5}\*+$/.test(value) || value.length > 6) {
       return {
         ok: false,
-        error: "Wildcard must be 6 characters, e.g. 36**** or 3640**.",
+        error: "Wildcard is a 1-5 digit prefix then *, e.g. 36* or 3640**.",
       };
     }
   } else if (type === "range") {
@@ -120,9 +120,14 @@ export function findShippingRate<T extends ShippingRateRule>(
   if (exact) {
     return exact;
   }
-  const range = rates.find(
-    (r) => r.type === "range" && matchesShippingPincode(normalized, r)
-  );
+  // Overlapping ranges: the narrowest one is the most specific.
+  const span = (r: T) => {
+    const [start, end] = r.pincode.split("-").map(Number);
+    return end - start;
+  };
+  const range = rates
+    .filter((r) => r.type === "range" && matchesShippingPincode(normalized, r))
+    .sort((a, b) => span(a) - span(b))[0];
   if (range) {
     return range;
   }
