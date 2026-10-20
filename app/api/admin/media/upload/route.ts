@@ -1,6 +1,16 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/authz";
-import { isAllowedMimeType, saveMediaAsset } from "@/lib/media/storage";
+import {
+  isAllowedMimeType,
+  isVideoMimeType,
+  maxUploadBytes,
+  saveMediaAsset,
+} from "@/lib/media/storage";
+
+function positiveInt(value: FormDataEntryValue | null): number | undefined {
+  const parsed = Number.parseInt(String(value ?? ""), 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
+}
 
 export async function POST(request: Request) {
   try {
@@ -19,16 +29,18 @@ export async function POST(request: Request) {
     if (!isAllowedMimeType(file.type)) {
       return NextResponse.json(
         {
-          error: `File type ${file.type} is not supported. Use JPG, PNG, WebP, AVIF, or SVG.`,
+          error: `File type ${file.type || "unknown"} is not supported. Use JPG, PNG, WebP, AVIF, SVG, MP4, WebM, or MOV.`,
         },
         { status: 400 }
       );
     }
 
-    // 10MB limit
-    if (file.size > 10 * 1024 * 1024) {
+    const maxBytes = maxUploadBytes(file.type);
+    if (file.size > maxBytes) {
       return NextResponse.json(
-        { error: "File exceeds maximum size of 10MB" },
+        {
+          error: `File exceeds maximum size of ${maxBytes / (1024 * 1024)}MB`,
+        },
         { status: 400 }
       );
     }
@@ -42,6 +54,11 @@ export async function POST(request: Request) {
       buffer,
       mimeType: file.type,
       altText,
+      // Only videos take browser-reported dimensions; images are parsed server-side.
+      ...(isVideoMimeType(file.type) && {
+        customWidth: positiveInt(formData.get("width")),
+        customHeight: positiveInt(formData.get("height")),
+      }),
     });
 
     return NextResponse.json({ success: true, asset });

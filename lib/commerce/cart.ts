@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { and, asc, eq, inArray } from "drizzle-orm";
+import { and, asc, eq, inArray, notLike } from "drizzle-orm";
 import { cookies } from "next/headers";
 import {
   cartItems,
@@ -301,7 +301,12 @@ export async function getCartDetails() {
     })
     .from(productMedia)
     .innerJoin(mediaAssets, eq(productMedia.assetId, mediaAssets.id))
-    .where(inArray(productMedia.productId, pIds))
+    .where(
+      and(
+        inArray(productMedia.productId, pIds),
+        notLike(mediaAssets.mimeType, "video/%")
+      )
+    )
     .orderBy(asc(productMedia.sortOrder));
 
   const items = await Promise.all(

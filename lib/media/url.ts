@@ -5,3 +5,7 @@ export function getMediaAssetUrl(storageKey: string): string {
   }
   return `/uploads/${storageKey}`;
 }
+
+export function isVideoMimeType(mimeType: string): boolean {
+  return mimeType.startsWith("video/");
+}

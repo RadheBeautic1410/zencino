@@ -6,6 +6,7 @@ import {
   exists,
   ilike,
   inArray,
+  notLike,
   or,
   type SQL,
   sql,
@@ -149,7 +150,12 @@ export async function getAdminProducts(params: ProductListParams = {}) {
     })
     .from(productMedia)
     .innerJoin(mediaAssets, eq(productMedia.assetId, mediaAssets.id))
-    .where(inArray(productMedia.productId, productIds))
+    .where(
+      and(
+        inArray(productMedia.productId, productIds),
+        notLike(mediaAssets.mimeType, "video/%")
+      )
+    )
     .orderBy(asc(productMedia.sortOrder));
 
   return productRows.map((prod) => {
