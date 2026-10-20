@@ -340,6 +340,9 @@ export function ProductDetailView({ product }: ProductDetailProps) {
                     Order with your Amazon Prime account for fast delivery &
                     verified returns.
                   </p>
+                  <p className="text-center text-2xs font-semibold text-muted-foreground">
+                    Zencino coupon codes apply to zencino.com orders only.
+                  </p>
                 </div>
               )}
 

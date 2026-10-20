@@ -10,12 +10,14 @@ import {
   Gear,
   Headset,
   Megaphone,
+  Tag,
   Package,
   Receipt,
   SignOut,
   SquaresFour,
   Stack,
   Tray,
+  Truck,
   Users,
 } from "@phosphor-icons/react";
 import Link from "next/link";
@@ -34,6 +36,7 @@ const commerceNavItems = [
   },
   { href: "/admin/products", label: "Products", icon: Package, exact: false },
   { href: "/admin/inventory", label: "Inventory", icon: Tray, exact: false },
+  { href: "/admin/shipping", label: "Shipping", icon: Truck, exact: false },
   {
     href: "/admin/categories",
     label: "Categories",
@@ -57,6 +60,7 @@ const operationsNavItems = [
     icon: Megaphone,
     exact: false,
   },
+  { href: "/admin/coupons", label: "Coupons", icon: Tag, exact: false },
 ];
 
 const systemNavItems = [

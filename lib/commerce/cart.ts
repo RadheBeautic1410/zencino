@@ -424,12 +424,9 @@ export async function mergeGuestCartOnLogin(
 }
 
 export async function clearCart(cartId?: string) {
-  if (cartId) {
-    await db.delete(cartItems).where(eq(cartItems.cartId, cartId));
-    return;
-  }
-  const details = await getCartDetails();
-  if (details.cartId) {
-    await db.delete(cartItems).where(eq(cartItems.cartId, details.cartId));
+  const id = cartId ?? (await getCartDetails()).cartId;
+  if (id) {
+    await db.delete(cartItems).where(eq(cartItems.cartId, id));
+    await db.update(carts).set({ couponCode: null }).where(eq(carts.id, id));
   }
 }

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { CheckoutView } from "@/components/store/checkout-view";
 import { StoreShell } from "@/components/store/store-shell";
 import { getCartDetails } from "@/lib/commerce/cart";
+import { getCartPricing } from "@/lib/commerce/coupons";
 
 export const metadata: Metadata = {
   title: "Checkout & Delivery - Zencino",
@@ -26,11 +27,23 @@ export default async function CheckoutPage() {
   const savedAddresses = session?.user?.id
     ? await getCustomerAddresses(session.user.id)
     : [];
+  const defaultAddress =
+    savedAddresses.find((a) => a.isDefault) || savedAddresses[0] || null;
+
+  const pricing = await getCartPricing(
+    cart,
+    {
+      userId: session?.user?.id,
+      email: session?.user?.email,
+    },
+    defaultAddress?.postcode
+  );
 
   return (
     <StoreShell>
       <CheckoutView
         cart={cart}
+        pricing={pricing}
         initialEmail={session?.user?.email || ""}
         initialName={session?.user?.name || ""}
         isLoggedIn={Boolean(session?.user)}

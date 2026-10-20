@@ -12,6 +12,7 @@ import {
   PinterestLogo,
   ShoppingCart,
   User,
+  WhatsappLogoIcon,
   X,
   XLogo,
   YoutubeLogo,
@@ -28,7 +29,11 @@ import {
 import { CampaignTracker } from "@/components/store/campaign-tracker";
 import { NewsletterSignup } from "@/components/store/newsletter-signup";
 import { WaveEdge } from "@/components/store/wave-edge";
-import { SELLER_INFO, SOCIAL_LINKS } from "@/config/platform";
+import {
+  SELLER_INFO,
+  SOCIAL_LINKS,
+  WHATSAPP_NUMBER,
+} from "@/config/platform";
 
 /** Shop destinations, shared by the desktop menu and the mobile drawer. */
 const SHOP_LINKS = [
@@ -648,6 +653,18 @@ export function StoreShell({ children }: { children: ReactNode }) {
           </p>
         </div>
       </footer>
+
+      {/* Floating chat button, pinned bottom-right on every storefront page. */}
+      <a
+        aria-label="Chat with us on WhatsApp"
+        className="fixed right-5 bottom-5 z-40 grid size-14 place-items-center rounded-full bg-[#25D366] text-white shadow-lg transition-transform duration-300 hover:-translate-y-0.5 hover:scale-105 hover:shadow-xl focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#25D366]/40"
+        href={`https://wa.me/${WHATSAPP_NUMBER}`}
+        rel="noopener noreferrer"
+        target="_blank"
+        title="Chat with us on WhatsApp"
+      >
+        <WhatsappLogoIcon size={30} weight="fill" />
+      </a>
     </div>
   );
 }

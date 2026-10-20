@@ -10,7 +10,9 @@ import {
   GST_RATE,
   isPincodeServiceable,
   STANDARD_SHIPPING_PAISE,
+  totalCartWeightG,
 } from "./rules";
+import { quoteShipping } from "./shipping";
 
 export {
   calculateInclusiveGst,
@@ -90,7 +92,14 @@ export async function calculateCheckoutQuote(params: {
 
   // Shipping calculation
   const isFreeShipping = subtotalMinor >= FREE_SHIPPING_THRESHOLD_PAISE;
-  const shippingMinor = isFreeShipping ? 0 : STANDARD_SHIPPING_PAISE;
+  const shippingMinor = isFreeShipping
+    ? 0
+    : (
+        await quoteShipping(
+          shippingAddress.postcode,
+          totalCartWeightG(quoteItems)
+        )
+      ).chargeMinor;
 
   // 18% GST (already inclusive in product selling price, but explicitly broken out for invoices)
   // Tax component = Total * (GST / (1 + GST))

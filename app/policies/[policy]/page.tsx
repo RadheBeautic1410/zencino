@@ -30,7 +30,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function PolicyPage({ params }: Props) {
   const { policy } = await params;
 
-  if (!["shipping", "returns", "privacy", "terms"].includes(policy)) {
+  if (
+    !["shipping", "returns", "privacy", "terms", "zencino-challenge"].includes(
+      policy
+    )
+  ) {
     notFound();
   }
 
