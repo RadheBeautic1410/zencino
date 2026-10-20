@@ -24,3 +24,7 @@ The Firebase Admin SDK writes images under `uploads/` and stores their token-bea
 Existing images are not migrated: local keys keep resolving to `/uploads/`, and Firebase URLs keep working after switching back to local. Keep existing local files on the server. Checksum deduplication continues to reuse existing images in their original location. No database migration is required.
 
 Reference: [Firebase Admin Storage documentation](https://firebase.google.com/docs/storage/admin/start).
+
+## Product videos
+
+The admin product **Media Gallery** also accepts MP4, WebM and MOV videos (up to 100MB; images stay at 10MB). Videos use the same storage setting and `media_assets` table, identified by a `video/*` `mime_type`, so no migration is needed. The storefront plays them in the product gallery, while product cards, the cart and social/SEO previews always use the first image. If the app sits behind a proxy or host with a request body limit (for example nginx `client_max_body_size`), raise it to allow video uploads.

@@ -6,6 +6,7 @@ import {
   Images,
   Package,
   PencilSimple,
+  Play,
   Plus,
   Trash,
   UploadSimple,
@@ -40,7 +41,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { getMediaAssetUrl } from "@/lib/media/url";
+import { getMediaAssetUrl, isVideoMimeType } from "@/lib/media/url";
 
 interface Category {
   id: string;
@@ -71,6 +72,7 @@ interface MediaItem {
   bytes: number;
   height: number;
   id: string;
+  mimeType: string;
   originalFilename: string;
   sortOrder: number;
   storageKey: string;
@@ -93,6 +95,29 @@ interface ProductDetails {
   specifications: Record<string, string>;
   status: "draft" | "published" | "archived";
   variants: Variant[];
+}
+
+/** Reads a video's pixel size in the browser; the server cannot parse video headers. */
+function readVideoDimensions(
+  file: File
+): Promise<{ height: number; width: number } | null> {
+  return new Promise((resolve) => {
+    const url = URL.createObjectURL(file);
+    const video = document.createElement("video");
+    const done = (dims: { height: number; width: number } | null) => {
+      URL.revokeObjectURL(url);
+      resolve(dims);
+    };
+    video.preload = "metadata";
+    video.onloadedmetadata = () =>
+      done(
+        video.videoWidth > 0 && video.videoHeight > 0
+          ? { width: video.videoWidth, height: video.videoHeight }
+          : null
+      );
+    video.onerror = () => done(null);
+    video.src = url;
+  });
 }
 
 export function ProductEditorTabs({
@@ -179,7 +204,7 @@ export function ProductEditorTabs({
     });
   };
 
-  // Media upload (supports selecting multiple images at once)
+  // Media upload (supports selecting multiple images and videos at once)
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const input = e.target;
     const files = Array.from(input.files ?? []);
@@ -203,6 +228,13 @@ export function ProductEditorTabs({
         const formData = new FormData();
         formData.set("file", file);
         formData.set("altText", `${product.name} - ${file.name}`);
+        if (isVideoMimeType(file.type)) {
+          const dims = await readVideoDimensions(file);
+          if (dims) {
+            formData.set("width", String(dims.width));
+            formData.set("height", String(dims.height));
+          }
+        }
 
         const uploadRes = await fetch("/api/admin/media/upload", {
           method: "POST",
@@ -227,8 +259,8 @@ export function ProductEditorTabs({
     if (uploadedAssetIds.length === 0) {
       setError(
         failures.length > 0
-          ? `No images uploaded. ${failures.join("; ")}`
-          : "No images uploaded."
+          ? `No media uploaded. ${failures.join("; ")}`
+          : "No media uploaded."
       );
       setIsUploading(false);
       setUploadProgress(null);
@@ -245,7 +277,7 @@ export function ProductEditorTabs({
         setError(attachRes.error);
       } else {
         setSuccess(
-          `${uploadedAssetIds.length} image${
+          `${uploadedAssetIds.length} file${
             uploadedAssetIds.length === 1 ? "" : "s"
           } uploaded and attached to product gallery.`
         );
@@ -260,11 +292,16 @@ export function ProductEditorTabs({
     });
   };
 
+  // Product cards and cart use the first image, so mark that one as primary.
+  const primaryImageId = product.media.find(
+    (item) => !isVideoMimeType(item.mimeType)
+  )?.id;
+
   // Media detach
   const handleDetachMedia = async (mediaId: string) => {
     const confirmed = await confirm({
-      title: "Remove image?",
-      description: "Remove this image from the product gallery?",
+      title: "Remove media?",
+      description: "Remove this file from the product gallery?",
       confirmLabel: "Remove",
       destructive: true,
     });
@@ -278,7 +315,7 @@ export function ProductEditorTabs({
       if (res.error) {
         setError(res.error);
       } else {
-        setSuccess("Image detached from product.");
+        setSuccess("Media detached from product.");
       }
     });
   };
@@ -824,13 +861,13 @@ export function ProductEditorTabs({
               <div>
                 <CardTitle>Product Media Assets</CardTitle>
                 <CardDescription>
-                  Upload product photos and variant-specific imagery. Images are
-                  stored securely and verified.
+                  Upload product photos and videos. Images up to 10MB; MP4,
+                  WebM or MOV videos up to 100MB.
                 </CardDescription>
               </div>
               <label className="cursor-pointer">
                 <input
-                  accept="image/png,image/jpeg,image/webp,image/avif"
+                  accept="image/png,image/jpeg,image/webp,image/avif,video/mp4,video/webm,video/quicktime"
                   className="hidden"
                   disabled={isUploading}
                   multiple
@@ -842,7 +879,7 @@ export function ProductEditorTabs({
                     <UploadSimple className="mr-1.5" size={14} />
                     {isUploading
                       ? `Uploading${uploadProgress ? ` ${uploadProgress.done}/${uploadProgress.total}` : ""}...`
-                      : "Upload Images"}
+                      : "Upload Media"}
                   </span>
                 </Button>
               </label>
@@ -855,29 +892,47 @@ export function ProductEditorTabs({
                     size={40}
                   />
                   <p className="font-semibold text-sm">
-                    No images in this product gallery
+                    No media in this product gallery
                   </p>
                   <p className="mt-1 text-muted-foreground text-xs">
-                    Upload PNG, JPG, or WebP images to display on product detail
-                    pages. You can select multiple files at once.
+                    Upload PNG, JPG, or WebP images and MP4, WebM, or MOV videos
+                    to display on product detail pages. You can select multiple
+                    files at once.
                   </p>
                 </div>
               ) : (
                 <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-                  {product.media.map((item, index) => (
+                  {product.media.map((item) => (
                     <div
                       className="group relative overflow-hidden border border-border bg-card"
                       key={item.id}
                     >
                       <div className="relative aspect-square w-full bg-muted">
-                        <Image
-                          alt={item.altText}
-                          className="object-cover"
-                          fill
-                          sizes="(max-width: 768px) 50vw, 33vw"
-                          src={getMediaAssetUrl(item.storageKey)}
-                        />
-                        {index === 0 && (
+                        {isVideoMimeType(item.mimeType) ? (
+                          <>
+                            {/* biome-ignore lint/a11y/useMediaCaption: admin preview of an uploaded product video; no caption track exists. */}
+                            <video
+                              aria-label={item.altText}
+                              className="size-full bg-black object-contain"
+                              controls
+                              playsInline
+                              preload="metadata"
+                              src={getMediaAssetUrl(item.storageKey)}
+                            />
+                            <span className="absolute top-2 right-2 inline-flex items-center gap-1 bg-black/70 px-2 py-0.5 text-2xs font-bold text-white uppercase tracking-ui">
+                              <Play size={10} weight="fill" /> Video
+                            </span>
+                          </>
+                        ) : (
+                          <Image
+                            alt={item.altText}
+                            className="object-cover"
+                            fill
+                            sizes="(max-width: 768px) 50vw, 33vw"
+                            src={getMediaAssetUrl(item.storageKey)}
+                          />
+                        )}
+                        {item.id === primaryImageId && (
                           <span className="absolute top-2 left-2 bg-primary px-2 py-0.5 text-2xs font-bold text-primary-foreground uppercase tracking-ui">
                             Primary
                           </span>
@@ -889,7 +944,9 @@ export function ProductEditorTabs({
                         </p>
                         <p className="text-2xs text-muted-foreground">
                           {item.width}×{item.height} px ·{" "}
-                          {(item.bytes / 1024).toFixed(1)} KB
+                          {item.bytes >= 1024 * 1024
+                            ? `${(item.bytes / (1024 * 1024)).toFixed(1)} MB`
+                            : `${(item.bytes / 1024).toFixed(1)} KB`}
                         </p>
                         <div className="mt-3 flex items-center justify-between border-t border-border pt-2">
                           <span className="text-2xs text-muted-foreground">

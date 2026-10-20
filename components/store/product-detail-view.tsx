@@ -5,6 +5,7 @@ import {
   Bag,
   Check,
   Package,
+  Play,
   ShieldCheck,
   SpinnerGap,
   Truck,
@@ -37,6 +38,7 @@ export interface MediaData {
   altText: string;
   height: number;
   id: string;
+  isVideo: boolean;
   sortOrder: number;
   url: string;
   variantId: string | null;
@@ -160,7 +162,18 @@ export function ProductDetailView({ product }: ProductDetailProps) {
         {/* Gallery Section */}
         <div className="lg:col-span-7 space-y-4">
           <div className="relative aspect-square w-full overflow-hidden rounded-3xl border border-border/80 bg-card shadow-sm">
-            {activeMedia ? (
+            {activeMedia?.isVideo ? (
+              // biome-ignore lint/a11y/useMediaCaption: product videos are uploaded without caption tracks.
+              <video
+                aria-label={activeMedia.altText || product.name}
+                className="size-full bg-black object-contain"
+                controls
+                key={activeMedia.id}
+                playsInline
+                preload="metadata"
+                src={activeMedia.url}
+              />
+            ) : activeMedia ? (
               <Image
                 alt={activeMedia.altText || product.name}
                 className="object-cover"
@@ -196,13 +209,32 @@ export function ProductDetailView({ product }: ProductDetailProps) {
                   onClick={() => setActiveImageIndex(idx)}
                   type="button"
                 >
-                  <Image
-                    alt={m.altText || `${product.name} thumbnail ${idx + 1}`}
-                    className="object-cover"
-                    fill
-                    sizes="80px"
-                    src={m.url}
-                  />
+                  {m.isVideo ? (
+                    <>
+                      <video
+                        aria-hidden
+                        className="size-full bg-black object-cover"
+                        muted
+                        playsInline
+                        preload="metadata"
+                        src={`${m.url}#t=0.1`}
+                      />
+                      <span className="absolute inset-0 grid place-items-center bg-black/25 text-white">
+                        <Play size={22} weight="fill" />
+                      </span>
+                      <span className="sr-only">
+                        Play {product.name} video {idx + 1}
+                      </span>
+                    </>
+                  ) : (
+                    <Image
+                      alt={m.altText || `${product.name} thumbnail ${idx + 1}`}
+                      className="object-cover"
+                      fill
+                      sizes="80px"
+                      src={m.url}
+                    />
+                  )}
                 </button>
               ))}
             </div>
@@ -285,104 +317,100 @@ export function ProductDetailView({ product }: ProductDetailProps) {
           )}
 
           {/* Dual Purchasing Action Buttons */}
-          <div className="space-y-4 rounded-3xl border border-border/80 bg-card p-6 shadow-sm">
-            <p className="text-xs font-bold uppercase tracking-ui text-foreground">
-              Ways to Purchase
-            </p>
+          {(selectedVariant?.amazonEnabled ||
+            selectedVariant?.websiteEnabled) && (
+            <div className="space-y-4 rounded-3xl border border-border/80 bg-card p-6 shadow-sm">
+              <p className="text-xs font-bold uppercase tracking-ui text-foreground">
+                Ways to Purchase
+              </p>
 
-            {/* Path A: Amazon Outbound Link */}
-            {selectedVariant?.amazonEnabled && (
-              <div className="space-y-1.5">
-                <a
-                  className="flex w-full items-center justify-center gap-2 rounded-full bg-[#FF9900] hover:bg-[#FF9900]/90 text-black py-3.5 px-6 font-extrabold text-sm tracking-wide shadow-xs transition-all hover:scale-101"
-                  href={`/api/outbound/amazon?variantId=${selectedVariant.id}`}
-                  rel="noopener noreferrer"
-                  target="_blank"
-                >
-                  <span>Buy on Amazon Prime</span>
-                  <ArrowSquareOut size={16} weight="bold" />
-                </a>
-                <p className="text-center text-2xs text-muted-foreground">
-                  Order with your Amazon Prime account for fast delivery &
-                  verified returns.
-                </p>
-                <p className="text-center text-2xs font-semibold text-muted-foreground">
-                  Zencino coupon codes apply to zencino.com orders only.
-                </p>
-              </div>
-            )}
+              {/* Path A: Amazon Outbound Link */}
+              {selectedVariant?.amazonEnabled && (
+                <div className="space-y-1.5">
+                  <a
+                    className="flex w-full items-center justify-center gap-2 rounded-full bg-[#FF9900] hover:bg-[#FF9900]/90 text-black py-3.5 px-6 font-extrabold text-sm tracking-wide shadow-xs transition-all hover:scale-101"
+                    href={`/api/outbound/amazon?variantId=${selectedVariant.id}`}
+                    rel="noopener noreferrer"
+                    target="_blank"
+                  >
+                    <span>Buy on Amazon Prime</span>
+                    <ArrowSquareOut size={16} weight="bold" />
+                  </a>
+                  <p className="text-center text-2xs text-muted-foreground">
+                    Order with your Amazon Prime account for fast delivery &
+                    verified returns.
+                  </p>
+                  <p className="text-center text-2xs font-semibold text-muted-foreground">
+                    Zencino coupon codes apply to zencino.com orders only.
+                  </p>
+                </div>
+              )}
 
-            {/* Path B: Direct Storefront Checkout */}
-            {selectedVariant?.websiteEnabled && (
-              <div className="pt-1 space-y-1.5">
-                {addedSuccess ? (
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between rounded-2xl bg-emerald-50 border border-emerald-200 p-3.5 text-xs font-semibold text-emerald-900">
-                      <div className="flex items-center gap-2">
-                        <Check
-                          className="text-emerald-700"
-                          size={18}
-                          weight="bold"
-                        />
-                        <span>Added to your shopping bag!</span>
+              {/* Path B: Direct Storefront Checkout */}
+              {selectedVariant?.websiteEnabled && (
+                <div className="pt-1 space-y-1.5">
+                  {addedSuccess ? (
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between rounded-2xl bg-emerald-50 border border-emerald-200 p-3.5 text-xs font-semibold text-emerald-900">
+                        <div className="flex items-center gap-2">
+                          <Check
+                            className="text-emerald-700"
+                            size={18}
+                            weight="bold"
+                          />
+                          <span>Added to your shopping bag!</span>
+                        </div>
+                        <Link
+                          className="rounded-full bg-primary text-primary-foreground px-4 py-1.5 text-xs font-bold hover:bg-primary/90 uppercase tracking-ui shadow-2xs"
+                          href="/cart"
+                        >
+                          View Bag &rarr;
+                        </Link>
                       </div>
-                      <Link
-                        className="rounded-full bg-primary text-primary-foreground px-4 py-1.5 text-xs font-bold hover:bg-primary/90 uppercase tracking-ui shadow-2xs"
-                        href="/cart"
+                      <button
+                        className="w-full text-center text-2xs text-muted-foreground hover:text-foreground py-1 font-medium transition-colors"
+                        disabled={isAdding}
+                        onClick={() => handleAddToCart(selectedVariant.id)}
+                        type="button"
                       >
-                        View Bag &rarr;
-                      </Link>
+                        + Add another piece
+                      </button>
                     </div>
+                  ) : (
                     <button
-                      className="w-full text-center text-2xs text-muted-foreground hover:text-foreground py-1 font-medium transition-colors"
+                      className="flex w-full items-center justify-center gap-2 rounded-full bg-primary text-primary-foreground py-3.5 px-6 font-extrabold text-sm hover:bg-primary/90 shadow-sm transition-all hover:scale-101 disabled:opacity-50"
                       disabled={isAdding}
                       onClick={() => handleAddToCart(selectedVariant.id)}
                       type="button"
                     >
-                      + Add another piece
+                      {isAdding ? (
+                        <>
+                          <SpinnerGap className="animate-spin" size={18} />
+                          <span>Adding to Bag...</span>
+                        </>
+                      ) : (
+                        <>
+                          <Bag size={18} weight="bold" />
+                          <span>Order Direct with Zencino</span>
+                        </>
+                      )}
                     </button>
-                  </div>
-                ) : (
-                  <button
-                    className="flex w-full items-center justify-center gap-2 rounded-full bg-primary text-primary-foreground py-3.5 px-6 font-extrabold text-sm hover:bg-primary/90 shadow-sm transition-all hover:scale-101 disabled:opacity-50"
-                    disabled={isAdding}
-                    onClick={() => handleAddToCart(selectedVariant.id)}
-                    type="button"
-                  >
-                    {isAdding ? (
-                      <>
-                        <SpinnerGap className="animate-spin" size={18} />
-                        <span>Adding to Bag...</span>
-                      </>
-                    ) : (
-                      <>
-                        <Bag size={18} weight="bold" />
-                        <span>Order Direct with Zencino</span>
-                      </>
-                    )}
-                  </button>
-                )}
+                  )}
 
-                {cartError && (
-                  <p className="mt-2 text-xs text-destructive text-center font-medium">
-                    {cartError}
+                  {cartError && (
+                    <p className="mt-2 text-xs text-destructive text-center font-medium">
+                      {cartError}
+                    </p>
+                  )}
+
+                  <p className="text-center text-2xs text-muted-foreground">
+                    Direct orders ship within 24h · Free delivery &gt; ₹999 ·
+                    Secure checkout
                   </p>
-                )}
-
-                <p className="text-center text-2xs text-muted-foreground">
-                  Direct orders ship within 24h · Free delivery &gt; ₹999 ·
-                  Secure checkout
-                </p>
-              </div>
-            )}
-
-            {!selectedVariant?.amazonEnabled &&
-              !selectedVariant?.websiteEnabled && (
-                <div className="p-3 text-center text-xs text-muted-foreground">
-                  This variant is currently being replenished.
                 </div>
               )}
-          </div>
+            </div>
+          )}
 
           {/* Trust Value Badges */}
           <div className="grid grid-cols-2 gap-3 pt-2">
@@ -403,6 +431,18 @@ export function ProductDetailView({ product }: ProductDetailProps) {
               <span>Protective cushioned packaging</span>
             </div>
           </div>
+
+          {/* Description */}
+          {product.description?.trim() && (
+            <div className="border-t border-border/80 pt-6">
+              <h3 className="text-xs font-bold uppercase tracking-ui text-foreground mb-2">
+                Description
+              </h3>
+              <p className="whitespace-pre-line text-sm leading-relaxed text-muted-foreground">
+                {product.description.trim()}
+              </p>
+            </div>
+          )}
 
           {/* Specifications Table */}
           {Object.keys(product.specifications).length > 0 && (

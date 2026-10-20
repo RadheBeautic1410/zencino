@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, ilike, inArray, or, sql } from "drizzle-orm";
+import { and, asc, desc, eq, ilike, inArray, notLike, or, sql } from "drizzle-orm";
 import {
   categories,
   collectionProducts,
@@ -12,7 +12,7 @@ import {
   variantChannels,
 } from "@/db/schema/catalog";
 import { db } from "@/lib/db";
-import { getMediaAssetUrl } from "@/lib/media/url";
+import { getMediaAssetUrl, isVideoMimeType } from "@/lib/media/url";
 
 export async function getStorefrontCategories() {
   return db
@@ -252,7 +252,12 @@ export async function getStorefrontProducts(
     })
     .from(productMedia)
     .innerJoin(mediaAssets, eq(productMedia.assetId, mediaAssets.id))
-    .where(inArray(productMedia.productId, pIds))
+    .where(
+      and(
+        inArray(productMedia.productId, pIds),
+        notLike(mediaAssets.mimeType, "video/%")
+      )
+    )
     .orderBy(asc(productMedia.sortOrder));
 
   const enrichedProducts = productRows.map((prod) => {
@@ -386,6 +391,7 @@ export async function getStorefrontProductBySlug(slug: string) {
       sortOrder: productMedia.sortOrder,
       storageKey: mediaAssets.storageKey,
       altText: mediaAssets.altText,
+      mimeType: mediaAssets.mimeType,
       width: mediaAssets.width,
       height: mediaAssets.height,
     })
@@ -416,6 +422,7 @@ export async function getStorefrontProductBySlug(slug: string) {
       media: media.map((m) => ({
         ...m,
         url: getMediaAssetUrl(m.storageKey),
+        isVideo: isVideoMimeType(m.mimeType),
       })),
     },
     redirectUrl: null,
@@ -519,7 +526,12 @@ export async function getStorefrontCategoryTiles(): Promise<
           })
           .from(productMedia)
           .innerJoin(mediaAssets, eq(productMedia.assetId, mediaAssets.id))
-          .where(inArray(productMedia.productId, productIds))
+          .where(
+            and(
+              inArray(productMedia.productId, productIds),
+              notLike(mediaAssets.mimeType, "video/%")
+            )
+          )
           .orderBy(asc(productMedia.sortOrder))
       : [];
 

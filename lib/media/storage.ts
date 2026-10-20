@@ -7,7 +7,9 @@ import { mediaAssets, productMedia } from "@/db/schema/catalog";
 import { db } from "@/lib/db";
 import { env } from "@/lib/env";
 
-export { getMediaAssetUrl } from "./url";
+import { isVideoMimeType } from "./url";
+
+export { getMediaAssetUrl, isVideoMimeType } from "./url";
 
 const ALLOWED_MIME_TYPES: Record<string, string> = {
   "image/jpeg": ".jpg",
@@ -16,10 +18,20 @@ const ALLOWED_MIME_TYPES: Record<string, string> = {
   "image/webp": ".webp",
   "image/avif": ".avif",
   "image/svg+xml": ".svg",
+  "video/mp4": ".mp4",
+  "video/webm": ".webm",
+  "video/quicktime": ".mov",
 };
+
+const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
+const MAX_VIDEO_BYTES = 100 * 1024 * 1024;
 
 export function isAllowedMimeType(mime: string): boolean {
   return mime in ALLOWED_MIME_TYPES;
+}
+
+export function maxUploadBytes(mime: string): number {
+  return isVideoMimeType(mime) ? MAX_VIDEO_BYTES : MAX_IMAGE_BYTES;
 }
 
 export function parseImageDimensions(
@@ -123,7 +135,7 @@ export async function saveMediaAsset(options: SaveMediaOptions) {
   } = options;
 
   if (!isAllowedMimeType(mimeType)) {
-    throw new Error(`Unsupported image type: ${mimeType}`);
+    throw new Error(`Unsupported media type: ${mimeType}`);
   }
 
   const checksum = createHash("sha256").update(buffer).digest("hex");
@@ -153,7 +165,10 @@ export async function saveMediaAsset(options: SaveMediaOptions) {
     await writeFile(path.join(uploadDir, uniqueKey), buffer);
   }
 
-  const detectedDims = parseImageDimensions(buffer, mimeType);
+  // Video dimensions are sent by the browser as customWidth/customHeight; fall back to 16:9.
+  const detectedDims = isVideoMimeType(mimeType)
+    ? { width: 1920, height: 1080 }
+    : parseImageDimensions(buffer, mimeType);
   const width = customWidth || detectedDims.width;
   const height = customHeight || detectedDims.height;
 

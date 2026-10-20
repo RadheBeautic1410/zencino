@@ -19,7 +19,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const title = product.seoTitle || `${product.name} | Zencino`;
   const description =
     product.seoDescription || product.description.slice(0, 160);
-  const primaryImg = product.media[0]?.url;
+  const primaryImg = product.media.find((m) => !m.isVideo)?.url;
 
   return {
     title,
@@ -62,7 +62,7 @@ export default async function ProductDetailPage({ params }: Props) {
     "@type": "Product",
     name: product.name,
     description: product.description,
-    image: product.media.map((m) => m.url),
+    image: product.media.filter((m) => !m.isVideo).map((m) => m.url),
     sku: product.variants[0]?.sku,
     offers: {
       "@type": "AggregateOffer",
