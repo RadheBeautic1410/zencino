@@ -25,6 +25,8 @@ const envSchema = z
     RAZORPAY_KEY_ID: optionalString,
     RAZORPAY_KEY_SECRET: optionalString,
     NEXT_PUBLIC_APP_URL: z.url(),
+    // Content of Search Console's HTML-tag verification (<meta name="google-site-verification">).
+    GOOGLE_SITE_VERIFICATION: optionalString,
     NODE_ENV: z
       .enum(["development", "test", "production"])
       .default("development"),

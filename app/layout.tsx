@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Fraunces, Inter } from "next/font/google";
 import type { ReactNode } from "react";
 import { PRODUCT_DESCRIPTION, PRODUCT_NAME } from "@/config/platform";
+import { env } from "@/lib/env";
 import { cn } from "@/lib/utils";
 import "./globals.css";
 
@@ -25,6 +26,10 @@ export const metadata: Metadata = {
   },
   description: PRODUCT_DESCRIPTION,
   icons: { icon: "/brand-mark.svg" },
+  metadataBase: new URL(env.NEXT_PUBLIC_APP_URL),
+  verification: env.GOOGLE_SITE_VERIFICATION
+    ? { google: env.GOOGLE_SITE_VERIFICATION }
+    : undefined,
 };
 
 export default function RootLayout({

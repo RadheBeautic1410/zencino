@@ -16,7 +16,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return { title: "Product Not Found - Zencino" };
   }
 
-  const title = product.seoTitle || `${product.name} | Zencino`;
+  // The root layout's title template appends " | Zencino"; drop a brand suffix
+  // already present in the SEO title so it is not repeated.
+  const title = (product.seoTitle || product.name).replace(
+    /\s*[|–-]\s*Zencino\s*$/i,
+    ""
+  );
   const description =
     product.seoDescription || product.description.slice(0, 160);
   const primaryImg = product.media.find((m) => !m.isVideo)?.url;

@@ -14,6 +14,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { addToCartAction } from "@/app/actions/cart";
+import { ProductShare } from "@/components/store/product-share";
 
 export interface VariantData {
   active: boolean;
@@ -411,6 +412,8 @@ export function ProductDetailView({ product }: ProductDetailProps) {
               )}
             </div>
           )}
+
+          <ProductShare name={product.name} price={price} slug={product.slug} />
 
           {/* Trust Value Badges */}
           <div className="grid grid-cols-2 gap-3 pt-2">
