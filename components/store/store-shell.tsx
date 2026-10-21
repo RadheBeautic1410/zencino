@@ -27,13 +27,10 @@ import {
   useState,
 } from "react";
 import { CampaignTracker } from "@/components/store/campaign-tracker";
+import { FirebaseAnalytics } from "@/components/store/firebase-analytics";
 import { NewsletterSignup } from "@/components/store/newsletter-signup";
 import { WaveEdge } from "@/components/store/wave-edge";
-import {
-  SELLER_INFO,
-  SOCIAL_LINKS,
-  WHATSAPP_NUMBER,
-} from "@/config/platform";
+import { SELLER_INFO, SOCIAL_LINKS, WHATSAPP_NUMBER } from "@/config/platform";
 
 /** Shop destinations, shared by the desktop menu and the mobile drawer. */
 const SHOP_LINKS = [
@@ -315,6 +312,7 @@ export function StoreShell({ children }: { children: ReactNode }) {
       }
     >
       <CampaignTracker />
+      <FirebaseAnalytics />
       <a
         className="sr-only bg-primary font-semibold text-primary-foreground focus:not-sr-only focus:block focus:p-4"
         href="#main-content"
