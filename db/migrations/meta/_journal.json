@@ -85,6 +85,13 @@
       "when": 1791944839368,
       "tag": "0011_shipping_pincode_rates",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1792840058246,
+      "tag": "0012_blog_posts",
+      "breakpoints": true
     }
   ]
 }

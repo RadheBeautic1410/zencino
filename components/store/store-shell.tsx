@@ -73,6 +73,7 @@ const COLLECTION_LINKS = [
 /** Flat links sitting to the right of the two menus. */
 const NAV_LINKS = [
   { href: "/about", label: "About" },
+  { href: "/blog", label: "Blog" },
   { href: "/#process", label: "Our Process" },
   { href: "/faq", label: "FAQs" },
 ];
@@ -99,6 +100,7 @@ const FOOTER_COLUMNS = [
     title: "Quick Links",
     links: [
       { href: "/about", label: "About Us" },
+      { href: "/blog", label: "Blog" },
       { href: "/#process", label: "Our Process" },
       { href: "/faq", label: "FAQs" },
       { href: "/contact", label: "Contact" },
