@@ -1,5 +1,6 @@
 import { eq } from "drizzle-orm";
 import type { MetadataRoute } from "next";
+import { blogPosts } from "@/db/schema/blog";
 import { categories, collections, products } from "@/db/schema/catalog";
 import { db } from "@/lib/db";
 import { env } from "@/lib/env";
@@ -111,8 +112,27 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.7,
     }));
 
+    const pubPosts = await db
+      .select({ slug: blogPosts.slug, updatedAt: blogPosts.updatedAt })
+      .from(blogPosts)
+      .where(eq(blogPosts.status, "published"));
+
+    const blogRoutes: MetadataRoute.Sitemap = pubPosts.map((p) => ({
+      url: `${baseUrl}/blog/${p.slug}`,
+      lastModified: p.updatedAt,
+      changeFrequency: "monthly",
+      priority: 0.6,
+    }));
+
     return [
       ...staticRoutes,
+      {
+        url: `${baseUrl}/blog`,
+        lastModified: new Date(),
+        changeFrequency: "weekly",
+        priority: 0.6,
+      },
+      ...blogRoutes,
       ...categoryRoutes,
       ...collectionRoutes,
       ...productRoutes,

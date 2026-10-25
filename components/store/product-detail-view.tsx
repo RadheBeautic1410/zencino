@@ -12,7 +12,7 @@ import {
 } from "@phosphor-icons/react";
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { addToCartAction } from "@/app/actions/cart";
 import { ProductShare } from "@/components/store/product-share";
 
@@ -119,6 +119,30 @@ export function ProductDetailView({ product }: ProductDetailProps) {
 
   const activeMedia = product.media[activeImageIndex] || product.media[0];
 
+  // Swipe left/right on the main image to change media
+  const touchStart = useRef<{ x: number; y: number } | null>(null);
+  const handleTouchStart = (e: React.TouchEvent) => {
+    const t = e.touches[0];
+    touchStart.current = { x: t.clientX, y: t.clientY };
+  };
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    const start = touchStart.current;
+    touchStart.current = null;
+    const count = product.media.length;
+    if (!start || count < 2) {
+      return;
+    }
+    const t = e.changedTouches[0];
+    const dx = t.clientX - start.x;
+    const dy = t.clientY - start.y;
+    if (Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy)) {
+      return;
+    }
+    setActiveImageIndex((i) =>
+      dx < 0 ? (i + 1) % count : (i - 1 + count) % count
+    );
+  };
+
   const price = selectedVariant?.priceMinor
     ? selectedVariant.priceMinor / 100
     : null;
@@ -129,11 +153,11 @@ export function ProductDetailView({ product }: ProductDetailProps) {
       : null;
 
   return (
-    <div className="mx-auto max-w-7xl px-6 py-8 md:py-14">
+    <div className="mx-auto w-full max-w-7xl overflow-x-hidden px-4 py-6 sm:px-6 md:py-14">
       {/* Breadcrumb Navigation */}
       <nav
         aria-label="Breadcrumb"
-        className="mb-6 flex items-center gap-2 text-xs text-muted-foreground"
+        className="mb-4 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground md:mb-6"
       >
         <Link className="hover:text-primary transition-colors" href="/">
           Home
@@ -154,15 +178,15 @@ export function ProductDetailView({ product }: ProductDetailProps) {
           </>
         )}
         <span>/</span>
-        <span className="text-foreground font-medium truncate max-w-xs">
+        <span className="text-foreground font-medium max-w-full truncate">
           {product.name}
         </span>
       </nav>
 
-      <div className="grid gap-12 lg:grid-cols-12 lg:items-start">
+      <div className="grid gap-8 lg:gap-12 lg:grid-cols-12 lg:items-start">
         {/* Gallery Section */}
-        <div className="lg:col-span-7 space-y-4">
-          <div className="relative aspect-square w-full overflow-hidden rounded-3xl border border-border/80 bg-card shadow-sm">
+        <div className="min-w-0 space-y-4 lg:col-span-7">
+          <div onTouchEnd={handleTouchEnd} onTouchStart={handleTouchStart} className="relative aspect-square w-full touch-pan-y overflow-hidden rounded-3xl border border-border/80 bg-card shadow-sm">
             {activeMedia?.isVideo ? (
               // biome-ignore lint/a11y/useMediaCaption: product videos are uploaded without caption tracks.
               <video
@@ -201,7 +225,7 @@ export function ProductDetailView({ product }: ProductDetailProps) {
             <div className="flex gap-3 overflow-x-auto pb-2 pt-1">
               {product.media.map((m, idx) => (
                 <button
-                  className={`relative size-20 shrink-0 overflow-hidden rounded-2xl border-2 transition-all duration-200 ${
+                  className={`relative size-16 shrink-0 sm:size-20 overflow-hidden rounded-2xl border-2 transition-all duration-200 ${
                     activeImageIndex === idx
                       ? "border-primary ring-2 ring-primary/20 scale-102 shadow-xs"
                       : "border-border/80 hover:border-foreground/40 opacity-75 hover:opacity-100"
@@ -243,20 +267,20 @@ export function ProductDetailView({ product }: ProductDetailProps) {
         </div>
 
         {/* Product Purchase & Option Details */}
-        <div className="lg:col-span-5 space-y-6">
+        <div className="min-w-0 space-y-5 md:space-y-6 lg:col-span-5">
           {product.category && (
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100/80 text-emerald-800 text-xs font-bold tracking-wider uppercase">
               <span>{product.category.name}</span>
             </div>
           )}
 
-          <h1 className="font-heading text-3xl font-extrabold tracking-tight md:text-4xl text-foreground leading-tight">
+          <h1 className="font-heading text-2xl font-extrabold tracking-tight sm:text-3xl md:text-4xl text-foreground leading-tight break-words">
             {product.name}
           </h1>
 
           {/* Price Header */}
           <div className="border-b border-border/80 pb-5">
-            <div className="flex items-baseline gap-3">
+            <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
               {price === null ? (
                 <span className="text-xl font-semibold text-muted-foreground">
                   Price on Request
@@ -320,7 +344,7 @@ export function ProductDetailView({ product }: ProductDetailProps) {
           {/* Dual Purchasing Action Buttons */}
           {(selectedVariant?.amazonEnabled ||
             selectedVariant?.websiteEnabled) && (
-            <div className="space-y-4 rounded-3xl border border-border/80 bg-card p-6 shadow-sm">
+            <div className="space-y-4 rounded-2xl border border-border/80 bg-card p-4 shadow-sm sm:rounded-3xl sm:p-6">
               <p className="text-xs font-bold uppercase tracking-ui text-foreground">
                 Ways to Purchase
               </p>
@@ -352,7 +376,7 @@ export function ProductDetailView({ product }: ProductDetailProps) {
                 <div className="pt-1 space-y-1.5">
                   {addedSuccess ? (
                     <div className="space-y-2">
-                      <div className="flex items-center justify-between rounded-2xl bg-emerald-50 border border-emerald-200 p-3.5 text-xs font-semibold text-emerald-900">
+                      <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl bg-emerald-50 border border-emerald-200 p-3.5 text-xs font-semibold text-emerald-900">
                         <div className="flex items-center gap-2">
                           <Check
                             className="text-emerald-700"
@@ -416,7 +440,7 @@ export function ProductDetailView({ product }: ProductDetailProps) {
           <ProductShare name={product.name} price={price} slug={product.slug} />
 
           {/* Trust Value Badges */}
-          <div className="grid grid-cols-2 gap-3 pt-2">
+          <div className="grid grid-cols-1 gap-3 pt-2 sm:grid-cols-2">
             <div className="flex items-center gap-2.5 p-3 rounded-2xl bg-card border border-border/70 text-xs text-foreground">
               <ShieldCheck
                 className="text-emerald-700 shrink-0"

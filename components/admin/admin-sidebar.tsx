@@ -53,6 +53,7 @@ const commerceNavItems = [
 
 const operationsNavItems = [
   { href: "/admin/content", label: "Content", icon: Article, exact: false },
+  { href: "/admin/blog", label: "Blog", icon: Article, exact: false },
   { href: "/admin/support", label: "Support", icon: Headset, exact: false },
   {
     href: "/admin/campaigns",
