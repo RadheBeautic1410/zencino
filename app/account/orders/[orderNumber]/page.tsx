@@ -7,7 +7,7 @@ import { getSecureCustomerOrder } from "@/lib/commerce/customer-account";
 import { getOrderReturnAndRefundDetails } from "@/lib/commerce/returns";
 
 export const metadata = {
-  title: "Order Details - Zencino",
+  title: "Order Details",
   robots: { index: false, follow: false },
 };
 

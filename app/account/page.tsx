@@ -8,7 +8,7 @@ import { getCustomerOrders } from "@/lib/commerce/orders";
 import { formatDateTime } from "@/lib/utils";
 
 export const metadata = {
-  title: "My account - Zencino",
+  title: "My account",
   robots: { index: false, follow: false },
 };
 

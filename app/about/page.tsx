@@ -8,7 +8,8 @@ import {
 } from "@/lib/commerce/content";
 
 export const metadata: Metadata = {
-  title: "About Zencino - Our Story & Craft",
+  alternates: { canonical: "/about" },
+  title: "About Us - Our Story & Craft",
   description:
     "Learn about Zencino's mission to bring calm and functional order to everyday living spaces.",
 };

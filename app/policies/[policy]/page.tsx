@@ -19,10 +19,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     "policy"
   );
   if (!data?.title) {
-    return { title: "Policy Not Found - Zencino" };
+    return { title: "Policy Not Found" };
   }
   return {
-    title: `${data.title} - Zencino Policies`,
+    title: data.title,
+    alternates: { canonical: `/policies/${policy}` },
     description: data.subtitle,
   };
 }

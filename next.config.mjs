@@ -17,6 +17,13 @@ const nextConfig = {
   async redirects() {
     return [
       {
+        // One canonical host for search engines: www.zencino.com -> zencino.com.
+        source: "/:path*",
+        has: [{ type: "host", value: "www.zencino.com" }],
+        destination: "https://zencino.com/:path*",
+        permanent: true,
+      },
+      {
         source: "/orbit/:path*",
         destination: "/admin/:path*",
         permanent: true,

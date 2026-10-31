@@ -7,7 +7,8 @@ import {
 } from "@/lib/commerce/content";
 
 export const metadata: Metadata = {
-  title: "Frequently Asked Questions - Zencino",
+  alternates: { canonical: "/faq" },
+  title: "Frequently Asked Questions",
   description:
     "Find answers to common questions about ordering, Amazon purchasing, acrylic care, and shipping.",
 };

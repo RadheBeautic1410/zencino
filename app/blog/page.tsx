@@ -5,7 +5,8 @@ import { StoreShell } from "@/components/store/store-shell";
 import { getPublishedPosts } from "@/lib/blog/queries";
 
 export const metadata: Metadata = {
-  title: "Blog - Zencino",
+  alternates: { canonical: "/blog" },
+  title: "Blog",
   description:
     "Ideas, guides and stories from Zencino: acrylic home, kitchen and office essentials.",
 };

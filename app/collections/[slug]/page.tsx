@@ -18,11 +18,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const collection = collections.find((c) => c.slug === slug);
 
   if (!collection) {
-    return { title: "Collection Not Found - Zencino" };
+    return { title: "Collection Not Found" };
   }
 
   return {
-    title: `${collection.name} Collection - Zencino`,
+    title: `${collection.name} Collection`,
+    alternates: { canonical: `/collections/${slug}` },
     description:
       collection.description ||
       `Discover the ${collection.name} curated collection from Zencino.`,

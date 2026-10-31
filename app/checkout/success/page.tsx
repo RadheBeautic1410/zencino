@@ -4,7 +4,7 @@ import { StoreShell } from "@/components/store/store-shell";
 import { getOrderDetails } from "@/lib/commerce/orders";
 
 export const metadata = {
-  title: "Order Received - Zencino",
+  title: "Order Received",
   description: "Your order details and payment verification status.",
 };
 

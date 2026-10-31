@@ -13,7 +13,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { product } = await getStorefrontProductBySlug(slug);
 
   if (!product) {
-    return { title: "Product Not Found - Zencino" };
+    return { title: "Product Not Found" };
   }
 
   // The root layout's title template appends " | Zencino"; drop a brand suffix
@@ -29,6 +29,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title,
     description,
+    alternates: { canonical: `/products/${slug}` },
     openGraph: {
       title,
       description,

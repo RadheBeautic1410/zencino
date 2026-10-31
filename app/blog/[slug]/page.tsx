@@ -15,10 +15,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const post = await getPublishedPostBySlug(slug).catch(() => null);
   if (!post) {
-    return { title: "Post Not Found - Zencino" };
+    return { title: "Post Not Found" };
   }
   return {
-    title: post.seoTitle || `${post.title} - Zencino`,
+    // The root layout's title template appends " | Zencino"; drop a brand
+    // suffix already present in the SEO title so it is not repeated.
+    title: (post.seoTitle || post.title).replace(/\s*[|–-]\s*Zencino\s*$/i, ""),
+    alternates: { canonical: `/blog/${slug}` },
     description: post.seoDescription || post.excerpt || undefined,
     openGraph: post.coverImageUrl
       ? { images: [post.coverImageUrl] }
