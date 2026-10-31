@@ -9,7 +9,7 @@ import { getCurrentSession } from "@/lib/authz";
 import { getOrderDetails } from "@/lib/commerce/orders";
 
 export const metadata = {
-  title: "Tax Invoice - Zencino",
+  title: "Tax Invoice",
   robots: { index: false, follow: false },
 };
 

@@ -8,7 +8,8 @@ import {
 } from "@/lib/catalog/storefront";
 
 export const metadata: Metadata = {
-  title: "All Products - Zencino",
+  alternates: { canonical: "/products" },
+  title: "All Products",
   description:
     "Browse Zencino's full catalog of acrylic organizers, home and kitchen essentials.",
 };

@@ -10,7 +10,7 @@ import { getOrderDetails } from "@/lib/commerce/orders";
 import { getOrderReturnAndRefundDetails } from "@/lib/commerce/returns";
 
 export const metadata = {
-  title: "GST Credit Note - Zencino",
+  title: "GST Credit Note",
   robots: { index: false, follow: false },
 };
 

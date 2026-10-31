@@ -2,7 +2,7 @@
 import { StoreShell } from "@/components/store/store-shell";
 
 export const metadata = {
-  title: "Track Your Order - Zencino",
+  title: "Track Your Order",
   description:
     "Check live delivery milestones, courier assignment, and AWB tracking for your Zencino direct orders.",
 };

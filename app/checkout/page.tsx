@@ -6,7 +6,7 @@ import { getCartDetails } from "@/lib/commerce/cart";
 import { getCartPricing } from "@/lib/commerce/coupons";
 
 export const metadata: Metadata = {
-  title: "Checkout & Delivery - Zencino",
+  title: "Checkout & Delivery",
   description:
     "Provide shipping details and generate a verified checkout quote for your Zencino order.",
 };
@@ -43,10 +43,10 @@ export default async function CheckoutPage() {
     <StoreShell>
       <CheckoutView
         cart={cart}
-        pricing={pricing}
         initialEmail={session?.user?.email || ""}
         initialName={session?.user?.name || ""}
         isLoggedIn={Boolean(session?.user)}
+        pricing={pricing}
         savedAddresses={savedAddresses}
       />
     </StoreShell>

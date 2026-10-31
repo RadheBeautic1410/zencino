@@ -6,7 +6,7 @@ import { requireSession } from "@/lib/authz";
 import { getCustomerAddresses } from "@/lib/commerce/customer-account";
 
 export const metadata = {
-  title: "Delivery Addresses - Zencino",
+  title: "Delivery Addresses",
   robots: { index: false, follow: false },
 };
 

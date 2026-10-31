@@ -17,9 +17,9 @@ export async function generateMetadata({
 }: Props): Promise<Metadata> {
   const { q } = await searchParams;
   return {
-    title: q
-      ? `Search results for "${q}" - Zencino`
-      : "Search Catalog - Zencino",
+    title: q ? `Search results for "${q}"` : "Search Catalog",
+    // Result pages duplicate product listings; let crawlers follow, not index.
+    robots: { index: false, follow: true },
   };
 }
 

@@ -6,7 +6,7 @@ import { getCartDetails } from "@/lib/commerce/cart";
 import { getCartPricing } from "@/lib/commerce/coupons";
 
 export const metadata: Metadata = {
-  title: "Shopping Bag - Zencino",
+  title: "Shopping Bag",
   description:
     "Review items in your Zencino shopping bag before proceeding to delivery checkout.",
 };

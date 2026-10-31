@@ -27,6 +27,7 @@ import {
 } from "@/lib/commerce/content";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/" },
   title: {
     absolute: "Zencino — Crystal-Clear Acrylic Organizers & Home Essentials",
   },

@@ -18,11 +18,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const category = categories.find((c) => c.slug === slug);
 
   if (!category) {
-    return { title: "Category Not Found - Zencino" };
+    return { title: "Category Not Found" };
   }
 
   return {
-    title: `${category.name} - Zencino`,
+    title: category.name,
+    alternates: { canonical: `/categories/${slug}` },
     description:
       category.description || `Discover ${category.name} from Zencino.`,
   };
