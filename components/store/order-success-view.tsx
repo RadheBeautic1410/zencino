@@ -9,7 +9,9 @@ import {
   Truck,
 } from "@phosphor-icons/react";
 import Link from "next/link";
+import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { trackFunnel } from "@/lib/analytics/track";
 
 export interface OrderSuccessProps {
   address: {
@@ -62,6 +64,34 @@ export function OrderSuccessView({
 }: OrderSuccessProps) {
   const isUnderReview =
     order.status === "payment_review" || order.paymentStatus === "under_review";
+
+  // Funnel: report the purchase to GA4 / Meta once per order, not on reloads
+  useEffect(() => {
+    if (order.status === "cancelled") {
+      return;
+    }
+    const storageKey = `zen_purchase_tracked:${order.orderNumber}`;
+    try {
+      if (localStorage.getItem(storageKey)) {
+        return;
+      }
+      localStorage.setItem(storageKey, "1");
+    } catch {
+      // storage blocked: still report once for this page load
+    }
+    trackFunnel("purchase", {
+      transactionId: order.orderNumber,
+      valueMinor: order.totalMinor,
+      items: items.map((item) => ({
+        id: item.sku,
+        name: item.productName,
+        variant: item.variantTitle,
+        priceMinor: item.unitPriceMinor,
+        quantity: item.quantity,
+      })),
+    });
+  }, [order.orderNumber, order.status, order.totalMinor, items]);
+
   return (
     <div className="mx-auto max-w-4xl px-6 py-12 md:py-20">
       {/* Top Banner */}

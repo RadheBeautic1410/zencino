@@ -3,6 +3,7 @@
 import { usePathname, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useRef } from "react";
 import { recordClientAnalyticsAction } from "@/app/actions/campaigns";
+import { isInternalVisitor, markInternalVisitor } from "@/lib/analytics/track";
 
 const COOKIE_MAX_AGE_SECONDS = 2_592_000; // 30 days
 
@@ -21,6 +22,9 @@ function TrackerContent() {
   const trackedRef = useRef<string | null>(null);
 
   useEffect(() => {
+    if (isInternalVisitor()) {
+      return;
+    }
     try {
       // 1. Resolve or create anonymous session ID
       let sessionId = localStorage.getItem("zen_anon_session");
@@ -77,7 +81,13 @@ function TrackerContent() {
           campaignCode: activeCampaignCode,
           path: pathname,
           anonymousSessionId: sessionId,
-        }).catch(() => {
+        })
+          .then((res) => {
+            if (res.internal) {
+              markInternalVisitor();
+            }
+          })
+          .catch(() => {
           // silent error handling for analytics
         });
       }

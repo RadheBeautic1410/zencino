@@ -28,6 +28,7 @@ import {
 } from "react";
 import { CampaignTracker } from "@/components/store/campaign-tracker";
 import { FirebaseAnalytics } from "@/components/store/firebase-analytics";
+import { MetaPixel } from "@/components/store/meta-pixel";
 import { NewsletterSignup } from "@/components/store/newsletter-signup";
 import { WaveEdge } from "@/components/store/wave-edge";
 import { SELLER_INFO, SOCIAL_LINKS, WHATSAPP_NUMBER } from "@/config/platform";
@@ -315,6 +316,7 @@ export function StoreShell({ children }: { children: ReactNode }) {
     >
       <CampaignTracker />
       <FirebaseAnalytics />
+      <MetaPixel />
       <a
         className="sr-only bg-primary font-semibold text-primary-foreground focus:not-sr-only focus:block focus:p-4"
         href="#main-content"

@@ -18,7 +18,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { saveAddressAction } from "@/app/actions/addresses";
 import { getCheckoutPricingAction } from "@/app/actions/shipping";
 import {
@@ -29,6 +29,7 @@ import { CouponBox } from "@/components/store/coupon-box";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { trackFunnel } from "@/lib/analytics/track";
 import type { CartPricing } from "@/lib/commerce/coupons";
 
 export interface CheckoutCartItem {
@@ -114,7 +115,7 @@ export function CheckoutView({
   // Shipping is charged per kg by delivery PIN code, so re-price when it changes.
   const [pricing, setPricing] = useState(initialPricing);
   useEffect(() => {
-    const pin = postcode.replace(/D/g, "");
+    const pin = postcode.replace(/\D/g, "");
     if (pin.length !== 6) {
       setPricing(initialPricing);
       return;
@@ -168,6 +169,31 @@ export function CheckoutView({
   const subtotal = cart.subtotalMinor / 100;
   const estimatedTotal = pricing.totalMinor / 100;
 
+  const trackedItems = useMemo(
+    () =>
+      cart.items.map((item) => ({
+        id: item.sku,
+        name: item.productName,
+        variant: item.variantTitle,
+        priceMinor: item.unitPriceMinor,
+        quantity: item.quantity,
+      })),
+    [cart.items]
+  );
+
+  // Funnel: one checkout_started per checkout page load
+  const checkoutTrackedRef = useRef(false);
+  useEffect(() => {
+    if (checkoutTrackedRef.current) {
+      return;
+    }
+    checkoutTrackedRef.current = true;
+    trackFunnel("checkout_started", {
+      valueMinor: initialPricing.totalMinor,
+      items: trackedItems,
+    });
+  }, [trackedItems, initialPricing.totalMinor]);
+
   const handleCopy = (text: string, label: string) => {
     navigator.clipboard.writeText(text);
     setCopiedField(label);
@@ -214,6 +240,12 @@ export function CheckoutView({
           );
           saveAddressAction(saveAddrData).catch(() => {});
         }
+
+        trackFunnel("payment_started", {
+          transactionId: res.orderNumber,
+          valueMinor: pricing.totalMinor,
+          items: trackedItems,
+        });
 
         setOrderPayment({
           orderId: res.orderId,

@@ -3,6 +3,7 @@
 import { usePathname, useSearchParams } from "next/navigation";
 import Script from "next/script";
 import { Suspense, useEffect } from "react";
+import { isInternalVisitor } from "@/lib/analytics/track";
 
 // Firebase Analytics is backed by this Google Analytics 4 measurement ID, so
 // gtag.js reports straight into the Firebase/GA dashboards without the web SDK.
@@ -40,7 +41,7 @@ function PageViewLogger({ measurementId }: { measurementId: string }) {
   useEffect(() => {
     const query = searchParams.toString();
     const url = query ? `${pathname}?${query}` : pathname;
-    if (url === lastLoggedUrl) {
+    if (url === lastLoggedUrl || isInternalVisitor()) {
       return;
     }
     if (lastLoggedUrl === null) {
