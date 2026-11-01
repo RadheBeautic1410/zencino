@@ -1,4 +1,4 @@
-import { and, desc, eq, inArray, sql } from "drizzle-orm";
+import { and, desc, eq, gte, inArray, sql } from "drizzle-orm";
 import {
   analyticsEvents,
   type Campaign,
@@ -160,6 +160,75 @@ export interface CampaignPerformanceSummary {
   directRevenueMinor: number;
   pageViews: number;
   productViews: number;
+}
+
+export interface StoreFunnelSummary {
+  addedToCart: number;
+  days: number;
+  ordersPaid: number;
+  ordersPlaced: number;
+  startedCheckout: number;
+  viewedProduct: number;
+  visitors: number;
+}
+
+/**
+ * Flags every event from an admin's browser session as internal, including
+ * visits recorded before they signed in, so the funnel counts only customers.
+ */
+export async function markSessionInternal(anonymousSessionId: string) {
+  await db
+    .update(analyticsEvents)
+    .set({
+      properties: sql`${analyticsEvents.properties} || '{"internal": true}'::jsonb`,
+    })
+    .where(
+      and(
+        eq(analyticsEvents.anonymousSessionId, anonymousSessionId),
+        sql`coalesce(${analyticsEvents.properties}->>'internal', '') <> 'true'`
+      )
+    );
+}
+
+// Store-wide funnel over all customer traffic (not only campaign links),
+// counted in unique anonymous sessions so each step is "how many people got
+// this far". Internal (admin) sessions are excluded.
+export async function getStoreFunnel(days = 30): Promise<StoreFunnelSummary> {
+  const since = new Date(Date.now() - days * 86_400_000);
+
+  const sessionCounts = await db
+    .select({
+      eventName: analyticsEvents.eventName,
+      sessions: sql<number>`count(distinct ${analyticsEvents.anonymousSessionId})::int`,
+    })
+    .from(analyticsEvents)
+    .where(
+      and(
+        gte(analyticsEvents.occurredAt, since),
+        sql`coalesce(${analyticsEvents.properties}->>'internal', '') <> 'true'`
+      )
+    )
+    .groupBy(analyticsEvents.eventName);
+  const sessionsFor = (name: string) =>
+    sessionCounts.find((row) => row.eventName === name)?.sessions ?? 0;
+
+  const [orderCounts] = await db
+    .select({
+      placed: sql<number>`count(*)::int`,
+      paid: sql<number>`count(*) filter (where ${orders.paymentStatus} in ('verified', 'refunded'))::int`,
+    })
+    .from(orders)
+    .where(gte(orders.createdAt, since));
+
+  return {
+    days,
+    visitors: sessionsFor("page_view"),
+    viewedProduct: sessionsFor("product_view"),
+    addedToCart: sessionsFor("add_to_cart"),
+    startedCheckout: sessionsFor("checkout_started"),
+    ordersPlaced: orderCounts?.placed ?? 0,
+    ordersPaid: orderCounts?.paid ?? 0,
+  };
 }
 
 export async function getCampaignPerformanceReport(): Promise<

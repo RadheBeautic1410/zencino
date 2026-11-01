@@ -1,9 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { requireAdmin } from "@/lib/authz";
+import { ADMIN_ROLE } from "@/config/platform";
+import { getCurrentSession, requireAdmin } from "@/lib/authz";
 import {
   createOrUpdateCampaign,
+  markSessionInternal,
   recordAnalyticsEvent,
 } from "@/lib/commerce/campaigns";
 
@@ -57,9 +59,19 @@ export async function recordClientAnalyticsAction(input: {
   path: string;
   anonymousSessionId?: string;
 }) {
-  // Dedupe key: event:sessionId:path:minute
+  // Admins browsing the store are not customers: don't count them, flag this
+  // browser's earlier events, and tell the client to stop tracking it.
+  const session = await getCurrentSession().catch(() => null);
+  if (session?.user.role === ADMIN_ROLE) {
+    if (input.anonymousSessionId) {
+      await markSessionInternal(input.anonymousSessionId).catch(() => {});
+    }
+    return { success: true, internal: true };
+  }
+
+  // Dedupe key: event:sessionId:path:variant:minute
   const minuteStamp = Math.floor(Date.now() / 60_000);
-  const dedupeKey = `${input.eventName}:${input.anonymousSessionId || "anon"}:${input.path}:${minuteStamp}`;
+  const dedupeKey = `${input.eventName}:${input.anonymousSessionId || "anon"}:${input.path}:${input.variantId || ""}:${minuteStamp}`;
 
   await recordAnalyticsEvent({
     eventName: input.eventName,
@@ -73,5 +85,5 @@ export async function recordClientAnalyticsAction(input: {
     },
   });
 
-  return { success: true };
+  return { success: true, internal: false };
 }

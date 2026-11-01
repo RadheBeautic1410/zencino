@@ -2,6 +2,7 @@ import { Receipt } from "@phosphor-icons/react/dist/ssr";
 import Link from "next/link";
 import { AdminFilterBar } from "@/components/admin/admin-filter-bar";
 import { OrbitPageHeader } from "@/components/admin/orbit-page-header";
+import { UnpaidOrdersFollowUp } from "@/components/admin/unpaid-orders-follow-up";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,7 +15,10 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { requireAdmin } from "@/lib/authz";
-import { getAdminOrders } from "@/lib/commerce/orders";
+import {
+  getAdminOrders,
+  getUnpaidOrdersForFollowUp,
+} from "@/lib/commerce/orders";
 import { formatDateTime } from "@/lib/utils";
 
 export const metadata = {
@@ -40,13 +44,16 @@ export default async function AdminOrdersPage({
   const resolvedParams = await searchParams;
   const statusFilter = resolvedParams.status || "all";
 
-  const ordersList = await getAdminOrders({
-    status: statusFilter,
-    paymentStatus: resolvedParams.payment,
-    paymentMethod: resolvedParams.method,
-    search: resolvedParams.q,
-    limit: 50,
-  });
+  const [ordersList, unpaidOrders] = await Promise.all([
+    getAdminOrders({
+      status: statusFilter,
+      paymentStatus: resolvedParams.payment,
+      paymentMethod: resolvedParams.method,
+      search: resolvedParams.q,
+      limit: 50,
+    }),
+    getUnpaidOrdersForFollowUp(),
+  ]);
 
   const filterTabs = [
     { label: "All Orders", value: "all" },
@@ -89,6 +96,8 @@ export default async function AdminOrdersPage({
           <Link href="/admin/returns">Return Claims Queue</Link>
         </Button>
       </div>
+
+      <UnpaidOrdersFollowUp orders={unpaidOrders} />
 
       <AdminFilterBar
         searchPlaceholder="Search order #, customer name, email or phone..."

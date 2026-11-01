@@ -12,9 +12,10 @@ import {
 } from "@phosphor-icons/react";
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { addToCartAction } from "@/app/actions/cart";
 import { ProductShare } from "@/components/store/product-share";
+import { trackFunnel } from "@/lib/analytics/track";
 
 export interface VariantData {
   active: boolean;
@@ -79,6 +80,30 @@ export function ProductDetailView({ product }: ProductDetailProps) {
     [product.variants, selectedVariantId]
   );
 
+  // Funnel: one product_view per product page load
+  const viewedProductRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (viewedProductRef.current === product.id || !selectedVariant) {
+      return;
+    }
+    viewedProductRef.current = product.id;
+    const priceMinor = selectedVariant.priceMinor ?? 0;
+    trackFunnel("product_view", {
+      productId: product.id,
+      variantId: selectedVariant.id,
+      valueMinor: priceMinor,
+      items: [
+        {
+          id: selectedVariant.sku,
+          name: product.name,
+          variant: selectedVariant.title,
+          priceMinor,
+          quantity: 1,
+        },
+      ],
+    });
+  }, [product.id, product.name, selectedVariant]);
+
   // Gallery active image
   const [activeImageIndex, setActiveImageIndex] = useState(0);
 
@@ -109,6 +134,22 @@ export function ProductDetailView({ product }: ProductDetailProps) {
         setCartError(res.error);
       } else {
         setAddedSuccess(true);
+        const variant = product.variants.find((v) => v.id === variantId);
+        const priceMinor = variant?.priceMinor ?? 0;
+        trackFunnel("add_to_cart", {
+          productId: product.id,
+          variantId,
+          valueMinor: priceMinor,
+          items: [
+            {
+              id: variant?.sku ?? variantId,
+              name: product.name,
+              variant: variant?.title,
+              priceMinor,
+              quantity: 1,
+            },
+          ],
+        });
       }
     } catch {
       setCartError("Unable to add product to bag. Please try again.");

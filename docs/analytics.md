@@ -18,6 +18,29 @@ Where to read the data:
 
 Standard reports can take 24–48 hours to fill after the first visits; Realtime shows them within a minute.
 
+## Purchase funnel
+
+`lib/analytics/track.ts` (`trackFunnel`) sends each funnel step to three places at once:
+
+| Step | Fired from | Own DB (`analytics_events`) | GA4 | Meta Pixel |
+|---|---|---|---|---|
+| Product page opened | `product-detail-view.tsx` | `product_view` | `view_item` | `ViewContent` |
+| Added to bag | `product-detail-view.tsx` | `add_to_cart` | `add_to_cart` | `AddToCart` |
+| Checkout page opened | `checkout-view.tsx` | `checkout_started` | `begin_checkout` | `InitiateCheckout` |
+| Order created, UPI shown | `checkout-view.tsx` | — | `add_payment_info` | `AddPaymentInfo` |
+| Order success page | `order-success-view.tsx` | — | `purchase` | `Purchase` |
+| Admin verifies payment | `lib/commerce/orders.ts` | `purchase_confirmed` | — | — |
+
+The browser `purchase` fires once per order (guarded in localStorage) when the customer reaches the success page, before an admin verifies the UPI payment, so ads can optimise for it; verified sales are the `purchase_confirmed` rows.
+
+**Admin > Campaigns** shows the all-traffic store funnel for the last 30 days (unique visitors per step, plus orders placed and payment-verified), above the per-campaign funnels.
+
+**Admin visits are not counted.** When a signed-in admin browses the store, `recordClientAnalyticsAction` skips the event, flags all of that browser's earlier events with `properties.internal = true` (excluded from the store funnel), and the browser stores `zen_internal=1` in localStorage so GA4, the Meta Pixel and our own tracking stay off there from then on. Sign in as admin once on each of your devices to exclude them.
+
+**Unpaid order follow-up:** **Admin > Orders** lists `pending_payment` orders (customer reached the UPI step but never paid) at the top with WhatsApp, call and email buttons and a prefilled payment reminder (`lib/commerce/follow-up.ts`). Keep these messages about that order; marketing messages need separate consent.
+
+**Meta Pixel:** set `NEXT_PUBLIC_META_PIXEL_ID` (Meta Events Manager > Data sources) on the host and redeploy. The pixel stays off while it is empty. Check it with Events Manager > Test events.
+
 ## Search and shopping discovery
 
 - `/robots.txt` (`app/robots.ts`) allows the storefront, blocks admin, account, cart, checkout, auth and API routes, and points to `/sitemap.xml`.

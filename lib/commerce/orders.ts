@@ -736,6 +736,30 @@ export async function getAdminOrders(params?: {
 }
 
 /**
+ * Orders placed at checkout but never paid (no proof submitted), newest first,
+ * with their product names so admins can follow up with the customer.
+ */
+export async function getUnpaidOrdersForFollowUp(limit = 20) {
+  return await db
+    .select({
+      id: orders.id,
+      orderNumber: orders.orderNumber,
+      customerName: orders.customerName,
+      customerEmail: orders.customerEmail,
+      customerPhone: orders.customerPhone,
+      totalMinor: orders.totalMinor,
+      createdAt: orders.createdAt,
+      itemNames: sql<string[]>`coalesce(array_agg(${orderItems.productName} order by ${orderItems.createdAt}) filter (where ${orderItems.id} is not null), '{}')`,
+    })
+    .from(orders)
+    .leftJoin(orderItems, eq(orderItems.orderId, orders.id))
+    .where(eq(orders.status, "pending_payment"))
+    .groupBy(orders.id)
+    .orderBy(desc(orders.createdAt))
+    .limit(limit);
+}
+
+/**
  * Loads orders belonging to a registered customer.
  */
 export async function getCustomerOrders(userId: string) {
