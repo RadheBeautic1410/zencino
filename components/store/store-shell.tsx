@@ -26,6 +26,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { BrandLogo } from "@/components/brand-logo";
 import { CampaignTracker } from "@/components/store/campaign-tracker";
 import { FirebaseAnalytics } from "@/components/store/firebase-analytics";
 import { MetaPixel } from "@/components/store/meta-pixel";
@@ -373,9 +374,7 @@ export function StoreShell({ children }: { children: ReactNode }) {
           </button>
 
           <Link className="shrink-0" href="/">
-            <span className="display text-[1.4rem] text-foreground">
-              Zencino
-            </span>
+            <BrandLogo className="h-6 sm:h-7" priority />
           </Link>
 
           <nav
@@ -570,10 +569,8 @@ export function StoreShell({ children }: { children: ReactNode }) {
         <div className="relative mx-auto max-w-7xl px-6 pt-16 pb-8">
           <div className="grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-12">
             <div className="space-y-6 lg:col-span-4">
-              <Link href="/">
-                <span className="display text-2xl text-primary-foreground">
-                  Zencino
-                </span>
+              <Link className="inline-block" href="/">
+                <BrandLogo className="h-6 sm:h-7" onDark />
               </Link>
 
               <p className="max-w-xs text-xs leading-relaxed text-primary-foreground/65">

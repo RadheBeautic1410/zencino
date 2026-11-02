@@ -25,7 +25,13 @@ export const metadata: Metadata = {
     template: `%s | ${PRODUCT_NAME}`,
   },
   description: PRODUCT_DESCRIPTION,
-  icons: { icon: "/brand-mark.svg" },
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "16x16 32x32 48x48" },
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+    ],
+    apple: "/apple-touch-icon.png",
+  },
   metadataBase: new URL(env.NEXT_PUBLIC_APP_URL),
   verification: env.GOOGLE_SITE_VERIFICATION
     ? { google: env.GOOGLE_SITE_VERIFICATION }

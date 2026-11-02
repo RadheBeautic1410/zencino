@@ -1,8 +1,8 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { logoutAction } from "@/app/actions/auth";
+import { BrandLogo } from "@/components/brand-logo";
 import { Button } from "@/components/ui/button";
-import { PRODUCT_NAME } from "@/config/platform";
 
 const navLinks = [
   { href: "/account", label: "My account" },
@@ -22,11 +22,8 @@ export function AppShell({
     <div className="min-h-screen bg-page text-foreground">
       <header className="border-b border-border bg-background/85 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-6 px-4 py-3 sm:px-6">
-          <Link className="flex items-center gap-3" href="/account">
-            <span className="grid size-9 place-items-center rounded-none bg-primary font-black text-primary-foreground text-xs">
-              Z
-            </span>
-            <span className="font-black tracking-normal">{PRODUCT_NAME}</span>
+          <Link className="shrink-0" href="/account">
+            <BrandLogo className="h-9" priority />
           </Link>
 
           <nav className="hidden items-center gap-1 md:flex">
