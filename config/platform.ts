@@ -1,7 +1,9 @@
 export const PRODUCT_NAME = "Zencino";
 export const PRODUCT_DESCRIPTION =
   "Shop Zencino home, kitchen, and everyday essentials.";
-export const LOGO_PATH = "/brand-mark.svg";
+export const LOGO_PATH = "/logo.png";
+export const LOGO_LIGHT_PATH = "/logo-light.png";
+export const BRAND_MARK_PATH = "/brand-mark.png";
 
 export const ADMIN_ROLE = "admin";
 export const USER_ROLE = "user";

@@ -20,10 +20,12 @@ import {
   Truck,
   Users,
 } from "@phosphor-icons/react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { logoutAction } from "@/app/actions/auth";
 import { Button } from "@/components/ui/button";
+import { BRAND_MARK_PATH } from "@/config/platform";
 
 const commerceNavItems = [
   { href: "/admin", label: "Overview", icon: ChartBar, exact: true },
@@ -100,9 +102,13 @@ export function AdminSidebar({ email }: { email: string }) {
     <aside className="flex w-full shrink-0 flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground md:h-screen md:w-64">
       {/* Brand */}
       <div className="flex items-center gap-3 border-b border-sidebar-border px-5 py-4">
-        <span className="grid size-9 shrink-0 place-items-center rounded-xl bg-primary font-black text-primary-foreground text-sm shadow-xs">
-          Z
-        </span>
+        <Image
+          alt=""
+          className="size-9 shrink-0"
+          height={36}
+          src={BRAND_MARK_PATH}
+          width={36}
+        />
         <div className="min-w-0">
           <p className="font-heading font-black text-sm leading-none tracking-tight">
             zencino<span className="text-emerald-600">.</span>
