@@ -18,7 +18,7 @@ export function BrandLogo({
     <Image
       alt={PRODUCT_NAME}
       className={className}
-      height={267}
+      height={262}
       priority={priority}
       src={onDark ? LOGO_LIGHT_PATH : LOGO_PATH}
       style={{ width: "auto" }}
