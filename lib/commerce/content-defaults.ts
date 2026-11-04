@@ -14,8 +14,8 @@ export interface HomepageContentData {
    */
   heroVideoPoster?: string;
   /**
-   * Optional hero clip. When empty the homepage renders the acrylic organizer
-   * in 3D instead, so the section is never waiting on an asset.
+   * Optional hero clip. When empty the homepage shows the still, then products
+   * from the catalog, so the section is never waiting on an asset.
    */
   heroVideoUrl?: string;
   highlights: Array<{ title: string; subtitle: string; icon: string }>;
@@ -54,22 +54,22 @@ export type EditableContentValue =
   EditableContentData[keyof EditableContentData];
 
 export const DEFAULT_HOMEPAGE_CONTENT: HomepageContentData = {
-  eyebrowBadge: "Optical-grade acrylic organizers",
-  headline: "Everything in its place.",
-  headlineSub: "Everything in plain sight.",
+  eyebrowBadge: "Home, kitchen, toys and more",
+  headline: "Useful finds for your home.",
+  headlineSub: "Delivered across India.",
   description:
-    "Acrylic organizers for the desk, the drawer and the countertop — cut to the dimensions we publish and polished smooth at every edge. Order direct, or through our verified Amazon India listings.",
+    "Practical products for the kitchen, the desk, the kids' room and every corner of the house. Order direct, or through our verified Amazon India listings.",
   ctaPrimaryText: "Shop All Products",
   ctaPrimaryLink: "/products",
-  ctaSecondaryText: "Explore Acrylic Essentials",
-  ctaSecondaryLink: "/collections/acrylic-essentials",
+  ctaSecondaryText: "Shop Home & Kitchen",
+  ctaSecondaryLink: "/categories/home-kitchen",
   announcementBanner: "Complimentary pan-India delivery on orders above ₹999",
   heroVideoUrl: "/video/hero-1.mp4",
   heroVideoPoster: "/video/hero-1-poster.jpg",
   highlights: [
     {
-      title: "Diamond Polished",
-      subtitle: "Edge-buffed optical clarity",
+      title: "7-Day Returns",
+      subtitle: "On unused items in original packaging",
       icon: "ShieldCheck",
     },
     {

@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
 import { Fraunces, Inter } from "next/font/google";
 import type { ReactNode } from "react";
-import { PRODUCT_DESCRIPTION, PRODUCT_NAME } from "@/config/platform";
+import {
+  LOGO_PATH,
+  PRODUCT_DESCRIPTION,
+  PRODUCT_NAME,
+} from "@/config/platform";
 import { env } from "@/lib/env";
 import { cn } from "@/lib/utils";
 import "./globals.css";
@@ -33,9 +37,39 @@ export const metadata: Metadata = {
     apple: "/apple-touch-icon.png",
   },
   metadataBase: new URL(env.NEXT_PUBLIC_APP_URL),
+  openGraph: {
+    type: "website",
+    siteName: PRODUCT_NAME,
+    locale: "en_IN",
+    images: [{ url: LOGO_PATH, width: 1200, height: 262, alt: PRODUCT_NAME }],
+  },
   verification: env.GOOGLE_SITE_VERIFICATION
     ? { google: env.GOOGLE_SITE_VERIFICATION }
     : undefined,
+};
+
+// Tells search engines the site's name and that this domain is the brand.
+// Add `sameAs` to the Organization once the official social profiles are confirmed.
+const siteUrl = new URL("/", env.NEXT_PUBLIC_APP_URL).href;
+const brandJsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Organization",
+      "@id": `${siteUrl}#organization`,
+      name: PRODUCT_NAME,
+      url: siteUrl,
+      logo: new URL(LOGO_PATH, siteUrl).href,
+      description: PRODUCT_DESCRIPTION,
+    },
+    {
+      "@type": "WebSite",
+      "@id": `${siteUrl}#website`,
+      name: PRODUCT_NAME,
+      url: siteUrl,
+      publisher: { "@id": `${siteUrl}#organization` },
+    },
+  ],
 };
 
 export default function RootLayout({
@@ -46,7 +80,14 @@ export default function RootLayout({
       className={cn("font-sans", inter.variable, fraunces.variable)}
       lang="en"
     >
-      <body suppressHydrationWarning>{children}</body>
+      <body suppressHydrationWarning>
+        <script
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: JSON-LD structured data built from constants in this file.
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(brandJsonLd) }}
+          type="application/ld+json"
+        />
+        {children}
+      </body>
     </html>
   );
 }

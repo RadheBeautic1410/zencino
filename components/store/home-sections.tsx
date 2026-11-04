@@ -1,13 +1,13 @@
 import {
   ArrowRight,
+  ArrowSquareOut,
   ArrowsClockwise,
-  Diamond,
-  MapPinLine,
+  MagnifyingGlass,
+  Package,
   Plus,
-  Ruler,
-  SealCheck,
-  Sparkle,
-  Stack,
+  ShieldCheck,
+  ShoppingBag,
+  Truck,
 } from "@phosphor-icons/react/dist/ssr";
 import Image from "next/image";
 import Link from "next/link";
@@ -15,51 +15,41 @@ import { order, travel } from "@/components/store/motion";
 import { TestimonialRail } from "@/components/store/testimonial-rail";
 import { WaveEdge } from "@/components/store/wave-edge";
 
-/* ══ 1. How it is made ══════════════════════════════════════════
-   Four factual stages. The copy restates what the specifications
-   already claim rather than adding new ones. */
+/* ══ 1. How it works ════════════════════════════════════════════
+   Four stages that hold for every product in the range. The copy
+   restates the shipping policy rather than adding new promises. */
 
-interface CraftStep {
+interface ShoppingStep {
   body: string;
-  icon: typeof Stack;
-  /**
-   * Photograph of the stage. Drop a file in `public/craft/` and point this at
-   * it — until then the card draws its own tinted panel, so the section never
-   * waits on an asset and never shows a broken image.
-   */
-  image: string | null;
+  icon: typeof ShoppingBag;
   title: string;
 }
 
-const CRAFT_STEPS: CraftStep[] = [
+const SHOPPING_STEPS: ShoppingStep[] = [
   {
-    icon: Stack,
-    image: "/craft/optical-sheet.svg",
-    title: "Optical-grade sheet",
-    body: "Premium cast acrylic rated for up to 99% light transmission — it will not cloud or yellow within a season.",
+    icon: MagnifyingGlass,
+    title: "Find what you need",
+    body: "Browse by category and check the features, size and price on each product page.",
   },
   {
-    icon: Ruler,
-    image: "/craft/cut-to-size.svg",
-    title: "Cut to the listed size",
-    body: "Blanks are cut to the exact dimensions published on the product page, so a drawer measured at home fits.",
+    icon: ShoppingBag,
+    title: "Order your way",
+    body: "Check out here on zencino.com, or use the Buy on Amazon link where it is available.",
   },
   {
-    icon: Diamond,
-    image: "/craft/polished-edge.svg",
-    title: "Diamond-polished edges",
-    body: "Edges are diamond-polished and buffed for a smooth, premium finish that needs no warning label.",
+    icon: Package,
+    title: "Dispatched with tracking",
+    body: "In-stock website orders leave within 1 to 2 business days, with a tracking link by email.",
   },
   {
-    icon: SealCheck,
-    image: "/craft/measured-packed.svg",
-    title: "Measured, then packed",
-    body: "Each unit is checked against its specification, then protected and foam-cased before dispatch.",
+    icon: Truck,
+    title: "Delivered to your door",
+    body: "Metro delivery usually takes 3 to 5 business days, and other areas 5 to 7.",
   },
 ];
 
-/** The tinted panel a stage falls back to while it has no photograph. */
-function CraftPanel({ step }: { step: CraftStep }) {
+/** The tinted panel each stage draws around its icon. */
+function StepPanel({ step }: { step: ShoppingStep }) {
   return (
     <>
       <span
@@ -76,7 +66,7 @@ function CraftPanel({ step }: { step: CraftStep }) {
   );
 }
 
-export function CraftProcess() {
+export function HowItWorks() {
   return (
     <section
       className="grain relative overflow-hidden border-y border-border/60 bg-primary-wash/40"
@@ -91,20 +81,20 @@ export function CraftProcess() {
       <div className="relative mx-auto grid max-w-7xl gap-12 px-6 py-16 md:py-20 lg:grid-cols-[20rem_minmax(0,1fr)] lg:gap-14">
         <div className="reveal-soft lg:pt-2">
           <p className="text-2xs font-bold uppercase tracking-eyebrow text-primary-soft">
-            How it is made
+            How it works
           </p>
           <h2 className="display mt-3 text-3xl text-foreground md:text-[2.5rem]">
-            From cast sheet to polished shelf
+            From browsing to your doorstep
           </h2>
           <p className="mt-5 text-sm leading-relaxed text-muted-foreground">
-            Four stages stand between an acrylic sheet and the piece on your
-            countertop. None of them are decorative.
+            Four simple steps, whichever product you choose and wherever you
+            prefer to buy it.
           </p>
           <Link
             className="group sheen mt-8 inline-flex items-center gap-2.5 rounded-full bg-primary px-6 py-3.5 text-xs font-bold uppercase tracking-ui text-primary-foreground transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
-            href="/about"
+            href="/products"
           >
-            Explore our process
+            Start shopping
             <ArrowRight
               className="transition-transform duration-300 group-hover:translate-x-1.5"
               size={13}
@@ -114,7 +104,7 @@ export function CraftProcess() {
         </div>
 
         <ol className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 lg:gap-4">
-          {CRAFT_STEPS.map((step, idx) => (
+          {SHOPPING_STEPS.map((step, idx) => (
             <li
               className="reveal-item relative"
               key={step.title}
@@ -136,21 +126,7 @@ export function CraftProcess() {
               </p>
 
               <div className="group relative mt-3 aspect-4/3 overflow-hidden rounded-xl border border-border/60 bg-primary-wash">
-                {step.image ? (
-                  <Image
-                    alt=""
-                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                    fill
-                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 22vw"
-                    src={step.image}
-                    /* The optimizer rejects SVG unless `dangerouslyAllowSVG`
-                       is on, and these drawn stages are vector. A photograph
-                       dropped in later is optimized as usual. */
-                    unoptimized={step.image.endsWith(".svg")}
-                  />
-                ) : (
-                  <CraftPanel step={step} />
-                )}
+                <StepPanel step={step} />
 
                 <span className="absolute bottom-3 left-3 z-2 grid size-8 place-items-center rounded-lg bg-background/90 text-primary-soft shadow-xs">
                   <step.icon size={15} weight="light" />
@@ -171,17 +147,17 @@ export function CraftProcess() {
   );
 }
 
-/* ══ 2. The calm band ═══════════════════════════════════════════
-   The page's dark anchor: the argument for the product, with the
+/* ══ 2. The everyday band ═══════════════════════════════════════
+   The page's dark anchor: the argument for the range, with the
    three numbers that support it. */
 
-const CALM_STATS = [
+const EVERYDAY_STATS = [
   { label: "Happy customers", value: "20K+" },
   { label: "Average rating", value: "4.8★" },
-  { label: "Premium acrylic", value: "100%" },
+  { label: "Day return window", value: "7" },
 ];
 
-export function CalmBand({ image }: { image?: string | null }) {
+export function EverydayBand({ image }: { image?: string | null }) {
   return (
     <section className="relative text-primary">
       <WaveEdge side="top" />
@@ -196,21 +172,21 @@ export function CalmBand({ image }: { image?: string | null }) {
         <div className="relative grid items-stretch lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
           <div className="reveal-soft flex flex-col justify-center px-6 py-16 sm:px-10 md:py-20 lg:pr-14 lg:pl-[max(1.5rem,calc((100vw-80rem)/2+1.5rem))]">
             <p className="text-2xs font-bold uppercase tracking-eyebrow text-gold">
-              A calmer space
+              Made for everyday homes
             </p>
             <h2 className="display mt-4 text-3xl text-primary-foreground md:text-[2.5rem]">
-              Clarity meets calm
+              Small things, easier days
             </h2>
             <p className="mt-5 max-w-md text-sm leading-relaxed text-primary-foreground/75 md:text-base">
-              A clean space does more than look good — it helps you think
-              clearer, feel lighter and focus on what matters.
+              The right product saves a little time every day, in the kitchen,
+              at the desk and around the house.
             </p>
 
             <Link
               className="group sheen sheen-gold mt-8 inline-flex w-fit items-center gap-2.5 rounded-full bg-primary-foreground px-6 py-3.5 text-xs font-bold uppercase tracking-ui text-primary transition-all duration-300 hover:-translate-y-0.5 hover:bg-gold hover:text-gold-foreground"
-              href="/about"
+              href="/products"
             >
-              Our story
+              Browse all products
               <ArrowRight
                 className="transition-transform duration-300 group-hover:translate-x-1.5"
                 size={13}
@@ -219,7 +195,7 @@ export function CalmBand({ image }: { image?: string | null }) {
             </Link>
 
             <dl className="mt-12 flex flex-wrap items-start gap-x-10 gap-y-6 border-t border-primary-foreground/15 pt-8">
-              {CALM_STATS.map((stat) => (
+              {EVERYDAY_STATS.map((stat) => (
                 <div key={stat.label}>
                   <dt className="sr-only">{stat.label}</dt>
                   <dd>
@@ -254,7 +230,7 @@ export function CalmBand({ image }: { image?: string | null }) {
             {/* The seal in the corner, the way a maker's mark sits on a print. */}
             <span className="absolute top-8 right-8 hidden size-28 flex-col items-center justify-center gap-1.5 rounded-full bg-primary/70 p-4 text-center backdrop-blur-sm md:flex">
               <span className="text-3xs font-semibold leading-tight text-primary-foreground/85">
-                Designed for everyday beauty
+                Useful finds for your home
               </span>
               <ArrowRight className="text-gold" size={13} weight="bold" />
             </span>
@@ -267,128 +243,28 @@ export function CalmBand({ image }: { image?: string | null }) {
   );
 }
 
-/* ══ 3. Before and after ════════════════════════════════════════ */
-
-interface ClutterToClarityProps {
-  afterImage?: string | null;
-  beforeImage?: string | null;
-}
-
-/** One half of the comparison — its own picture, its own chip. */
-function ComparePane({
-  alt,
-  image,
-  label,
-  tone,
-}: {
-  alt: string;
-  image?: string | null;
-  label: string;
-  tone: "after" | "before";
-}) {
-  return (
-    <div className="relative aspect-4/3 overflow-hidden rounded-2xl border border-border/60 bg-muted/30">
-      {image ? (
-        <Image
-          alt={alt}
-          className="object-cover"
-          fill
-          sizes="(max-width: 1024px) 50vw, 25vw"
-          src={image}
-        />
-      ) : (
-        <span
-          aria-hidden
-          className={`absolute inset-0 ${
-            tone === "before"
-              ? "bg-linear-to-br from-muted via-background to-muted"
-              : "bg-linear-to-br from-primary-wash via-background to-gold-subtle"
-          }`}
-        />
-      )}
-
-      <span
-        className={`absolute top-4 left-4 z-2 rounded-full px-3.5 py-1.5 text-2xs font-bold uppercase tracking-ui ${
-          tone === "before"
-            ? "bg-background/90 text-foreground"
-            : "bg-primary text-primary-foreground"
-        }`}
-      >
-        {label}
-      </span>
-    </div>
-  );
-}
-
-export function ClutterToClarity({
-  afterImage,
-  beforeImage,
-}: ClutterToClarityProps) {
-  return (
-    <section className="mx-auto max-w-7xl px-6 py-16 md:py-20">
-      <div className="grid gap-10 lg:grid-cols-[20rem_minmax(0,1fr)] lg:gap-14">
-        <div className="reveal-soft lg:pt-6">
-          <p className="text-2xs font-bold uppercase tracking-eyebrow text-primary-soft">
-            Real spaces, real difference
-          </p>
-          <h2 className="display mt-3 text-3xl text-foreground md:text-[2.5rem]">
-            From clutter to clarity
-          </h2>
-          <p className="mt-5 text-sm leading-relaxed text-muted-foreground">
-            See how a single organizer changes the way a drawer, a desk or a
-            countertop works for you.
-          </p>
-        </div>
-
-        <div className="reveal-media relative grid grid-cols-2 gap-4 sm:gap-6">
-          <ComparePane
-            alt="A cluttered surface before a Zencino organizer"
-            image={beforeImage}
-            label="Before"
-            tone="before"
-          />
-          <ComparePane
-            alt="The same surface sorted into a Zencino acrylic organizer"
-            image={afterImage}
-            label="After"
-            tone="after"
-          />
-
-          {/* The handle straddles the gutter, reading as one comparison. */}
-          <span
-            aria-hidden
-            className="-translate-x-1/2 -translate-y-1/2 absolute top-1/2 left-1/2 z-2 grid size-10 place-items-center rounded-full bg-background text-foreground shadow-lg"
-          >
-            <ArrowRight size={15} weight="bold" />
-          </span>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-/* ══ 4. Why choose Zencino ══════════════════════════════════════ */
+/* ══ 3. Why choose Zencino ══════════════════════════════════════ */
 
 const REASONS = [
   {
-    icon: Diamond,
-    title: "99% optical clarity",
-    body: "Crystal-clear finish that lasts.",
+    icon: Truck,
+    title: "Free delivery above ₹999",
+    body: "Pan-India delivery with tracking.",
   },
   {
     icon: ArrowsClockwise,
-    title: "7 days replacement",
-    body: "Hassle-free returns.",
+    title: "7-day returns",
+    body: "For unused items in their original packaging.",
   },
   {
-    icon: Sparkle,
-    title: "100% premium acrylic",
-    body: "No yellowing, no brittleness.",
+    icon: ShieldCheck,
+    title: "Damaged in transit?",
+    body: "Free replacement when reported within 48 hours.",
   },
   {
-    icon: MapPinLine,
-    title: "Made in India",
-    body: "Supporting local craftsmanship.",
+    icon: ArrowSquareOut,
+    title: "Direct or on Amazon",
+    body: "Buy here, or on Amazon India where available.",
   },
 ];
 
@@ -410,11 +286,11 @@ export function WhyZencino() {
               Why choose Zencino
             </p>
             <h2 className="display mt-3 text-3xl text-primary-foreground md:text-[2.5rem]">
-              More than just organizers
+              Shopping made simple
             </h2>
             <p className="mt-5 text-sm leading-relaxed text-primary-foreground/75">
-              Thoughtful design, premium materials and a commitment to quality —
-              in every piece.
+              Clear policies, tracked delivery and two ways to buy, across the
+              whole range.
             </p>
           </div>
 
@@ -447,7 +323,7 @@ export function WhyZencino() {
   );
 }
 
-/* ══ 5. Testimonials ════════════════════════════════════════════ */
+/* ══ 4. Testimonials ════════════════════════════════════════════ */
 
 export interface Testimonial {
   author: string;
@@ -472,7 +348,7 @@ export function Testimonials({ items }: { items: Testimonial[] }) {
   );
 }
 
-/* ══ 6. Questions asked before ordering ═════════════════════════ */
+/* ══ 5. Questions asked before ordering ═════════════════════════ */
 
 export function HomeFaq({ items }: { items: Array<{ a: string; q: string }> }) {
   if (items.length === 0) {
@@ -545,7 +421,7 @@ export function HomeFaq({ items }: { items: Array<{ a: string; q: string }> }) {
   );
 }
 
-/* ══ 7. Closing invitation ══════════════════════════════════════ */
+/* ══ 6. Closing invitation ══════════════════════════════════════ */
 
 export function ClosingInvitation({ image }: { image?: string | null }) {
   return (
@@ -574,19 +450,19 @@ export function ClosingInvitation({ image }: { image?: string | null }) {
 
       <div className="reveal-soft relative mx-auto max-w-2xl px-6 py-20 text-center md:py-28">
         <p className="text-2xs font-bold uppercase tracking-eyebrow text-primary-soft">
-          Bring order home
+          Keep exploring
         </p>
         <h2 className="display mt-4 text-3xl text-foreground md:text-[2.75rem]">
-          Simple. Stylish. Organized.
+          Find something useful today.
         </h2>
         <p className="mx-auto mt-5 max-w-md text-sm leading-relaxed text-muted-foreground">
-          Discover premium acrylic organizers for every space in your home.
+          Browse home and kitchen essentials, stationery, toys and more.
         </p>
         <Link
           className="group sheen mt-9 inline-flex items-center gap-2.5 rounded-full bg-primary px-8 py-4 text-xs font-bold uppercase tracking-ui text-primary-foreground transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl"
           href="/products"
         >
-          Shop collection
+          Shop all products
           <ArrowRight
             className="transition-transform duration-300 group-hover:translate-x-1.5"
             size={13}

@@ -76,7 +76,7 @@ const COLLECTION_LINKS = [
 const NAV_LINKS = [
   { href: "/about", label: "About" },
   { href: "/blog", label: "Blog" },
-  { href: "/#process", label: "Our Process" },
+  { href: "/#process", label: "How It Works" },
   { href: "/faq", label: "FAQs" },
 ];
 
@@ -103,7 +103,7 @@ const FOOTER_COLUMNS = [
     links: [
       { href: "/about", label: "About Us" },
       { href: "/blog", label: "Blog" },
-      { href: "/#process", label: "Our Process" },
+      { href: "/#process", label: "How It Works" },
       { href: "/faq", label: "FAQs" },
       { href: "/contact", label: "Contact" },
     ],
@@ -410,7 +410,7 @@ export function StoreShell({ children }: { children: ReactNode }) {
                 aria-label="Search products"
                 className="w-64 rounded-full border border-border/70 bg-background/70 py-2.5 pr-10 pl-10 text-xs text-foreground transition-all placeholder:text-muted-foreground/70 focus:border-primary/40 focus:bg-background focus:outline-none focus:ring-4 focus:ring-primary/8"
                 onChange={(event) => setSearchQuery(event.target.value)}
-                placeholder="Search for organizers…"
+                placeholder="Search products…"
                 ref={desktopSearchRef}
                 type="search"
                 value={searchQuery}
@@ -468,7 +468,7 @@ export function StoreShell({ children }: { children: ReactNode }) {
                 aria-label="Search products"
                 className="w-full rounded-full border border-border/80 bg-muted/30 py-3.5 pr-24 pl-11 text-sm text-foreground placeholder:text-muted-foreground/70 focus:border-primary focus:bg-background focus:outline-none"
                 onChange={(event) => setSearchQuery(event.target.value)}
-                placeholder="Search for organizers…"
+                placeholder="Search products…"
                 ref={mobileSearchRef}
                 type="search"
                 value={searchQuery}
@@ -574,8 +574,8 @@ export function StoreShell({ children }: { children: ReactNode }) {
               </Link>
 
               <p className="max-w-xs text-xs leading-relaxed text-primary-foreground/65">
-                Premium acrylic organizers designed to bring clarity, calm and
-                beauty to your everyday spaces.
+                Useful products for the home, kitchen, desk and kids, delivered
+                across India.
               </p>
 
               <ul className="flex items-center gap-2.5">
