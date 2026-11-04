@@ -50,6 +50,7 @@ zencino-db-*
 # uploads
 /public/uploads/*
 !/public/uploads/.gitkeep
+!/public/uploads/amazon/
 
 # archives
 *.zip
