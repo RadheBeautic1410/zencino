@@ -54,8 +54,16 @@ const toWords = (line: string) =>
  */
 const PROOF_INITIALS = ["A", "M", "R", "S"];
 
+/** A product the hero can show when no clip or still is configured. */
+interface HeroProduct {
+  id: string;
+  name: string;
+  primaryImage: string | null;
+}
+
 interface HeroProps {
   content: HomepageContentData;
+  products: HeroProduct[];
   secondaryCtaLink: string;
   secondaryCtaText: string;
 }
@@ -92,7 +100,11 @@ function ProofRow() {
  * Eyebrow, headline, description and the two calls to action — the whole left
  * column of the split.
  */
-function HeroCopy({ content, secondaryCtaLink, secondaryCtaText }: HeroProps) {
+function HeroCopy({
+  content,
+  secondaryCtaLink,
+  secondaryCtaText,
+}: Omit<HeroProps, "products">) {
   const headlineWords = toWords(content.headline);
   const headlineSubWords = toWords(content.headlineSub);
   // The second line continues the first, so its stagger picks up where that ended.
@@ -172,10 +184,10 @@ function CaptionCard() {
     <div className="absolute right-6 bottom-6 hidden items-center gap-4 rounded-2xl bg-background/92 px-5 py-3.5 shadow-lg backdrop-blur-sm md:flex">
       <span>
         <span className="display block text-sm text-foreground">
-          Clear. Durable. Timeless.
+          Useful finds, every day.
         </span>
         <span className="mt-0.5 block text-2xs text-muted-foreground">
-          Optical-grade cast acrylic
+          Home, kitchen, stationery &amp; toys
         </span>
       </span>
       <Link
@@ -189,8 +201,45 @@ function CaptionCard() {
   );
 }
 
-/** The backdrop — the clip when one is configured, else the still, else 3D. */
-function HeroMedia({ content }: { content: HomepageContentData }) {
+/**
+ * Real products from the catalog, kept to the half the copy does not use so
+ * the range sits beside the words instead of under them.
+ */
+function ProductMosaic({ products }: { products: HeroProduct[] }) {
+  return (
+    <div className="ml-auto grid size-full grid-cols-2 gap-3 p-4 lg:w-1/2 lg:gap-4 lg:p-6">
+      {products.map((product) => (
+        <div
+          className="relative overflow-hidden rounded-2xl border border-border/60 bg-background"
+          key={product.id}
+        >
+          {product.primaryImage && (
+            <Image
+              alt={product.name}
+              className="object-contain p-2"
+              fill
+              priority
+              sizes="(max-width: 1024px) 50vw, 30vw"
+              src={product.primaryImage}
+            />
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/**
+ * The backdrop — the clip when one is configured, else the still, else the
+ * products, else 3D.
+ */
+function HeroMedia({
+  content,
+  products,
+}: {
+  content: HomepageContentData;
+  products: HeroProduct[];
+}) {
   const video = content.heroVideoUrl?.trim();
   const poster = content.heroVideoPoster?.trim();
 
@@ -233,6 +282,12 @@ function HeroMedia({ content }: { content: HomepageContentData }) {
         src={poster}
       />
     );
+  }
+
+  const pictured = products.filter((product) => product.primaryImage);
+
+  if (pictured.length > 0) {
+    return <ProductMosaic products={pictured} />;
   }
 
   return (
@@ -286,20 +341,25 @@ function TrustStrip({ content }: { content: HomepageContentData }) {
 }
 
 /**
- * The homepage opening: the product footage filling the screen, the copy over
- * it on the left where a cream scrim keeps the words readable.
+ * The homepage opening: the products or footage filling the screen, the copy
+ * over them on the left where a cream scrim keeps the words readable.
  */
 export function Hero({
   content,
+  products,
   secondaryCtaLink,
   secondaryCtaText,
 }: HeroProps) {
+  const hasFootage = Boolean(
+    content.heroVideoUrl?.trim() || content.heroVideoPoster?.trim()
+  );
+
   return (
     <section className="screen-below-chrome relative flex flex-col overflow-hidden bg-page">
       {/* The footage is the ground the whole section stands on, not a panel
           beside the words. */}
       <div className="intro-backdrop absolute inset-0">
-        <HeroMedia content={content} />
+        <HeroMedia content={content} products={products} />
       </div>
 
       {/* The copy has to hold up against whatever frame is playing. Stacked,
@@ -309,10 +369,12 @@ export function Hero({
         aria-hidden
         className="pointer-events-none absolute inset-0 bg-page/85 lg:hidden"
       />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 hidden bg-linear-to-r from-page from-38% via-page/55 via-64% to-transparent lg:block"
-      />
+      {hasFootage && (
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 hidden bg-linear-to-r from-page from-38% via-page/55 via-64% to-transparent lg:block"
+        />
+      )}
 
       <div className="relative flex flex-1 items-center">
         <div className="mx-auto w-full max-w-7xl px-6 py-12 sm:px-10 md:py-16 lg:py-20">

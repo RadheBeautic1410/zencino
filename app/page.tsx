@@ -2,11 +2,10 @@ import type { Metadata } from "next";
 import { CategoryGrid } from "@/components/store/category-grid";
 import { Hero } from "@/components/store/hero";
 import {
-  CalmBand,
   ClosingInvitation,
-  ClutterToClarity,
-  CraftProcess,
+  EverydayBand,
   HomeFaq,
+  HowItWorks,
   type Testimonial,
   Testimonials,
   WhyZencino,
@@ -29,48 +28,17 @@ import {
 export const metadata: Metadata = {
   alternates: { canonical: "/" },
   title: {
-    absolute: "Zencino — Crystal-Clear Acrylic Organizers & Home Essentials",
+    absolute: "Zencino — Home, Kitchen & Everyday Essentials Online in India",
   },
   description:
-    "Diamond-polished optical acrylic organizers for the home, kitchen and workspace. Shop direct with Zencino or through verified Amazon India listings.",
+    "Useful products for the home, kitchen, desk and kids. Shop direct with Zencino or through verified Amazon India listings, with delivery across India.",
 };
 
 /**
- * Photographs for the comparison band. The frames live in `public/home/` so
- * they ship with the build — `public/uploads/` is the runtime upload directory
- * and is untracked, so site assets cannot live there.
+ * Add only real, attributable customer reviews here. The section stays hidden
+ * while the list is empty.
  */
-const BEFORE_IMAGE: string | null = "/home/before-1.png";
-const AFTER_IMAGE: string | null = "/home/after-1.png";
-
-/**
- * PLACEHOLDER REVIEWS — replace every entry with a real, attributable customer
- * review before this page goes live. They are kept in one constant so there is
- * a single place to change, and the section disappears if the list is emptied.
- */
-const PLACEHOLDER_TESTIMONIALS: Omit<Testimonial, "image">[] = [
-  {
-    author: "Sample review — replace",
-    id: "t1",
-    quote:
-      "Amazing quality and looks so premium on my vanity. Totally worth it.",
-    rating: 5,
-  },
-  {
-    author: "Sample review — replace",
-    id: "t2",
-    quote:
-      "My kitchen looks so organized now. The clarity and finish is just perfect.",
-    rating: 5,
-  },
-  {
-    author: "Sample review — replace",
-    id: "t3",
-    quote:
-      "Sturdy, elegant and super useful. Exactly what I needed for my desk.",
-    rating: 5,
-  },
-];
+const CUSTOMER_REVIEWS: Omit<Testimonial, "image">[] = [];
 
 export default async function HomePage() {
   const [
@@ -86,23 +54,35 @@ export default async function HomePage() {
     getPublishedContent<FaqContentData>("faq", "faq"),
   ]);
 
-  // A short set here; the FAQ page keeps the full list.
-  const faqItems = (faqContent.items || []).slice(0, 4);
+  // A short set here; the FAQ page keeps the full list, including the
+  // questions that only apply to one material.
+  const faqItems = (faqContent.items || [])
+    .filter((item) => !/acrylic/i.test(item.q))
+    .slice(0, 4);
 
   const secondaryCtaLink = heroContent.ctaSecondaryLink || "/products";
-  const secondaryCtaText = heroContent.ctaSecondaryText || "Explore categories";
+  const secondaryCtaText = heroContent.ctaSecondaryText || "Explore products";
 
   // The quotes borrow the product each one is about, so the rail is not
   // showing faces the shop does not own.
-  const testimonials: Testimonial[] = PLACEHOLDER_TESTIMONIALS.map(
-    (item, idx) => ({ ...item, image: featuredProducts[idx]?.primaryImage })
-  );
+  const testimonials: Testimonial[] = CUSTOMER_REVIEWS.map((item, idx) => ({
+    ...item,
+    image: featuredProducts[idx]?.primaryImage,
+  }));
+
+  // The rail below shows the first four, so the hero takes the next ones when
+  // there are enough to keep the two from repeating each other.
+  const heroProducts =
+    featuredProducts.length >= 8
+      ? featuredProducts.slice(4, 8)
+      : featuredProducts.slice(0, 4);
 
   return (
     <StoreShell>
       {/* 1. Hero — copy against the warm ground, product filling the right */}
       <Hero
         content={heroContent}
+        products={heroProducts}
         secondaryCtaLink={secondaryCtaLink}
         secondaryCtaText={secondaryCtaText}
       />
@@ -118,7 +98,7 @@ export default async function HomePage() {
       {/* 2. Shelves to browse */}
       <CategoryGrid categories={categoryTiles} />
 
-      {/* 3. What people are actually buying */}
+      {/* 3. The newest additions to the range */}
       {featuredProducts.length > 0 && (
         <section className="relative text-primary">
           <WaveEdge side="top" />
@@ -126,10 +106,10 @@ export default async function HomePage() {
           <div className="grain relative overflow-hidden bg-primary text-primary-foreground">
             <div className="relative mx-auto max-w-7xl px-6 py-16 md:py-20">
               <SectionHeading
-                eyebrow="Customers' favourites"
+                eyebrow="Just added"
                 linkHref="/products"
                 linkLabel="View all products"
-                title="Best selling products"
+                title="New arrivals"
                 tone="dark"
               />
 
@@ -151,25 +131,22 @@ export default async function HomePage() {
         </section>
       )}
 
-      {/* 4. How the pieces are made */}
-      <CraftProcess />
+      {/* 4. How buying works, for any product */}
+      <HowItWorks />
 
       {/* 5. The page's dark anchor */}
-      <CalmBand image={featuredProducts[0]?.primaryImage} />
+      <EverydayBand image={featuredProducts[0]?.primaryImage} />
 
-      {/* 6. The difference an organizer makes */}
-      <ClutterToClarity afterImage={AFTER_IMAGE} beforeImage={BEFORE_IMAGE} />
-
-      {/* 7. The reasons behind the range */}
+      {/* 6. The reasons behind the range */}
       <WhyZencino />
 
-      {/* 8. What customers say */}
+      {/* 7. What customers say */}
       <Testimonials items={testimonials} />
 
-      {/* 9. Questions people ask before ordering */}
+      {/* 8. Questions people ask before ordering */}
       <HomeFaq items={faqItems} />
 
-      {/* 10. Closing invitation, handing off to the footer */}
+      {/* 9. Closing invitation, handing off to the footer */}
       <ClosingInvitation image={heroContent.heroVideoPoster} />
     </StoreShell>
   );
