@@ -12,8 +12,9 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { order, travel } from "@/components/store/motion";
+import { RevealWords } from "@/components/store/reveal-words";
 import { TestimonialRail } from "@/components/store/testimonial-rail";
-import { WaveEdge } from "@/components/store/wave-edge";
+import { WaveEdge, waveCutBottom } from "@/components/store/wave-edge";
 
 /* ══ 1. How it works ════════════════════════════════════════════
    Four stages that hold for every product in the range. The copy
@@ -60,7 +61,7 @@ function StepPanel({ step }: { step: ShoppingStep }) {
         aria-hidden
         className="absolute inset-0 grid place-items-center text-gold/30 transition-transform duration-700 ease-out group-hover:scale-105"
       >
-        <step.icon size={52} weight="thin" />
+        <step.icon className="coin-flip" size={52} weight="thin" />
       </span>
     </>
   );
@@ -69,7 +70,7 @@ function StepPanel({ step }: { step: ShoppingStep }) {
 export function HowItWorks() {
   return (
     <section
-      className="grain relative overflow-hidden border-y border-border/60 bg-primary-wash/40"
+      className="grain relative overflow-clip border-y border-border/60 bg-primary-wash/40"
       id="process"
     >
       <div
@@ -91,7 +92,7 @@ export function HowItWorks() {
             prefer to buy it.
           </p>
           <Link
-            className="group sheen mt-8 inline-flex items-center gap-2.5 rounded-full bg-primary px-6 py-3.5 text-xs font-bold uppercase tracking-ui text-primary-foreground transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg"
+            className="press-3d group sheen mt-8 inline-flex items-center gap-2.5 rounded-full bg-primary px-6 py-3.5 text-xs font-bold uppercase tracking-ui text-primary-foreground transition-all duration-300 hover:-translate-y-0.5"
             href="/products"
           >
             Start shopping
@@ -125,7 +126,7 @@ export function HowItWorks() {
                 {String(idx + 1).padStart(2, "0")}
               </p>
 
-              <div className="group relative mt-3 aspect-4/3 overflow-hidden rounded-xl border border-border/60 bg-primary-wash">
+              <div className="tilt-3d card-3d group mt-3 aspect-4/3 overflow-hidden rounded-xl border border-border/60 bg-primary-wash">
                 <StepPanel step={step} />
 
                 <span className="absolute bottom-3 left-3 z-2 grid size-8 place-items-center rounded-lg bg-background/90 text-primary-soft shadow-xs">
@@ -162,41 +163,57 @@ export function EverydayBand({ image }: { image?: string | null }) {
     <section className="relative text-primary">
       <WaveEdge side="top" />
 
-      <div className="grain relative overflow-hidden bg-primary text-primary-foreground">
+      <div className="grain relative overflow-clip bg-primary text-primary-foreground">
+        {/* Faded out before the band's ends, or the glow would stop dead where
+          the flat-coloured waves take over. */}
         <div
           aria-hidden
-          className="parallax pointer-events-none absolute -left-32 bottom-0 size-128 rounded-full bg-gold/10 blur-3xl"
-          style={travel("3rem", "-3rem")}
-        />
+          className="pointer-events-none absolute inset-0"
+          style={{
+            maskImage:
+              "linear-gradient(transparent, #000 30%, #000 70%, transparent)",
+          }}
+        >
+          <div
+            className="parallax absolute -left-32 bottom-0 size-128 rounded-full bg-gold/10 blur-3xl"
+            style={travel("3rem", "-3rem")}
+          />
+        </div>
 
         <div className="relative grid items-stretch lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-          <div className="reveal-soft flex flex-col justify-center px-6 py-16 sm:px-10 md:py-20 lg:pr-14 lg:pl-[max(1.5rem,calc((100vw-80rem)/2+1.5rem))]">
-            <p className="text-2xs font-bold uppercase tracking-eyebrow text-gold">
+          <div className="flex flex-col justify-center px-6 py-16 sm:px-10 md:py-20 lg:pr-14 lg:pl-[max(1.5rem,calc((100vw-80rem)/2+1.5rem))]">
+            <p className="reveal-soft text-2xs font-bold uppercase tracking-eyebrow text-gold">
               Made for everyday homes
             </p>
-            <h2 className="display mt-4 text-3xl text-primary-foreground md:text-[2.5rem]">
-              Small things, easier days
+            <h2 className="reveal-words display mt-4 text-3xl text-primary-foreground md:text-[2.5rem]">
+              <RevealWords text="Small things, easier days" />
             </h2>
-            <p className="mt-5 max-w-md text-sm leading-relaxed text-primary-foreground/75 md:text-base">
+            <p className="reveal-soft mt-5 max-w-md text-sm leading-relaxed text-primary-foreground/75 md:text-base">
               The right product saves a little time every day, in the kitchen,
               at the desk and around the house.
             </p>
 
-            <Link
-              className="group sheen sheen-gold mt-8 inline-flex w-fit items-center gap-2.5 rounded-full bg-primary-foreground px-6 py-3.5 text-xs font-bold uppercase tracking-ui text-primary transition-all duration-300 hover:-translate-y-0.5 hover:bg-gold hover:text-gold-foreground"
-              href="/products"
-            >
-              Browse all products
-              <ArrowRight
-                className="transition-transform duration-300 group-hover:translate-x-1.5"
-                size={13}
-                weight="bold"
-              />
-            </Link>
+            <div className="reveal-soft mt-8" style={order(1)}>
+              <Link
+                className="press-3d press-3d-gold group sheen sheen-gold inline-flex w-fit items-center gap-2.5 rounded-full bg-primary-foreground px-6 py-3.5 text-xs font-bold uppercase tracking-ui text-primary transition-all duration-300 hover:-translate-y-0.5 hover:bg-gold hover:text-gold-foreground"
+                href="/products"
+              >
+                Browse all products
+                <ArrowRight
+                  className="transition-transform duration-300 group-hover:translate-x-1.5"
+                  size={13}
+                  weight="bold"
+                />
+              </Link>
+            </div>
 
             <dl className="mt-12 flex flex-wrap items-start gap-x-10 gap-y-6 border-t border-primary-foreground/15 pt-8">
-              {EVERYDAY_STATS.map((stat) => (
-                <div key={stat.label}>
+              {EVERYDAY_STATS.map((stat, idx) => (
+                <div
+                  className="reveal-item"
+                  key={stat.label}
+                  style={order(idx)}
+                >
                   <dt className="sr-only">{stat.label}</dt>
                   <dd>
                     <span className="display block text-2xl text-primary-foreground">
@@ -211,15 +228,20 @@ export function EverydayBand({ image }: { image?: string | null }) {
             </dl>
           </div>
 
-          <div className="relative min-h-72 overflow-hidden lg:min-h-112">
+          <div
+            className="reveal-media relative min-h-72 overflow-clip lg:min-h-112"
+            style={waveCutBottom}
+          >
             {image ? (
-              <Image
-                alt=""
-                className="object-cover"
-                fill
-                sizes="(max-width: 1024px) 100vw, 50vw"
-                src={image}
-              />
+              <div className="scroll-tilt absolute inset-0">
+                <Image
+                  alt=""
+                  className="object-cover"
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  src={image}
+                />
+              </div>
             ) : (
               <span
                 aria-hidden
@@ -270,55 +292,45 @@ const REASONS = [
 
 export function WhyZencino() {
   return (
-    <section className="relative text-primary">
-      <WaveEdge side="top" />
+    <section className="relative">
+      <div className="relative mx-auto grid max-w-7xl gap-10 px-6 py-16 md:py-20 lg:grid-cols-[20rem_minmax(0,1fr)] lg:gap-14">
+        <div className="reveal-soft lg:pt-4">
+          <p className="text-2xs font-bold uppercase tracking-eyebrow text-primary-soft">
+            Why choose Zencino
+          </p>
+          <h2 className="display mt-3 text-3xl text-foreground md:text-[2.5rem]">
+            Shopping made simple
+          </h2>
+          <p className="mt-5 text-sm leading-relaxed text-muted-foreground">
+            Clear policies, tracked delivery and two ways to buy, across the
+            whole range.
+          </p>
+        </div>
 
-      <div className="grain relative overflow-hidden bg-primary text-primary-foreground">
-        <div
-          aria-hidden
-          className="parallax pointer-events-none absolute -right-28 top-0 size-112 rounded-full bg-gold/10 blur-3xl"
-          style={travel("2.5rem", "-2.5rem")}
-        />
-
-        <div className="relative mx-auto grid max-w-7xl gap-10 px-6 py-16 md:py-20 lg:grid-cols-[20rem_minmax(0,1fr)] lg:gap-14">
-          <div className="reveal-soft lg:pt-4">
-            <p className="text-2xs font-bold uppercase tracking-eyebrow text-gold">
-              Why choose Zencino
-            </p>
-            <h2 className="display mt-3 text-3xl text-primary-foreground md:text-[2.5rem]">
-              Shopping made simple
-            </h2>
-            <p className="mt-5 text-sm leading-relaxed text-primary-foreground/75">
-              Clear policies, tracked delivery and two ways to buy, across the
-              whole range.
-            </p>
-          </div>
-
-          <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {REASONS.map((reason, idx) => (
-              <li
-                className="reveal-item group card-hover rounded-2xl border border-primary-foreground/15 bg-primary-foreground/5 p-6 backdrop-blur-sm hover:border-gold/45"
-                key={reason.title}
-                style={order(idx)}
-              >
-                <reason.icon
-                  className="text-gold transition-transform duration-500 group-hover:-translate-y-0.5"
-                  size={22}
-                  weight="light"
-                />
-                <h3 className="mt-5 font-heading text-sm font-semibold leading-snug text-primary-foreground">
+        <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {REASONS.map((reason, idx) => (
+            <li className="reveal-item" key={reason.title} style={order(idx)}>
+              <div className="tilt-3d card-3d group h-full rounded-2xl border border-border bg-card p-6 hover:border-gold/45">
+                {/* Directly inside the 3D card, half the turning icon would
+                    pass behind the card's face and disappear. */}
+                <span className="block w-fit">
+                  <reason.icon
+                    className="coin-flip text-primary-soft"
+                    size={22}
+                    weight="light"
+                  />
+                </span>
+                <h3 className="mt-5 font-heading text-sm font-semibold leading-snug text-foreground">
                   {reason.title}
                 </h3>
-                <p className="mt-2 text-2xs leading-relaxed text-primary-foreground/70">
+                <p className="mt-2 text-2xs leading-relaxed text-muted-foreground">
                   {reason.body}
                 </p>
-              </li>
-            ))}
-          </ul>
-        </div>
+              </div>
+            </li>
+          ))}
+        </ul>
       </div>
-
-      <WaveEdge side="bottom" />
     </section>
   );
 }
@@ -359,7 +371,7 @@ export function HomeFaq({ items }: { items: Array<{ a: string; q: string }> }) {
     <section className="relative text-primary">
       <WaveEdge side="top" />
 
-      <div className="grain relative overflow-hidden bg-primary text-primary-foreground">
+      <div className="grain relative overflow-clip bg-primary text-primary-foreground">
         {/* Light from above, the way it falls through the material. */}
         <div
           aria-hidden
@@ -383,7 +395,7 @@ export function HomeFaq({ items }: { items: Array<{ a: string; q: string }> }) {
               returns.
             </p>
             <Link
-              className="group sheen sheen-gold mt-8 inline-flex items-center gap-2.5 rounded-full bg-primary-foreground px-6 py-3.5 text-xs font-bold uppercase tracking-ui text-primary transition-all duration-300 hover:-translate-y-0.5 hover:bg-gold hover:text-gold-foreground"
+              className="press-3d press-3d-gold group sheen sheen-gold mt-8 inline-flex items-center gap-2.5 rounded-full bg-primary-foreground px-6 py-3.5 text-xs font-bold uppercase tracking-ui text-primary transition-all duration-300 hover:-translate-y-0.5 hover:bg-gold hover:text-gold-foreground"
               href="/faq"
             >
               View all FAQs
@@ -441,34 +453,42 @@ export function ClosingInvitation({ image }: { image?: string | null }) {
             className="absolute inset-0 bg-linear-to-br from-primary-wash via-background to-gold-subtle"
           />
         )}
-        {/* The type has to hold over whatever photograph is dropped in. */}
+        {/* The type has to hold over whatever photograph is dropped in, and
+            solid ground at the top lets the picture start without a ruled line
+            under the wave above it. */}
         <span
           aria-hidden
-          className="absolute inset-0 bg-linear-to-b from-page/72 via-page/72 via-72% to-page backdrop-blur-[1px]"
+          className="absolute inset-0 backdrop-blur-[1px]"
+          style={{
+            background:
+              "linear-gradient(to bottom, var(--page), color-mix(in oklch, var(--page) 72%, transparent) 10rem, color-mix(in oklch, var(--page) 72%, transparent) 72%, var(--page))",
+          }}
         />
       </div>
 
-      <div className="reveal-soft relative mx-auto max-w-2xl px-6 py-20 text-center md:py-28">
-        <p className="text-2xs font-bold uppercase tracking-eyebrow text-primary-soft">
+      <div className="relative mx-auto max-w-2xl px-6 py-20 text-center md:py-28">
+        <p className="reveal-soft text-2xs font-bold uppercase tracking-eyebrow text-primary-soft">
           Keep exploring
         </p>
-        <h2 className="display mt-4 text-3xl text-foreground md:text-[2.75rem]">
-          Find something useful today.
+        <h2 className="reveal-words display mt-4 text-3xl text-foreground md:text-[2.75rem]">
+          <RevealWords text="Find something useful today." />
         </h2>
-        <p className="mx-auto mt-5 max-w-md text-sm leading-relaxed text-muted-foreground">
+        <p className="reveal-soft mx-auto mt-5 max-w-md text-sm leading-relaxed text-muted-foreground">
           Browse home and kitchen essentials, stationery, toys and more.
         </p>
-        <Link
-          className="group sheen mt-9 inline-flex items-center gap-2.5 rounded-full bg-primary px-8 py-4 text-xs font-bold uppercase tracking-ui text-primary-foreground transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl"
-          href="/products"
-        >
-          Shop all products
-          <ArrowRight
-            className="transition-transform duration-300 group-hover:translate-x-1.5"
-            size={13}
-            weight="bold"
-          />
-        </Link>
+        <div className="reveal-soft mt-9" style={order(1)}>
+          <Link
+            className="press-3d group sheen inline-flex items-center gap-2.5 rounded-full bg-primary px-8 py-4 text-xs font-bold uppercase tracking-ui text-primary-foreground transition-all duration-300 hover:-translate-y-0.5"
+            href="/products"
+          >
+            Shop all products
+            <ArrowRight
+              className="transition-transform duration-300 group-hover:translate-x-1.5"
+              size={13}
+              weight="bold"
+            />
+          </Link>
+        </div>
       </div>
     </section>
   );

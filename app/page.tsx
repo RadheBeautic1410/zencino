@@ -10,8 +10,8 @@ import {
   Testimonials,
   WhyZencino,
 } from "@/components/store/home-sections";
-import { order } from "@/components/store/motion";
 import { ProductCard } from "@/components/store/product-card";
+import { ProductFloor } from "@/components/store/product-floor";
 import { SectionHeading } from "@/components/store/section-heading";
 import { StoreShell } from "@/components/store/store-shell";
 import { WaveEdge } from "@/components/store/wave-edge";
@@ -43,16 +43,19 @@ const CUSTOMER_REVIEWS: Omit<Testimonial, "image">[] = [];
 export default async function HomePage() {
   const [
     categoryTiles,
-    { products: featuredProducts },
+    { products: latestProducts },
     { data: heroContent },
     { data: faqContent },
   ] = await Promise.all([
     // Top level only — sub-categories belong on their parent's page.
     getStorefrontCategoryTiles(),
-    getStorefrontProducts({ pageSize: 8 }),
+    // Enough for the product floor to fill its columns without repeating.
+    getStorefrontProducts({ pageSize: 25 }),
     getPublishedContent<HomepageContentData>("home", "homepage"),
     getPublishedContent<FaqContentData>("faq", "faq"),
   ]);
+
+  const featuredProducts = latestProducts.slice(0, 8);
 
   // A short set here; the FAQ page keeps the full list, including the
   // questions that only apply to one material.
@@ -87,6 +90,9 @@ export default async function HomePage() {
         secondaryCtaText={secondaryCtaText}
       />
 
+      {/* Grows straight out of the hero's green claim band. */}
+      <ProductFloor products={latestProducts} />
+
       {/* The hero closes on a green claim band, so it leaves on the same curve
           the bands further down use. Shorter than the default — the strip it
           hangs off is thin. */}
@@ -103,7 +109,9 @@ export default async function HomePage() {
         <section className="relative text-primary">
           <WaveEdge side="top" />
 
-          <div className="grain relative overflow-hidden bg-primary text-primary-foreground">
+          {/* `clip` rather than `hidden`: a scroll container here would capture
+              the view timelines the cards inside animate on. */}
+          <div className="grain relative overflow-clip bg-primary text-primary-foreground">
             <div className="relative mx-auto max-w-7xl px-6 py-16 md:py-20">
               <SectionHeading
                 eyebrow="Just added"
@@ -114,14 +122,8 @@ export default async function HomePage() {
               />
 
               <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-                {featuredProducts.slice(0, 4).map((prod, idx) => (
-                  <div
-                    className="reveal-item h-full"
-                    key={prod.id}
-                    style={order(idx % 4)}
-                  >
-                    <ProductCard product={prod} />
-                  </div>
+                {featuredProducts.slice(0, 4).map((prod) => (
+                  <ProductCard key={prod.id} product={prod} />
                 ))}
               </div>
             </div>
@@ -137,7 +139,7 @@ export default async function HomePage() {
       {/* 5. The page's dark anchor */}
       <EverydayBand image={featuredProducts[0]?.primaryImage} />
 
-      {/* 6. The reasons behind the range */}
+      {/* 6. The reasons behind the range, on the light ground between bands */}
       <WhyZencino />
 
       {/* 7. What customers say */}

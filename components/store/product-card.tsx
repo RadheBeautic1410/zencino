@@ -1,6 +1,7 @@
 import { Package, ShoppingBagOpen, Star } from "@phosphor-icons/react/dist/ssr";
 import Image from "next/image";
 import Link from "next/link";
+import { turnOffset } from "@/components/store/motion";
 
 export interface ProductCardProps {
   product: {
@@ -16,6 +17,8 @@ export interface ProductCardProps {
     variantCount: number;
     primaryImage: string | null;
     primaryImageAlt: string;
+    /** Printed on the back of the turning picture; the primary repeats without it. */
+    secondaryImage?: string | null;
     /** Present only once the catalog carries ratings; the row adapts without it. */
     rating?: number | null;
     reviewCount?: number | null;
@@ -49,6 +52,49 @@ function RatingRow({ rating }: { rating: number }) {
   );
 }
 
+const TURN_IMAGE_SIZES =
+  "(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw";
+
+/**
+ * The picture as a physical slab turning inside the card: main photo on the
+ * front, the next gallery photo on the back, with a gold edge between them.
+ */
+function ProductTurn({
+  product,
+}: {
+  product: ProductCardProps["product"] & { primaryImage: string };
+}) {
+  return (
+    <div className="turn-stage" style={turnOffset(product.id)}>
+      <span aria-hidden className="turn-shadow" />
+      <div className="turn-idle">
+        <div className="turn-slab">
+          <div className="turn-face turn-front">
+            <Image
+              alt={product.primaryImageAlt}
+              className="object-cover"
+              fill
+              sizes={TURN_IMAGE_SIZES}
+              src={product.primaryImage}
+            />
+          </div>
+          <div className="turn-face turn-back">
+            <Image
+              alt=""
+              className="object-cover"
+              fill
+              sizes={TURN_IMAGE_SIZES}
+              src={product.secondaryImage ?? product.primaryImage}
+            />
+          </div>
+          <i aria-hidden className="turn-edge turn-edge-left" />
+          <i aria-hidden className="turn-edge turn-edge-right" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export function ProductCard({ product }: ProductCardProps) {
   const price = product.minPriceMinor ? product.minPriceMinor / 100 : null;
   const mrp = product.maxMrpMinor ? product.maxMrpMinor / 100 : null;
@@ -59,89 +105,87 @@ export function ProductCard({ product }: ProductCardProps) {
   const href = `/products/${product.slug}`;
 
   return (
-    <article className="group card-hover relative flex h-full flex-col overflow-hidden rounded-2xl border border-border/70 bg-card hover:border-primary/25">
-      <div className="relative">
-        <Link
-          className="sheen relative block aspect-4/3 w-full overflow-hidden bg-muted/25"
-          href={href}
-        >
-          {product.primaryImage ? (
-            <Image
-              alt={product.primaryImageAlt}
-              className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.06]"
-              fill
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-              src={product.primaryImage}
-            />
-          ) : (
-            <div className="grid size-full place-items-center text-muted-foreground/30 transition-transform duration-700 ease-out group-hover:scale-105">
-              <Package size={44} />
-            </div>
-          )}
+    <div className="reveal-item h-full">
+      <article className="product-card tilt-3d card-3d group flex h-full flex-col rounded-2xl border border-border/70 bg-card hover:border-primary/25">
+        <div className="depth-stack relative">
+          <Link
+            className="sheen relative block aspect-4/3 w-full overflow-hidden rounded-t-2xl bg-muted/25"
+            href={href}
+          >
+            {product.primaryImage ? (
+              <ProductTurn
+                product={{ ...product, primaryImage: product.primaryImage }}
+              />
+            ) : (
+              <div className="grid size-full place-items-center text-muted-foreground/30 transition-transform duration-700 ease-out group-hover:scale-105">
+                <Package size={44} />
+              </div>
+            )}
 
-          {discountPct && (
-            <span className="absolute top-3 left-3 z-2 rounded-full bg-primary/92 px-2.5 py-1 text-3xs font-bold uppercase tracking-ui text-primary-foreground backdrop-blur-xs">
-              {discountPct}% off
-            </span>
-          )}
+            {discountPct && (
+              <span className="absolute top-3 left-3 z-2 rounded-full bg-primary/92 px-2.5 py-1 text-3xs font-bold uppercase tracking-ui text-primary-foreground backdrop-blur-xs">
+                {discountPct}% off
+              </span>
+            )}
 
-          {product.hasAmazonChannel && (
-            <span className="absolute top-3 right-3 z-2 rounded-full bg-gold px-2.5 py-1 text-3xs font-bold uppercase tracking-ui text-gold-foreground">
-              Prime
-            </span>
-          )}
-        </Link>
+            {product.hasAmazonChannel && (
+              <span className="absolute top-3 right-3 z-2 rounded-full bg-gold px-2.5 py-1 text-3xs font-bold uppercase tracking-ui text-gold-foreground">
+                Prime
+              </span>
+            )}
+          </Link>
 
-        {/* Sits on the seam between picture and copy, the way the reference
+          {/* Sits on the seam between picture and copy, the way the reference
             card does. It opens the product page, because the variant is
             chosen there — nothing is added to a bag behind the shopper. */}
-        <Link
-          aria-label={`View ${product.name}`}
-          className="absolute -bottom-5 right-4 z-2 grid size-10 place-items-center rounded-full bg-primary text-primary-foreground shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-lg"
-          href={href}
-        >
-          <ShoppingBagOpen size={16} weight="bold" />
-        </Link>
-      </div>
+          <Link
+            aria-label={`View ${product.name}`}
+            className="depth-2 absolute -bottom-5 right-4 z-2 grid size-10 place-items-center rounded-full bg-primary text-primary-foreground shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-lg"
+            href={href}
+          >
+            <ShoppingBagOpen size={16} weight="bold" />
+          </Link>
+        </div>
 
-      <div className="flex flex-1 flex-col p-4 pt-5">
-        <h3 className="line-clamp-2 font-heading text-sm font-medium leading-snug text-foreground transition-colors group-hover:text-primary">
-          <Link href={href}>{product.name}</Link>
-        </h3>
+        <div className="depth-1 flex flex-1 flex-col p-4 pt-5">
+          <h3 className="line-clamp-2 font-heading text-sm font-medium leading-snug text-foreground transition-colors group-hover:text-primary">
+            <Link href={href}>{product.name}</Link>
+          </h3>
 
-        {/* Ratings when the catalog has them, otherwise the shelf the piece
+          {/* Ratings when the catalog has them, otherwise the shelf the piece
             belongs to — the row keeps its place either way. */}
-        <div className="mt-2 min-h-4">
-          {product.rating ? (
-            <RatingRow rating={product.rating} />
-          ) : (
-            product.primaryCategoryName && (
-              <p className="text-2xs font-semibold uppercase tracking-ui text-primary-soft">
-                {product.primaryCategoryName}
-              </p>
-            )
-          )}
-        </div>
+          <div className="mt-2 min-h-4">
+            {product.rating ? (
+              <RatingRow rating={product.rating} />
+            ) : (
+              product.primaryCategoryName && (
+                <p className="text-2xs font-semibold uppercase tracking-ui text-primary-soft">
+                  {product.primaryCategoryName}
+                </p>
+              )
+            )}
+          </div>
 
-        <div className="mt-auto flex items-baseline gap-2 pt-3">
-          {price === null ? (
-            <span className="text-xs font-medium text-muted-foreground">
-              Pricing on request
-            </span>
-          ) : (
-            <>
-              <span className="font-heading text-base font-semibold text-foreground">
-                ₹{price.toLocaleString("en-IN")}
+          <div className="mt-auto flex items-baseline gap-2 pt-3">
+            {price === null ? (
+              <span className="text-xs font-medium text-muted-foreground">
+                Pricing on request
               </span>
-              {mrp && mrp > price && (
-                <span className="text-xs text-muted-foreground/70 line-through">
-                  ₹{mrp.toLocaleString("en-IN")}
+            ) : (
+              <>
+                <span className="font-heading text-base font-semibold text-foreground">
+                  ₹{price.toLocaleString("en-IN")}
                 </span>
-              )}
-            </>
-          )}
+                {mrp && mrp > price && (
+                  <span className="text-xs text-muted-foreground/70 line-through">
+                    ₹{mrp.toLocaleString("en-IN")}
+                  </span>
+                )}
+              </>
+            )}
+          </div>
         </div>
-      </div>
-    </article>
+      </article>
+    </div>
   );
 }

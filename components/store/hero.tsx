@@ -150,7 +150,7 @@ function HeroCopy({
         style={delay(570)}
       >
         <Link
-          className="group sheen inline-flex items-center gap-2.5 rounded-full bg-primary px-7 py-3.5 text-xs font-bold uppercase tracking-ui text-primary-foreground shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl"
+          className="press-3d group sheen inline-flex items-center gap-2.5 rounded-full bg-primary px-7 py-3.5 text-xs font-bold uppercase tracking-ui text-primary-foreground transition-all duration-300 hover:-translate-y-0.5"
           href={content.ctaPrimaryLink || "/products"}
         >
           {content.ctaPrimaryText || "Shop Collection"}
@@ -161,7 +161,7 @@ function HeroCopy({
           />
         </Link>
         <Link
-          className="group inline-flex items-center gap-2.5 rounded-full border border-border bg-background px-7 py-3.5 text-xs font-bold uppercase tracking-ui text-foreground transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/40 hover:text-primary"
+          className="press-3d press-3d-gold group inline-flex items-center gap-2.5 rounded-full border border-border bg-background px-7 py-3.5 text-xs font-bold uppercase tracking-ui text-foreground transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/40 hover:text-primary"
           href={secondaryCtaLink}
         >
           {secondaryCtaText}

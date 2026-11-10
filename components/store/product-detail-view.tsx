@@ -227,7 +227,7 @@ export function ProductDetailView({ product }: ProductDetailProps) {
       <div className="grid gap-8 lg:gap-12 lg:grid-cols-12 lg:items-start">
         {/* Gallery Section */}
         <div className="min-w-0 space-y-4 lg:col-span-7">
-          <div onTouchEnd={handleTouchEnd} onTouchStart={handleTouchStart} className="relative aspect-square w-full touch-pan-y overflow-hidden rounded-3xl border border-border/80 bg-card shadow-sm">
+          <div onTouchEnd={handleTouchEnd} onTouchStart={handleTouchStart} className={`aspect-square w-full touch-pan-y overflow-hidden rounded-3xl border border-border/80 bg-card ${activeMedia?.isVideo ? "relative shadow-sm" : "tilt-3d card-3d"}`}>
             {activeMedia?.isVideo ? (
               // biome-ignore lint/a11y/useMediaCaption: product videos are uploaded without caption tracks.
               <video
@@ -242,8 +242,9 @@ export function ProductDetailView({ product }: ProductDetailProps) {
             ) : activeMedia ? (
               <Image
                 alt={activeMedia.altText || product.name}
-                className="object-cover"
+                className="gallery-turn object-cover"
                 fill
+                key={activeMedia.id}
                 priority
                 sizes="(max-width: 1024px) 100vw, 55vw"
                 src={activeMedia.url}

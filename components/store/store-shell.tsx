@@ -28,9 +28,11 @@ import {
 } from "react";
 import { BrandLogo } from "@/components/brand-logo";
 import { CampaignTracker } from "@/components/store/campaign-tracker";
+import { DepthPointer } from "@/components/store/depth-pointer";
 import { FirebaseAnalytics } from "@/components/store/firebase-analytics";
 import { MetaPixel } from "@/components/store/meta-pixel";
 import { NewsletterSignup } from "@/components/store/newsletter-signup";
+import { ScrollMotion } from "@/components/store/scroll-motion";
 import { WaveEdge } from "@/components/store/wave-edge";
 import { SELLER_INFO, SOCIAL_LINKS, WHATSAPP_NUMBER } from "@/config/platform";
 
@@ -316,8 +318,10 @@ export function StoreShell({ children }: { children: ReactNode }) {
       }
     >
       <CampaignTracker />
+      <DepthPointer />
       <FirebaseAnalytics />
       <MetaPixel />
+      <ScrollMotion />
       <a
         className="sr-only bg-primary font-semibold text-primary-foreground focus:not-sr-only focus:block focus:p-4"
         href="#main-content"

@@ -300,6 +300,9 @@ export async function getStorefrontProducts(
         ? getMediaAssetUrl(prodMedia[0].storageKey)
         : null,
       primaryImageAlt: prodMedia[0]?.altText || prod.name,
+      secondaryImage: prodMedia[1]
+        ? getMediaAssetUrl(prodMedia[1].storageKey)
+        : null,
     };
   });
 
