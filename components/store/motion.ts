@@ -17,6 +17,19 @@ export const order = (i: number) => ({ "--i": i }) as CSSProperties;
 export const wordStep = (i: number, base: number) =>
   ({ "--i": i, "--delay": `${base}ms` }) as CSSProperties;
 
+/** Offsets a product-floor column, so neighbours never line up row for row. */
+export const floorColumn = (i: number) =>
+  ({ "--floor-offset": `${i * -11}s` }) as CSSProperties;
+
+/** Derived from the id, so a grid of product turns never moves in unison. */
+export const turnOffset = (id: string) => {
+  let total = 0;
+  for (const character of id) {
+    total += character.charCodeAt(0);
+  }
+  return { "--turn-offset": `${(total % 11) * -1}s` } as CSSProperties;
+};
+
 /** Travel distance for a scroll-linked decorative layer. */
 export const travel = (from: string, to: string) =>
   ({ "--from": from, "--to": to }) as CSSProperties;
