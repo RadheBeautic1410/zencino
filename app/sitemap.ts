@@ -5,6 +5,9 @@ import { categories, collections, products } from "@/db/schema/catalog";
 import { db } from "@/lib/db";
 import { env } from "@/lib/env";
 
+// Rebuild hourly so newly published products reach the sitemap without a deploy.
+export const revalidate = 3600;
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = env.NEXT_PUBLIC_APP_URL || "https://zencino.com";
 
