@@ -48,6 +48,17 @@ export async function upsertBlogPostAction(
     return { error: "Invalid status." };
   }
 
+  // Optional publish time (ISO string, converted from the admin's local time
+  // on the client). A future time schedules the post.
+  const publishAtRaw = String(formData.get("publishAt") || "").trim();
+  let publishAt: Date | null = null;
+  if (publishAtRaw) {
+    publishAt = new Date(publishAtRaw);
+    if (Number.isNaN(publishAt.getTime())) {
+      return { error: "Invalid publish date." };
+    }
+  }
+
   const values = {
     title,
     slug,
@@ -84,9 +95,10 @@ export async function upsertBlogPostAction(
         .set({
           ...values,
           publishedAt:
-            status === "published"
+            publishAt ??
+            (status === "published"
               ? (existing.publishedAt ?? new Date())
-              : existing.publishedAt,
+              : existing.publishedAt),
           updatedAt: new Date(),
         })
         .where(eq(blogPosts.id, id));
@@ -105,7 +117,8 @@ export async function upsertBlogPostAction(
         .values({
           ...values,
           authorId: admin.user.id,
-          publishedAt: status === "published" ? new Date() : null,
+          publishedAt:
+            publishAt ?? (status === "published" ? new Date() : null),
         })
         .returning({ id: blogPosts.id });
       await audit({

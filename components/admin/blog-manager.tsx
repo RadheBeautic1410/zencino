@@ -41,6 +41,27 @@ const slugify = (v: string) =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
 
+/** ISO timestamp → `YYYY-MM-DDTHH:mm` in the browser's local time (for datetime-local). */
+const toLocalInput = (iso: string | null) => {
+  if (!iso) {
+    return "";
+  }
+  const d = new Date(iso);
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+};
+
+const isScheduled = (post: Post) =>
+  post.status === "published" &&
+  Boolean(post.publishedAt) &&
+  new Date(post.publishedAt as string).getTime() > Date.now();
+
+const formatWhen = (iso: string) =>
+  new Date(iso).toLocaleString("en-IN", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  });
+
 export function BlogManager({ posts }: { posts: Post[] }) {
   const router = useRouter();
   const [confirm, confirmDialog] = useConfirm();
@@ -127,6 +148,12 @@ export function BlogManager({ posts }: { posts: Post[] }) {
     setError(null);
     setSuccess(null);
     const formData = new FormData(e.currentTarget);
+    const publishAtLocal = String(formData.get("publishAtLocal") || "");
+    formData.delete("publishAtLocal");
+    if (publishAtLocal) {
+      // datetime-local has no timezone; convert using the admin's browser time.
+      formData.set("publishAt", new Date(publishAtLocal).toISOString());
+    }
     startTransition(async () => {
       const res = await upsertBlogPostAction(formData);
       if (res.error) {
@@ -213,16 +240,25 @@ export function BlogManager({ posts }: { posts: Post[] }) {
                           <span className="font-semibold text-sm">
                             {post.title}
                           </span>
-                          <Badge
-                            variant={
-                              post.status === "published"
-                                ? "default"
-                                : "secondary"
-                            }
-                          >
-                            {post.status}
-                          </Badge>
+                          {isScheduled(post) ? (
+                            <Badge variant="secondary">scheduled</Badge>
+                          ) : (
+                            <Badge
+                              variant={
+                                post.status === "published"
+                                  ? "default"
+                                  : "secondary"
+                              }
+                            >
+                              {post.status}
+                            </Badge>
+                          )}
                         </div>
+                        {isScheduled(post) && post.publishedAt && (
+                          <p className="text-2xs text-muted-foreground">
+                            Goes live {formatWhen(post.publishedAt)}
+                          </p>
+                        )}
                         <p className="truncate font-mono text-2xs text-muted-foreground">
                           /blog/{post.slug}
                         </p>
@@ -435,6 +471,23 @@ export function BlogManager({ posts }: { posts: Post[] }) {
                       <option value="archived">Archived</option>
                     </select>
                   </div>
+                </div>
+
+                <div>
+                  <label className={LABEL} htmlFor="blog-publish-at">
+                    Publish date &amp; time
+                  </label>
+                  <Input
+                    defaultValue={toLocalInput(editing?.publishedAt ?? null)}
+                    id="blog-publish-at"
+                    name="publishAtLocal"
+                    type="datetime-local"
+                  />
+                  <p className="mt-1 text-2xs text-muted-foreground">
+                    Set status to Published. Leave empty to publish now; pick a
+                    future time to schedule — the post goes live automatically
+                    (within ~5 minutes of that time).
+                  </p>
                 </div>
 
                 <div>
