@@ -643,6 +643,38 @@
   --primary-foreground: var(--gold-foreground);
   --primary-wash: oklch(1 0 0 / 0.08);
   color: var(--foreground);
+  /* Transparent at rest so the hero shows through; the scroll-linked
+     header-settle animation is swapped for a dark-emerald one below. */
+  background-color: transparent;
+  border-bottom-color: transparent;
+  -webkit-backdrop-filter: none;
+  backdrop-filter: none;
+  animation-name: luxe-header-settle !important;
+}
+@keyframes luxe-header-settle {
+  from {
+    background-color: transparent;
+    border-bottom-color: transparent;
+    box-shadow: 0 0 0 0 transparent;
+    -webkit-backdrop-filter: blur(0);
+    backdrop-filter: blur(0);
+  }
+  to {
+    background-color: oklch(0.2 0.05 168 / 0.92);
+    border-bottom-color: oklch(1 0 0 / 0.08);
+    box-shadow: 0 10px 30px -12px oklch(0 0 0 / 0.45);
+    -webkit-backdrop-filter: blur(24px);
+    backdrop-filter: blur(24px);
+  }
+}
+/* Pull the homepage content up under the header so it sits over the hero,
+   and pad the hero by the same amount so its content doesn't shift. */
+.luxe-main {
+  margin-top: calc(-1 * var(--header-h, 4.5rem));
+}
+.luxe-main .screen-below-chrome {
+  min-height: calc(100svh - var(--chrome-h, 6.5rem) + var(--header-h, 4.5rem));
+  padding-top: var(--header-h, 4.5rem);
 }
 .luxe-header input {
   background: oklch(1 0 0 / 0.12);
