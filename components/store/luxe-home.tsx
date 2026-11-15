@@ -444,7 +444,6 @@ export function FeaturedRail({ products }: { products: LuxeProduct[] }) {
         />
         <div className="relative mx-auto grid max-w-7xl items-center gap-10 px-6 py-12 sm:px-10 md:py-14 lg:grid-cols-[15rem_1fr]">
           <div className="reveal-item">
-            <Crown className="text-gold" size={34} weight="duotone" />
             <h2 className="mt-3 font-heading text-4xl leading-tight font-bold text-foreground italic">
               Bestsellers
               <span className="block">at Zencino</span>
@@ -577,11 +576,7 @@ export function NewArrivalSpotlight() {
 
         <div className="absolute inset-y-0 left-0 flex w-full max-w-xl flex-col justify-center p-6 sm:p-10 lg:p-14">
           <h2 className="font-heading text-4xl leading-none font-bold text-white italic sm:text-5xl lg:text-6xl">
-            <Sparkle
-              className="-mb-1 mr-1 inline text-gold"
-              size={30}
-              weight="fill"
-            />
+            
             New Arrivals
           </h2>
           <p className="mt-4 text-sm text-white/85 sm:text-base">

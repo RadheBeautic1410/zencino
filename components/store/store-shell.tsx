@@ -236,6 +236,7 @@ export function StoreShell({
   const noticeRef = useRef<HTMLDivElement>(null);
   const headerRef = useRef<HTMLElement>(null);
   const [chromeHeight, setChromeHeight] = useState<number | null>(null);
+  const [headerHeight, setHeaderHeight] = useState<number | null>(null);
 
   // Escape closes whichever layer is open; Ctrl/Cmd+K jumps to the field.
   useEffect(() => {
@@ -278,7 +279,9 @@ export function StoreShell({
         return;
       }
       const notice = noticeOpen ? (noticeRef.current?.offsetHeight ?? 0) : 0;
-      setChromeHeight(notice + (headerRef.current?.offsetHeight ?? 0));
+      const header = headerRef.current?.offsetHeight ?? 0;
+      setChromeHeight(notice + header);
+      setHeaderHeight(header);
     };
     measure();
     window.addEventListener("resize", measure);
@@ -322,7 +325,10 @@ export function StoreShell({
       style={
         chromeHeight === null
           ? undefined
-          : ({ "--chrome-h": `${chromeHeight}px` } as CSSProperties)
+          : ({
+              "--chrome-h": `${chromeHeight}px`,
+              "--header-h": `${headerHeight ?? 0}px`,
+            } as CSSProperties)
       }
     >
       <CampaignTracker />
@@ -571,7 +577,7 @@ export function StoreShell({
         )}
       </header>
 
-      <main className="flex-1" id="main-content">
+      <main className={`flex-1 ${luxe ? "luxe-main" : ""}`} id="main-content">
         {children}
       </main>
 
