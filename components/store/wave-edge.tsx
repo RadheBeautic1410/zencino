@@ -1,4 +1,4 @@
-import type { CSSProperties } from "react";
+import { type CSSProperties, useId } from "react";
 import { cn } from "@/lib/utils";
 
 /**
@@ -16,6 +16,18 @@ const WAVE_POSES = [
 
 /* Back to the first pose, so the loop has no seam. */
 const WAVE_LOOP = [...WAVE_POSES, WAVE_POSES[0]].join(";");
+
+/**
+ * The bold variant: three broad organic swells instead of a ripple, for the
+ * cream ↔ emerald transitions. Same command shape in every pose so it morphs.
+ */
+const BOLD_POSES = [
+  "M0,62C180,8 360,-4 560,42C760,88 900,122 1100,84C1260,52 1360,26 1440,38V140H0Z",
+  "M0,44C200,2 400,22 600,62C800,102 940,108 1120,72C1280,40 1380,56 1440,62V140H0Z",
+  "M0,72C160,34 340,8 540,32C740,56 880,112 1080,98C1240,86 1360,22 1440,28V140H0Z",
+];
+const BOLD_LOOP = [...BOLD_POSES, BOLD_POSES[0]].join(";");
+const BOLD_SECONDS = "9s";
 
 const WAVE_SECONDS = "1s";
 /* The echo runs behind the band's own edge, out of step with it. */
@@ -39,6 +51,60 @@ export const waveCutBottom: CSSProperties = {
   maskSize: `100% ${CUT_HEIGHT}, 100% calc(100% - ${CUT_HEIGHT} + 1px)`,
 };
 
+/** Strips a pose down to its crest line, for the ribbon riding the edge. */
+const crestOf = (pose: string) => pose.replace("V140H0Z", "");
+const crestLoop = (poses: string[]) =>
+  [...poses, poses[0]].map(crestOf).join(";");
+
+/**
+ * A thin satin ribbon of polished gold with cream glints, laid along a wave's
+ * crest. Strokes don't scale with the stretched viewBox, so it keeps a
+ * constant width at every screen size.
+ */
+function WaveRibbon({ dur, poses }: { dur: string; poses: string[] }) {
+  const gradientId = useId();
+  return (
+    <>
+      <defs>
+        <linearGradient id={gradientId} x1="0" x2="1" y1="0" y2="0">
+          <stop offset="0" stopColor="oklch(0.62 0.11 72)" />
+          <stop offset="0.18" stopColor="oklch(0.86 0.1 88)" />
+          <stop offset="0.3" stopColor="oklch(0.97 0.03 92)" />
+          <stop offset="0.45" stopColor="oklch(0.74 0.12 78)" />
+          <stop offset="0.62" stopColor="oklch(0.6 0.1 70)" />
+          <stop offset="0.78" stopColor="oklch(0.88 0.09 88)" />
+          <stop offset="0.88" stopColor="oklch(0.97 0.03 92)" />
+          <stop offset="1" stopColor="oklch(0.7 0.12 76)" />
+        </linearGradient>
+      </defs>
+      {/* Soft glow under the ribbon, then the ribbon itself. */}
+      {[
+        { opacity: 0.35, width: 9 },
+        { opacity: 1, width: 4 },
+      ].map((stroke) => (
+        <path
+          d={crestOf(poses[0])}
+          fill="none"
+          key={stroke.width}
+          stroke={`url(#${gradientId})`}
+          strokeLinecap="round"
+          strokeOpacity={stroke.opacity}
+          strokeWidth={stroke.width}
+          transform="translate(0 -3)"
+          vectorEffect="non-scaling-stroke"
+        >
+          <animate
+            attributeName="d"
+            dur={dur}
+            repeatCount="indefinite"
+            values={crestLoop(poses)}
+          />
+        </path>
+      ))}
+    </>
+  );
+}
+
 /**
  * Organic cap that lets a full-bleed colour band meet the page on a curve
  * instead of a ruled line. Colour comes from `currentColor`, so a caller sets
@@ -50,10 +116,39 @@ export const waveCutBottom: CSSProperties = {
 export function WaveEdge({
   className,
   side,
+  variant = "ripple",
 }: {
   className?: string;
   side: "top" | "bottom";
+  variant?: "ripple" | "bold";
 }) {
+  if (variant === "bold") {
+    return (
+      <svg
+        aria-hidden
+        className={cn(
+          "block h-[clamp(3.5rem,9vw,9rem)] w-full",
+          side === "top" ? "-mb-px" : "-mt-px -scale-y-100",
+          className
+        )}
+        data-wave
+        preserveAspectRatio="none"
+        viewBox="0 0 1440 140"
+      >
+        <path className="fill-current" d={BOLD_POSES[0]}>
+          <animate
+            attributeName="d"
+            dur={BOLD_SECONDS}
+            repeatCount="indefinite"
+            values={BOLD_LOOP}
+          />
+        </path>
+
+        <WaveRibbon dur={BOLD_SECONDS} poses={BOLD_POSES} />
+      </svg>
+    );
+  }
+
   return (
     <svg
       aria-hidden
@@ -68,8 +163,10 @@ export function WaveEdge({
       preserveAspectRatio="none"
       viewBox="0 0 1440 140"
     >
+      {/* The echo is a solid, lighter emerald rather than a see-through copy,
+          which washed out to grey over the cream page. */}
       <path
-        className="fill-current opacity-30"
+        className="fill-(--wave-echo,oklch(0.5_0.1_163))"
         d={WAVE_POSES[0]}
         transform="translate(0 -16)"
       >
@@ -89,6 +186,8 @@ export function WaveEdge({
           values={WAVE_LOOP}
         />
       </path>
+      {/* Gold-and-cream ribbon between the band and its emerald echo. */}
+      <WaveRibbon dur={WAVE_SECONDS} poses={WAVE_POSES} />
     </svg>
   );
 }

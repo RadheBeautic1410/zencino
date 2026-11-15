@@ -252,11 +252,11 @@ export async function getCouponByCode(
 // ---------------------------------------------------------------------------
 
 export interface CartPricing extends OrderTotals {
-  /** True until a valid delivery PIN code is known (default rate used). */
-  shippingEstimated: boolean;
   couponCode: string | null;
   couponDescription: string | null;
   couponError: string | null;
+  /** True until a valid delivery PIN code is known (default rate used). */
+  shippingEstimated: boolean;
 }
 
 /**
@@ -598,4 +598,36 @@ export async function setCouponActive(params: {
       description: `Coupon ${updated.code} ${params.active ? "enabled" : "disabled"}.`,
     });
   }
+}
+
+/**
+ * The coupon the homepage offer banner advertises: the newest active,
+ * store-wide code that is live right now and still has redemptions left.
+ * Returns null when there is none, so the banner never shows a code that
+ * checkout would reject.
+ */
+export async function getShowcaseCoupon(): Promise<Coupon | null> {
+  const now = new Date();
+  const rows = await db
+    .select()
+    .from(coupons)
+    .where(and(eq(coupons.active, true), eq(coupons.appliesTo, "all")))
+    .orderBy(desc(coupons.createdAt));
+
+  for (const coupon of rows) {
+    if (coupon.startsAt && coupon.startsAt > now) {
+      continue;
+    }
+    if (coupon.expiresAt && coupon.expiresAt <= now) {
+      continue;
+    }
+    if (
+      coupon.usageLimit !== null &&
+      (await countRedemptions(db, coupon.id)) >= coupon.usageLimit
+    ) {
+      continue;
+    }
+    return coupon;
+  }
+  return null;
 }

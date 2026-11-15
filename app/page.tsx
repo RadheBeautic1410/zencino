@@ -1,6 +1,4 @@
 import type { Metadata } from "next";
-import { CategoryGrid } from "@/components/store/category-grid";
-import { Hero } from "@/components/store/hero";
 import {
   ClosingInvitation,
   EverydayBand,
@@ -10,9 +8,15 @@ import {
   Testimonials,
   WhyZencino,
 } from "@/components/store/home-sections";
-import { ProductCard } from "@/components/store/product-card";
-import { ProductFloor } from "@/components/store/product-floor";
-import { SectionHeading } from "@/components/store/section-heading";
+import {
+  CategoryPedestals,
+  FeaturedRail,
+  LuxeCanvas,
+  LuxeHero,
+  NewArrivalSpotlight,
+  OfferBanner,
+  TrustBar,
+} from "@/components/store/luxe-home";
 import { StoreShell } from "@/components/store/store-shell";
 import { WaveEdge } from "@/components/store/wave-edge";
 import {
@@ -24,6 +28,7 @@ import {
   getPublishedContent,
   type HomepageContentData,
 } from "@/lib/commerce/content";
+import { getShowcaseCoupon } from "@/lib/commerce/coupons";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/" },
@@ -46,6 +51,7 @@ export default async function HomePage() {
     { products: latestProducts },
     { data: heroContent },
     { data: faqContent },
+    showcaseCoupon,
   ] = await Promise.all([
     // Top level only — sub-categories belong on their parent's page.
     getStorefrontCategoryTiles(),
@@ -53,6 +59,8 @@ export default async function HomePage() {
     getStorefrontProducts({ pageSize: 25 }),
     getPublishedContent<HomepageContentData>("home", "homepage"),
     getPublishedContent<FaqContentData>("faq", "faq"),
+    // Only a live, store-wide code is advertised; none hides the banner.
+    getShowcaseCoupon(),
   ]);
 
   const featuredProducts = latestProducts.slice(0, 8);
@@ -73,65 +81,35 @@ export default async function HomePage() {
     image: featuredProducts[idx]?.primaryImage,
   }));
 
-  // The rail below shows the first four, so the hero takes the next ones when
-  // there are enough to keep the two from repeating each other.
-  const heroProducts =
-    featuredProducts.length >= 8
-      ? featuredProducts.slice(4, 8)
-      : featuredProducts.slice(0, 4);
-
   return (
-    <StoreShell>
-      {/* 1. Hero — copy against the warm ground, product filling the right */}
-      <Hero
-        content={heroContent}
-        products={heroProducts}
-        secondaryCtaLink={secondaryCtaLink}
-        secondaryCtaText={secondaryCtaText}
-      />
+    <StoreShell tone="luxe">
+      {/* 1–6. The dark emerald showroom: hero, category plinths, featured
+          rail, promises, the newest piece and the live offer. */}
+      <LuxeCanvas>
+        <LuxeHero
+          content={heroContent}
+          secondaryCtaLink={secondaryCtaLink}
+          secondaryCtaText={secondaryCtaText}
+        />
+        <CategoryPedestals categories={categoryTiles} />
+        <FeaturedRail products={latestProducts.slice(0, 10)} />
+        <TrustBar content={heroContent} />
+        <NewArrivalSpotlight />
+        <OfferBanner
+          coupon={
+            showcaseCoupon && {
+              code: showcaseCoupon.code,
+              description: showcaseCoupon.description,
+              discountType: showcaseCoupon.discountType,
+              discountValue: showcaseCoupon.discountValue,
+              minOrderMinor: showcaseCoupon.minOrderMinor,
+            }
+          }
+        />
+      </LuxeCanvas>
 
-      {/* Grows straight out of the hero's green claim band. */}
-      <ProductFloor products={latestProducts} />
-
-      {/* The hero closes on a green claim band, so it leaves on the same curve
-          the bands further down use. Shorter than the default — the strip it
-          hangs off is thin. */}
-      <WaveEdge
-        className="h-[clamp(1.75rem,4vw,4rem)] text-primary"
-        side="bottom"
-      />
-
-      {/* 2. Shelves to browse */}
-      <CategoryGrid categories={categoryTiles} />
-
-      {/* 3. The newest additions to the range */}
-      {featuredProducts.length > 0 && (
-        <section className="relative text-primary">
-          <WaveEdge side="top" />
-
-          {/* `clip` rather than `hidden`: a scroll container here would capture
-              the view timelines the cards inside animate on. */}
-          <div className="grain relative overflow-clip bg-primary text-primary-foreground">
-            <div className="relative mx-auto max-w-7xl px-6 py-16 md:py-20">
-              <SectionHeading
-                eyebrow="Just added"
-                linkHref="/products"
-                linkLabel="View all products"
-                title="New arrivals"
-                tone="dark"
-              />
-
-              <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-                {featuredProducts.slice(0, 4).map((prod) => (
-                  <ProductCard key={prod.id} product={prod} />
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <WaveEdge side="bottom" />
-        </section>
-      )}
+      {/* Leaves the showroom on the same curve the bands further down use. */}
+      <WaveEdge className="text-primary" side="bottom" />
 
       {/* 4. How buying works, for any product */}
       <HowItWorks />

@@ -217,7 +217,15 @@ function NavMenu({
   );
 }
 
-export function StoreShell({ children }: { children: ReactNode }) {
+export function StoreShell({
+  children,
+  tone = "default",
+}: {
+  children: ReactNode;
+  /** `luxe` gives the homepage its dark emerald header with a gold Home pill. */
+  tone?: "default" | "luxe";
+}) {
+  const luxe = tone === "luxe";
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
@@ -331,7 +339,9 @@ export function StoreShell({ children }: { children: ReactNode }) {
 
       {noticeOpen && (
         <div
-          className="relative bg-primary text-primary-foreground"
+          className={`relative bg-primary text-primary-foreground ${
+            luxe ? "luxe-notice" : ""
+          }`}
           ref={noticeRef}
         >
           <div className="mx-auto flex max-w-7xl items-center justify-center gap-2.5 px-12 py-2 text-center text-2xs tracking-wide">
@@ -350,7 +360,9 @@ export function StoreShell({ children }: { children: ReactNode }) {
       )}
 
       <header
-        className="header-settle sticky top-0 z-50 border-b border-border/50 bg-page/85 backdrop-blur-xl"
+        className={`header-settle sticky top-0 z-50 border-b border-border/50 bg-page/85 backdrop-blur-xl ${
+          luxe ? "luxe-header" : ""
+        }`}
         ref={headerRef}
       >
         {/* Reading progress — scroll-linked in CSS, inert where unsupported */}
@@ -378,13 +390,18 @@ export function StoreShell({ children }: { children: ReactNode }) {
           </button>
 
           <Link className="shrink-0" href="/">
-            <BrandLogo className="h-6 sm:h-7" priority />
+            <BrandLogo className="h-6 sm:h-7" onDark={luxe} priority />
           </Link>
 
           <nav
             aria-label="Main navigation"
             className="ml-6 hidden items-center gap-1 lg:flex"
           >
+            {luxe && (
+              <Link aria-current="page" className="luxe-home-pill" href="/">
+                Home
+              </Link>
+            )}
             <NavMenu label="Shop" links={SHOP_LINKS} onNavigate={closeAll} />
             <NavMenu
               label="Collections"
