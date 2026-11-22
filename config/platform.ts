@@ -1,6 +1,6 @@
 export const PRODUCT_NAME = "Zencino";
 export const PRODUCT_DESCRIPTION =
-  "Shop Zencino home, kitchen, and everyday essentials.";
+  "Zencino is an Indian brand of home, kitchen and everyday essentials. Shop the official Zencino store at zencino.com.";
 export const LOGO_PATH = "/logo.png";
 export const LOGO_LIGHT_PATH = "/logo-light.png";
 export const BRAND_MARK_PATH = "/brand-mark.png";
@@ -26,18 +26,12 @@ export const SELLER_INFO = {
   defaultHsn: "39269099", // Optical acrylic organizers & household storage
 };
 
-/**
- * Storefront social profiles. Handles are placeholders until the accounts are
- * claimed — the footer renders only the entries listed here, so drop any row
- * that will not exist at launch.
- */
 /** Customer chat line; the storefront's floating button opens wa.me with it. */
 export const WHATSAPP_NUMBER = "919499673369";
 
+// Only accounts Zencino actually owns: these also feed the Organization
+// `sameAs` in app/layout.tsx, which tells Google the profiles and this domain
+// are one brand. Add a row only once the account is live.
 export const SOCIAL_LINKS = [
-  { href: "https://instagram.com/zencino", label: "Instagram" },
-  { href: "https://facebook.com/zencino", label: "Facebook" },
-  { href: "https://youtube.com/@zencino", label: "YouTube" },
-  { href: "https://x.com/zencino", label: "X" },
-  { href: "https://pinterest.com/zencino", label: "Pinterest" },
+  { href: "https://www.instagram.com/zencino.shop/", label: "Instagram" },
 ] as const;
