@@ -5,6 +5,7 @@ import {
   LOGO_PATH,
   PRODUCT_DESCRIPTION,
   PRODUCT_NAME,
+  SOCIAL_LINKS,
 } from "@/config/platform";
 import { env } from "@/lib/env";
 import { cn } from "@/lib/utils";
@@ -48,8 +49,8 @@ export const metadata: Metadata = {
     : undefined,
 };
 
-// Tells search engines the site's name and that this domain is the brand.
-// Add `sameAs` to the Organization once the official social profiles are confirmed.
+// Tells search engines the site's name and that this domain is the brand;
+// `sameAs` links the brand's own social profiles to it.
 const siteUrl = new URL("/", env.NEXT_PUBLIC_APP_URL).href;
 const brandJsonLd = {
   "@context": "https://schema.org",
@@ -58,14 +59,17 @@ const brandJsonLd = {
       "@type": "Organization",
       "@id": `${siteUrl}#organization`,
       name: PRODUCT_NAME,
+      alternateName: ["Zencino India", "zencino.com"],
       url: siteUrl,
       logo: new URL(LOGO_PATH, siteUrl).href,
       description: PRODUCT_DESCRIPTION,
+      sameAs: SOCIAL_LINKS.map((social) => social.href),
     },
     {
       "@type": "WebSite",
       "@id": `${siteUrl}#website`,
       name: PRODUCT_NAME,
+      alternateName: "zencino.com",
       url: siteUrl,
       publisher: { "@id": `${siteUrl}#organization` },
     },
